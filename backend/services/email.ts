@@ -240,4 +240,138 @@ export async function sendWelcomeEmail(
   });
 }
 
-export default { sendOTPEmail, sendRegistrationConfirmation, sendWelcomeEmail };
+export async function sendApprovalEmail(
+  email: string,
+  name: string,
+  barangay: string
+) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #10b981; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .success-icon { font-size: 64px; text-align: center; margin: 20px 0; }
+        .button { display: inline-block; background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🏥 SentinelPH</h1>
+          <p>Registration Approved</p>
+        </div>
+        <div class="content">
+          <div class="success-icon">✅</div>
+          <h2>Congratulations, ${name}!</h2>
+          <p>Your registration as a community sentinel in <strong>${barangay}</strong> has been approved by your Barangay Health Worker.</p>
+          
+          <p style="padding: 15px; background: #d1fae5; border-left: 4px solid #10b981; border-radius: 4px; margin: 20px 0;">
+            <strong>✓ Status:</strong> Approved<br>
+            <strong>✓ Barangay:</strong> ${barangay}<br>
+            <strong>✓ Next Step:</strong> Complete your training
+          </p>
+
+          <h3>What's Next?</h3>
+          <ol>
+            <li>Log in to your SentinelPH account</li>
+            <li>Complete the 15-minute training module</li>
+            <li>Pass the comprehension check</li>
+            <li>Start submitting observations</li>
+          </ol>
+
+          <center>
+            <a href="${process.env.FRONTEND_URL}/login" class="button">Login to SentinelPH</a>
+          </center>
+
+          <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
+            Welcome to the SentinelPH community! Together, we protect our communities through early outbreak detection.
+          </p>
+        </div>
+        <div class="footer">
+          <p>© 2024 SentinelPH. Empowering Communities, Protecting Health.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: 'SentinelPH Registration Approved ✅',
+    html,
+  });
+}
+
+export async function sendRejectionEmail(
+  email: string,
+  name: string,
+  reason: string
+) {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #ef4444; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .icon { font-size: 64px; text-align: center; margin: 20px 0; }
+        .reason-box { background: #fee2e2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .button { display: inline-block; background: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🏥 SentinelPH</h1>
+          <p>Registration Update</p>
+        </div>
+        <div class="content">
+          <div class="icon">❌</div>
+          <h2>Hello ${name},</h2>
+          <p>We regret to inform you that your registration as a community sentinel has not been approved at this time.</p>
+          
+          <div class="reason-box">
+            <strong>Reason:</strong><br>
+            ${reason}
+          </div>
+
+          <h3>What You Can Do:</h3>
+          <ul>
+            <li>Contact your Barangay Health Worker for more information</li>
+            <li>Address the concerns mentioned above</li>
+            <li>Reapply after meeting the requirements</li>
+            <li>Ask about alternative ways to contribute to community health</li>
+          </ul>
+
+          <p style="padding: 15px; background: #fef3c7; border-left: 4px solid #fbbf24; border-radius: 4px; margin: 20px 0;">
+            <strong>💡 Note:</strong> This decision does not prevent you from reapplying in the future. We encourage you to address the concerns and try again.
+          </p>
+
+          <center>
+            <a href="${process.env.FRONTEND_URL}/contact" class="button">Contact BHW</a>
+          </center>
+        </div>
+        <div class="footer">
+          <p>© 2024 SentinelPH. Empowering Communities, Protecting Health.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: 'SentinelPH Registration Update',
+    html,
+  });
+}
+
+export default { sendOTPEmail, sendRegistrationConfirmation, sendWelcomeEmail, sendApprovalEmail, sendRejectionEmail };
