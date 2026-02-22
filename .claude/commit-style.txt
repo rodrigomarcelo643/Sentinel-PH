@@ -1,0 +1,199 @@
+# Git Commit Style Guide
+
+## Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+## Types
+
+- **feat**: New feature
+- **fix**: Bug fix
+- **docs**: Documentation changes
+- **style**: Code style changes (formatting, semicolons, etc.)
+- **refactor**: Code refactoring
+- **perf**: Performance improvements
+- **test**: Adding or updating tests
+- **chore**: Maintenance tasks (dependencies, build, etc.)
+- **ci**: CI/CD changes
+- **revert**: Revert previous commit
+
+## Scopes
+
+### Frontend
+- **ui**: UI components
+- **auth**: Authentication
+- **map**: Map/heatmap features
+- **form**: Forms and validation
+- **state**: State management
+
+### Backend
+- **webhook**: Webhook handlers
+- **service**: Services (email, SMS, etc.)
+- **middleware**: Middleware functions
+- **config**: Configuration
+- **rag**: RAG processing
+
+### General
+- **deps**: Dependencies
+- **security**: Security updates
+- **db**: Database changes
+- **api**: API changes
+
+## Rules
+
+1. **Subject line**:
+   - Max 50 characters
+   - Lowercase
+   - No period at the end
+   - Imperative mood ("add" not "added")
+
+2. **Body** (optional):
+   - Wrap at 72 characters
+   - Explain what and why, not how
+   - Separate from subject with blank line
+
+3. **Footer** (optional):
+   - Reference issues: `Closes #123`
+   - Breaking changes: `BREAKING CHANGE: description`
+
+## Examples
+
+### Feature
+```
+feat(webhook): add email notification for registration approval
+
+- Implement sendApprovalEmail function
+- Add approve-registration endpoint
+- Include login link in email template
+
+Closes #45
+```
+
+### Bug Fix
+```
+fix(auth): resolve OTP expiration validation
+
+OTP was not properly checking expiration time, causing
+expired OTPs to be accepted. Added proper timestamp
+comparison.
+
+Fixes #67
+```
+
+### Documentation
+```
+docs(rag): add comprehensive RAG system documentation
+
+Created detailed documentation for:
+- RAG architecture and data flow
+- Setup instructions
+- Usage examples
+- Troubleshooting guide
+```
+
+### Refactor
+```
+refactor(middleware): extract validation logic to separate functions
+
+Split validation middleware into smaller, reusable functions
+for better maintainability and testing.
+```
+
+### Performance
+```
+perf(rag): optimize vector search query performance
+
+- Add composite indexes
+- Reduce embedding dimensions
+- Implement query caching
+
+Improves query time from 500ms to 200ms
+```
+
+### Style
+```
+style(backend): format code with prettier
+
+Applied prettier formatting across all backend files
+for consistent code style.
+```
+
+### Test
+```
+test(webhook): add unit tests for observation processing
+
+Added comprehensive test coverage for:
+- OTP generation and validation
+- Email sending
+- Error handling
+```
+
+### Chore
+```
+chore(deps): update dependencies to latest versions
+
+- firebase-admin: 13.5.0 -> 13.6.1
+- nodemailer: 6.9.7 -> 6.9.8
+- twilio: 4.19.0 -> 4.20.0
+```
+
+### Breaking Change
+```
+feat(api): change observation endpoint response format
+
+BREAKING CHANGE: Observation API now returns nested
+structure instead of flat object. Update frontend
+to handle new format.
+
+Before: { id, type, description }
+After: { id, data: { type, description } }
+```
+
+## Bad Examples
+
+❌ `fixed bug`
+❌ `Updated files`
+❌ `WIP`
+❌ `asdfasdf`
+❌ `Fixed the thing that was broken in the webhook handler because it wasn't working properly`
+
+## Good Examples
+
+✅ `fix(webhook): resolve OTP validation error`
+✅ `feat(ui): add observation heatmap component`
+✅ `docs(readme): update installation instructions`
+✅ `refactor(service): simplify email template logic`
+✅ `perf(db): add index for observation queries`
+
+## Commit Message Template
+
+Create `.gitmessage` in project root:
+
+```
+# <type>(<scope>): <subject>
+# |<----  Max 50 characters  ---->|
+
+# <body>
+# |<----  Wrap at 72 characters  ---->|
+
+# <footer>
+
+# Types: feat, fix, docs, style, refactor, perf, test, chore, ci, revert
+# Scopes: ui, auth, webhook, service, middleware, rag, db, api, deps
+# Remember: Use imperative mood in subject line
+```
+
+Configure git to use template:
+```bash
+git config commit.template .gitmessage
+```
+
+## Conventional Commits
+
+This style follows [Conventional Commits](https://www.conventionalcommits.org/) specification for automated changelog generation and semantic versioning.

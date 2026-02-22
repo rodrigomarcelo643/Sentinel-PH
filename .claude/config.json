@@ -1,0 +1,92 @@
+{
+  "project": {
+    "name": "SentinelPH",
+    "description": "Community Intelligence Network for Early Outbreak Detection",
+    "version": "1.0.0",
+    "track": "Good Health and Well-Being"
+  },
+  "context": {
+    "primary_language": "TypeScript",
+    "frameworks": ["React", "Express", "Firebase"],
+    "ai_models": ["OpenAI GPT-3.5", "Custom Trust Score"],
+    "databases": ["Firestore", "Supabase"]
+  },
+  "code_style": {
+    "typescript": {
+      "strict": true,
+      "noImplicitAny": true,
+      "strictNullChecks": true
+    },
+    "formatting": {
+      "semi": true,
+      "singleQuote": true,
+      "trailingComma": "es5",
+      "tabWidth": 2
+    },
+    "naming": {
+      "components": "PascalCase",
+      "functions": "camelCase",
+      "constants": "UPPER_SNAKE_CASE",
+      "files": "kebab-case"
+    }
+  },
+  "file_structure": {
+    "frontend": "src/",
+    "backend": "backend/",
+    "services": "src/services/ and backend/services/",
+    "components": "src/components/",
+    "webhooks": "backend/webhooks/",
+    "middleware": "backend/middleware/",
+    "config": "backend/config/"
+  },
+  "key_features": [
+    "AI-Powered Trust Scoring",
+    "3-Sentinel Rule Validation",
+    "RAG-Enhanced Categorization",
+    "Real-time Heatmaps",
+    "Two-Way Feedback Loop",
+    "Multi-Layered Spam Prevention"
+  ],
+  "integration_points": {
+    "openai": "Observation categorization and spam detection",
+    "supabase": "RAG vector database for health textbooks",
+    "firebase": "Authentication, Firestore, Cloud Functions",
+    "twilio": "SMS notifications",
+    "google_maps": "Observation heatmaps",
+    "cloudinary": "Image storage and optimization"
+  },
+  "security": {
+    "authentication": "Firebase Auth with JWT",
+    "authorization": "Role-based (sentinel, bhw, admin)",
+    "rate_limiting": true,
+    "input_sanitization": true,
+    "webhook_signatures": "HMAC-SHA256"
+  },
+  "testing": {
+    "unit_tests": "Jest",
+    "integration_tests": "Jest + Supertest",
+    "e2e_tests": "Cypress (planned)"
+  },
+  "documentation": {
+    "api": "backend/README.md",
+    "rag": "rag/RAG_DOCUMENTATION.md",
+    "agent": ".agent/",
+    "claude": ".claude/"
+  },
+  "deployment": {
+    "frontend": "Firebase Hosting",
+    "backend": "Cloud Functions or VPS",
+    "database": "Firebase Firestore",
+    "storage": "Firebase Storage + Cloudinary"
+  },
+  "environment": {
+    "development": {
+      "frontend_port": 5173,
+      "backend_port": 3001
+    },
+    "production": {
+      "frontend_url": "https://sentinelph.web.app",
+      "backend_url": "https://api.sentinelph.com"
+    }
+  }
+}
