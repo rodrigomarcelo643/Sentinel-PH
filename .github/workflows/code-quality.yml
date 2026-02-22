@@ -1,0 +1,88 @@
+name: Code Quality (DISABLED)
+
+# Workflow is disabled - remove (DISABLED) from name to activate
+on:
+  workflow_dispatch:  # Manual trigger only
+  # pull_request:
+  #   branches: [main, develop]
+  # push:
+  #   branches: [main, develop]
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true
+
+  type-check:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check frontend
+        run: npm run type-check
+        continue-on-error: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: pnpm install
+
+      - name: Type check backend
+        working-directory: ./backend
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Run pnpm audit (backend)
+        working-directory: ./backend
+        run: pnpm audit --audit-level=moderate
+        continue-on-error: true
