@@ -4,6 +4,10 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import observationWebhook from './webhooks/observation-webhook';
 import smsWebhook from './webhooks/sms-webhook';
+import authWebhook from './webhooks/auth-webhook';
+import { apiRateLimit } from './middleware/rateLimit';
+import { sanitizeInput } from './middleware/validation';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 dotenv.config();
 
@@ -17,6 +21,10 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Global middleware
+app.use(apiRateLimit);
+app.use(sanitizeInput);
 
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -33,21 +41,11 @@ app.get('/health', (req, res) => {
 
 app.use('/webhook', observationWebhook);
 app.use('/webhook', smsWebhook);
+app.use('/webhook', authWebhook);
 
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err);
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal server error',
-    timestamp: new Date().toISOString(),
-  });
-});
-
-app.use((req, res) => {
-  res.status(404).json({
-    error: 'Endpoint not found',
-    path: req.path,
-  });
-});
+// Error handlers
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`🚀 Webhook server running on port ${PORT}`);
