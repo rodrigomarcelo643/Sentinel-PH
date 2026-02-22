@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Menu, ChevronDown, MapPin } from "lucide-react";
+import LoginDialog from "@/components/auth/LoginDialog";
 
 const regions = [
   "NCR", "CAR", "Region I", "Region II", "Region III", "Region IV-A", 
@@ -23,6 +24,7 @@ const regions = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [regionsOpen, setRegionsOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
@@ -84,8 +86,12 @@ export default function Navbar() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost" asChild className="border border-[#1B365D]/20 shadow-sm shadow-[#1B365D]/10">
-              <Link to="/signin">Sign In</Link>
+            <Button 
+              variant="ghost" 
+              onClick={() => setLoginOpen(true)}
+              className="border border-[#1B365D]/20 shadow-sm shadow-[#1B365D]/10"
+            >
+              Sign In
             </Button>
             <Button asChild className="shadow-lg shadow-[#1B365D]/30">
               <Link to="/register">Register</Link>
@@ -158,11 +164,13 @@ export default function Navbar() {
                 <div className="mt-6 pt-6 border-t space-y-3">
                   <Button
                     variant="outline"
-                    asChild
+                    onClick={() => {
+                      setOpen(false);
+                      setLoginOpen(true);
+                    }}
                     className="w-full border-[#1B365D]/20 shadow-sm shadow-[#1B365D]/10"
-                    onClick={() => setOpen(false)}
                   >
-                    <Link to="/signin">Sign In</Link>
+                    Sign In
                   </Button>
                   <Button 
                     asChild 
@@ -177,6 +185,8 @@ export default function Navbar() {
           </Sheet>
         </div>
       </div>
+      
+      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
     </nav>
   );
 }
