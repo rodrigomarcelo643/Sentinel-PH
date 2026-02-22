@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/sentinel_ph_logo.jpg" alt="SentinelPH Logo" width="200"/>
+  <img src="public/sentinel_ph_logo.jpg" alt="SentinelPH Logo" width="300"/>
   <h1>SentinelPH: Community Intelligence Network for Early Outbreak Detection</h1>
 </div>
 
