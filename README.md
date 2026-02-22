@@ -80,20 +80,76 @@ SentinelPH builds a community intelligence network that trains and equips everyd
 
 ```
 SentinelPh/
-├── src/
-│   ├── components/     # Reusable UI components
-│   │   ├── ui/        # Base UI components (buttons, cards, etc.)
-│   │   ├── sentinel/  # Sentinel-specific components
-│   │   ├── bhw/       # BHW dashboard components
-│   │   └── maps/      # Map visualization components
-│   ├── lib/           # Utility functions
-│   │   ├── utils.ts   # Helper functions
-│   │   ├── firebase.ts # Firebase configuration
-│   │   └── trust-score.ts # Trust scoring algorithm
-│   ├── assets/        # Static assets
-│   └── App.tsx        # Main application
-├── public/            # Public assets
-└── package.json       # Dependencies
+├── src/                    # Frontend application
+│   ├── components/        # React components
+│   │   ├── ui/           # Base UI components (buttons, cards, etc.)
+│   │   ├── sentinel/     # Sentinel-specific components
+│   │   ├── bhw/          # BHW dashboard components
+│   │   └── maps/         # Map visualization components
+│   ├── services/         # Shared services (frontend & backend)
+│   │   ├── openAiService/      # AI categorization & spam detection
+│   │   ├── googleMapService/   # Maps integration
+│   │   └── cloudinaryService/  # Image upload
+│   ├── lib/              # Utility functions
+│   │   ├── utils.ts      # Helper functions (cn utility)
+│   │   └── firebase.ts   # Firebase client config
+│   ├── assets/           # Static assets
+│   └── App.tsx           # Main application
+│
+├── backend/               # Backend services
+│   ├── webhooks/         # Webhook handlers
+│   │   ├── observation-webhook.ts  # Observation processing
+│   │   ├── sms-webhook.ts         # SMS notifications
+│   │   └── auth-webhook.ts        # Authentication & registration
+│   ├── services/         # Backend services
+│   │   └── email.ts      # Email notifications (OTP, approval, etc.)
+│   ├── middleware/       # Express middleware
+│   │   ├── auth.ts       # Authentication middleware
+│   │   ├── rateLimit.ts  # Rate limiting
+│   │   ├── validation.ts # Input validation
+│   │   └── errorHandler.ts # Error handling
+│   ├── config/           # Configuration
+│   │   └── firebase-admin.ts # Firebase Admin SDK
+│   ├── rag/              # RAG processing
+│   │   ├── prepare-rag.ts      # Process textbooks from Supabase
+│   │   ├── query-rag.ts        # Interactive query tool
+│   │   └── supabase-schema.sql # Database schema
+│   ├── server.ts         # Main webhook server
+│   └── package.json      # Backend dependencies (pnpm)
+│
+├── rag/                   # RAG data storage
+│   ├── health-guidelines/     # DOH/WHO guidelines
+│   ├── disease-patterns/      # Historical outbreak data
+│   ├── symptoms-database/     # Verified symptoms
+│   ├── medication-reference/  # Common medications
+│   ├── training-materials/    # Sentinel training
+│   ├── advisories/           # Health advisories
+│   └── RAG_DOCUMENTATION.md  # RAG system guide
+│
+├── .agent/               # AI agent documentation
+│   ├── architecture/     # System architecture docs
+│   ├── features/         # Feature specifications
+│   ├── ai-ml/           # AI/ML documentation
+│   └── api/             # API integration docs
+│
+├── .claude/             # Claude AI integration
+│   ├── project-context.md  # Project overview
+│   ├── prompts.md         # Prompt library
+│   ├── commit-style.txt   # Git commit style guide
+│   └── config.json        # Project configuration
+│
+├── .github/             # GitHub Actions
+│   └── workflows/       # CI/CD workflows (disabled)
+│       ├── pr-validation.yml  # PR validation
+│       ├── ci-cd.yml         # Deployment pipeline
+│       └── code-quality.yml  # Code quality checks
+│
+├── public/              # Public assets
+├── firestore.rules      # Firestore security rules
+├── storage.rules        # Firebase storage rules
+├── firebase.json        # Firebase configuration
+├── .env.example         # Environment variables template
+└── package.json         # Frontend dependencies (pnpm)
 ```
 
 ## 🚀 Getting Started
@@ -101,13 +157,13 @@ SentinelPh/
 ### Frontend
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Run development server
-npm run dev
+pnpm run dev
 
 # Build for production
-npm run build
+pnpm run build
 ```
 
 ### Backend
