@@ -1,10 +1,17 @@
-# SentinelPH: Community Intelligence Network for Early Outbreak Detection
+<div align="center">
+  <img src="public/sentinel_ph_logo.jpg" alt="SentinelPH Logo" width="200"/>
+  <h1>SentinelPH: Community Intelligence Network for Early Outbreak Detection</h1>
+</div>
+
+<div align="center">
 
 ![React](https://img.shields.io/badge/React-18.3-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?logo=typescript)
 ![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite)
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?logo=firebase&logoColor=black)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css)
+
+</div>
 
 **Track:** 3 – Good Health and Well-Being
 
