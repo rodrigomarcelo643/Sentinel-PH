@@ -29,7 +29,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-3 z-10">
-            <img src="/sentinel_ph_logo.jpg" alt="SentinelPH" className="h-15 w-30" />
+            <img src="/sentinel_ph_logo.png" alt="SentinelPH" className="h-15 w-30" />
           
           </Link>
 
