@@ -91,6 +91,7 @@ SentinelPh/
 
 ## 🚀 Getting Started
 
+### Frontend
 ```bash
 # Install dependencies
 npm install
@@ -100,6 +101,19 @@ npm run dev
 
 # Build for production
 npm run build
+```
+
+### Backend
+```bash
+# Install dependencies
+cd backend
+pnpm install
+
+# Run webhook server
+pnpm run dev
+
+# Prepare RAG data
+pnpm run rag:prepare
 ```
 
 ## 🔑 Core Innovation

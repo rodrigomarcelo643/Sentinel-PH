@@ -86,7 +86,7 @@ Upload health textbooks to Supabase:
 
 ```bash
 cd backend
-npm run rag:prepare
+pnpm run rag:prepare
 ```
 
 This will:
@@ -100,7 +100,7 @@ This will:
 
 ```bash
 cd backend
-npm run rag:query
+pnpm run rag:query
 ```
 
 Interactive tool to test semantic search.

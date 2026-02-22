@@ -30,10 +30,10 @@ psql -h your-project.supabase.co -U postgres -f backend/rag/supabase-schema.sql
 
 # Process textbooks
 cd backend
-npm run rag:prepare
+pnpm run rag:prepare
 
 # Query RAG
-npm run rag:query
+pnpm run rag:query
 ```
 
 ## How It Works

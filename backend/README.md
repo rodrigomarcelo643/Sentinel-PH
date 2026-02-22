@@ -23,7 +23,7 @@ backend/
 
 ```bash
 cd backend
-npm install
+pnpm install
 ```
 
 ### 2. Configure Environment
@@ -56,10 +56,10 @@ ALLOWED_ORIGINS=http://localhost:5173
 
 ```bash
 # Development (auto-reload)
-npm run dev
+pnpm run dev
 
 # Production
-npm start
+pnpm start
 ```
 
 ## RAG Operations
@@ -67,13 +67,13 @@ npm start
 ### Prepare RAG Data
 
 ```bash
-npm run rag:prepare
+pnpm run rag:prepare
 ```
 
 ### Query RAG
 
 ```bash
-npm run rag:query
+pnpm run rag:query
 ```
 
 ## Webhooks
