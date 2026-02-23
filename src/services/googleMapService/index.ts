@@ -1,5 +1,11 @@
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 export const loadGoogleMapsScript = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (window.google && window.google.maps) {
@@ -17,8 +23,8 @@ export const loadGoogleMapsScript = (): Promise<void> => {
   });
 };
 
-export const createHeatmap = (map: google.maps.Map, data: google.maps.LatLng[]) => {
-  return new google.maps.visualization.HeatmapLayer({
+export const createHeatmap = (map: any, data: any[]) => {
+  return new window.google.maps.visualization.HeatmapLayer({
     data,
     map,
     radius: 20,
@@ -26,6 +32,6 @@ export const createHeatmap = (map: google.maps.Map, data: google.maps.LatLng[]) 
 };
 
 export const geocodeAddress = async (address: string) => {
-  const geocoder = new google.maps.Geocoder();
+  const geocoder = new window.google.maps.Geocoder();
   return geocoder.geocode({ address });
 };
