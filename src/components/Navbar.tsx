@@ -192,7 +192,7 @@ export default function Navbar() {
                 </Collapsible>
 
                 {/* Mobile Auth Buttons */}
-                <div className="mt-6 pt-6 border-t space-y-3">
+                <div className="mt-6 pt-6 px-2 border-t space-y-3">
                   <Button
                     variant="outline"
                     onClick={() => {
