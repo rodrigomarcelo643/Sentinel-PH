@@ -6,25 +6,25 @@ export default function LoadingAnimation() {
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-white overflow-hidden"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-white overflow-hidden"
     >
       <div className="relative flex flex-col items-center justify-center w-full h-full">
         {/* BIGGER RADAR / SCANNING RINGS */}
         <div className="absolute flex items-center justify-center pointer-events-none">
-          {[1, 2, 3, 4].map((ring) => (
+          {[1, 2, 3, 4, 5].map((ring) => (
             <motion.div
               key={ring}
               className="absolute border-2 border-blue-100 rounded-full"
-              initial={{ width: 200, height: 200, opacity: 0 }}
+              initial={{ width: 250, height: 250, opacity: 0 }}
               animate={{
-                width: [200, 900], // Significant increase in spread
-                height: [200, 900],
-                opacity: [0.5, 0],
+                width: [300, 900], // Significant increase in spread
+                height: [300, 900],
+                opacity: [1, 0],
               }}
               transition={{
-                duration: 5, // Slower, more epic pulse
+                duration: 4, // Slower, more epic pulse
                 repeat: Infinity,
-                delay: ring * 1.2,
+                delay: ring * 1,
                 ease: "easeOut",
               }}
             />
@@ -81,7 +81,7 @@ export default function LoadingAnimation() {
             <motion.p
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="text-sm uppercase tracking-[0.8em] font-black text-[#1B365D] ml-[0.8em]"
+              className="text-sm uppercase tracking-[0.4em] font-black text-[#1B365D] ml-[0.8em]"
             >
               Establishing Connection
             </motion.p>
@@ -89,7 +89,7 @@ export default function LoadingAnimation() {
         </motion.div>
 
         {/* Subtle Ambient Glow */}
-        <div className="absolute w-[500px] h-[500px] bg-blue-50 rounded-full blur-[120px] opacity-30 pointer-events-none" />
+        <div className="absolute w-125 h-125 bg-blue-100 rounded-full blur-[120px] opacity-30 pointer-events-none" />
       </div>
     </motion.div>
   );
