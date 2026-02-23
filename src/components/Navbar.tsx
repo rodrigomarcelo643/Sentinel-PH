@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -30,13 +31,23 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-3 z-10">
-            <img src="/sentinel_ph_logo.png" alt="SentinelPH" className="h-15 w-30" />
-          
-          </Link>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Link to="/" className="flex items-center gap-3 z-10">
+              <img src="/sentinel_ph_logo.png" alt="SentinelPH" className="h-15 w-30" />
+            </Link>
+          </motion.div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:block absolute left-1/2 -translate-x-1/2">
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="hidden lg:block absolute left-1/2 -translate-x-1/2"
+          >
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
@@ -50,7 +61,15 @@ export default function Navbar() {
                 <NavigationMenuItem>
                   <Link to="/about">
                     <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      About
+                      About Us
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+
+                <NavigationMenuItem>
+                  <Link to="/pricing">
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      Pricing
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -82,10 +101,15 @@ export default function Navbar() {
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
-          </div>
+          </motion.div>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden lg:flex items-center gap-3">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="hidden lg:flex items-center gap-3"
+          >
             <Button 
               variant="ghost" 
               onClick={() => setLoginOpen(true)}
@@ -96,7 +120,7 @@ export default function Navbar() {
             <Button asChild className="shadow-lg shadow-[#1B365D]/30">
               <Link to="/register">Register</Link>
             </Button>
-          </div>
+          </motion.div>
 
           {/* Mobile Menu */}
           <Sheet open={open} onOpenChange={setOpen}>
@@ -108,7 +132,7 @@ export default function Navbar() {
             <SheetContent side="right" className="w-[320px] sm:w-[380px] overflow-y-auto">
               <SheetHeader className="text-left mb-6">
                 <SheetTitle className="flex items-center gap-2">
-                  <img src="/sentinel_ph_logo.jpg" alt="SentinelPH" className="h-15 w-30" />
+                  <img src="/sentinel_ph_logo.png" alt="SentinelPH" className="h-15 w-30" />
            </SheetTitle>
               </SheetHeader>
               
@@ -125,7 +149,14 @@ export default function Navbar() {
                   onClick={() => setOpen(false)}
                   className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
                 >
-                  About
+                  About Us 
+                </Link>
+                <Link
+                  to="/pricing"
+                  onClick={() => setOpen(false)}
+                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
+                >
+                  Pricing
                 </Link>
                 <Link
                   to="/map"
