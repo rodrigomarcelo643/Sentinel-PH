@@ -2,8 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { 
-  Shield, Eye, FileText, Bell, Globe, 
-  Activity, Map, Lock, Zap 
+  Bell, Globe, Activity, Map, Lock,
 } from "lucide-react";
 import heroBg from "@/assets/images/hero_bg.jpg";
 
