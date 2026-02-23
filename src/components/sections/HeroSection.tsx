@@ -8,8 +8,8 @@ import heroBg from "@/assets/images/hero_bg.jpg";
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen  flex items-center overflow-hidden bg-[#f8fafc]">
-      <div className="max-w-7xl mx-auto w-full pt-8  px-6 sm:px-8 lg:px-12">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#f8fafc] py-20 lg:py-0">
+      <div className="max-w-7xl mx-auto w-full px-4 mt-8 sm:px-6 lg:px-12">
         <div className="grid lg:grid-cols-2 gap-8 items-center">
           
           {/* Left Content / Integrated Circle Section */}
@@ -21,32 +21,32 @@ export default function HeroSection() {
           >
             
             {/* Main Container for Circle + Content */}
-            <div className="relative w-[500px] h-[500px] flex items-center justify-center">
+            <div className="relative w-full max-w-[500px] aspect-square flex items-center justify-center mx-auto">
               
               {/* --- ROTATING BACKGROUND ELEMENTS --- */}
               {/* Outer Slow Rotation Ring */}
               <div className="absolute inset-0 rounded-full border border-slate-200 animate-[spin_50s_linear_infinite]" />
               
               {/* Mid-Ring with Dotted Border */}
-              <div className="absolute inset-8 rounded-full border-2 border-dashed border-[#1B365D]/10 animate-[spin_30s_linear_reverse_infinite]" />
+              <div className="absolute inset-4 sm:inset-8 rounded-full border-2 border-dashed border-[#1B365D]/10 animate-[spin_30s_linear_reverse_infinite]" />
 
               {/* Network Nodes (Icons) positioned around the circle */}
               <div className="absolute inset-0 animate-[spin_40s_linear_infinite]">
                 {/* Node 1: Map */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm -rotate-[inherit]">
-                  <Map className="w-5 h-5 text-[#1B365D]" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm -rotate-[inherit]">
+                  <Map className="w-4 h-4 sm:w-5 sm:h-5 text-[#1B365D]" />
                 </div>
                 {/* Node 2: Alert */}
-                <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm -rotate-[inherit]">
-                  <Bell className="w-5 h-5 text-[#CE1126]" />
+                <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm -rotate-[inherit]">
+                  <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-[#CE1126]" />
                 </div>
                 {/* Node 3: Security */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm -rotate-[inherit]">
-                  <Lock className="w-5 h-5 text-[#1B365D]" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm -rotate-[inherit]">
+                  <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-[#1B365D]" />
                 </div>
                 {/* Node 4: Global */}
-                <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm -rotate-[inherit]">
-                  <Globe className="w-5 h-5 text-[#1B365D]" />
+                <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm -rotate-[inherit]">
+                  <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-[#1B365D]" />
                 </div>
               </div>
 
@@ -55,23 +55,23 @@ export default function HeroSection() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="relative z-20 text-center flex flex-col items-center px-12"
+                className="relative z-20 text-center flex flex-col items-center px-6 sm:px-12"
               >
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.5 }}
-                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1B365D]/5 border border-[#1B365D]/10 mb-4"
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1B365D]/5 border border-[#1B365D]/10 mb-3 sm:mb-4"
                 >
                   <Activity className="w-3 h-3 text-[#CE1126] animate-pulse" />
-                  <span className="text-[10px] font-bold text-[#1B365D] uppercase tracking-[0.2em]">Live Network</span>
+                  <span className="text-[9px] sm:text-[10px] font-bold text-[#1B365D] uppercase tracking-[0.2em]">Live Network</span>
                 </motion.div>
 
                 <motion.h1 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.6 }}
-                  className="text-3xl md:text-4xl font-bold tracking-tight mb-4"
+                  className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-3 sm:mb-4"
                 >
                   <span className="text-[#1B365D]">Observe. </span>
                   <span className="text-[#CE1126]">Report. </span>
@@ -83,7 +83,7 @@ export default function HeroSection() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.6, delay: 0.8 }}
-                  className="text-slate-500 text-sm mb-8 max-w-[280px] leading-relaxed"
+                  className="text-slate-500 text-xs sm:text-sm mb-6 sm:mb-8 max-w-[240px] sm:max-w-[280px] leading-relaxed"
                 >
                   Join a community-driven intelligence network dedicated to Philippine safety and vigilance.
                 </motion.p>
@@ -93,12 +93,12 @@ export default function HeroSection() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 1 }}
-                  className="flex flex-col w-full max-w-[200px] gap-3"
+                  className="flex flex-col w-full max-w-[180px] sm:max-w-[200px] gap-2 sm:gap-3"
                 >
-                  <Button asChild className="bg-[#1B365D] hover:bg-[#1B365D]/90 text-white shadow-md rounded-full h-11">
+                  <Button asChild className="bg-[#1B365D] hover:bg-[#1B365D]/90 text-white shadow-md rounded-full h-10 sm:h-11 text-sm">
                     <Link to="/register">Get Started</Link>
                   </Button>
-                  <Button variant="ghost" asChild className="border border-[#1B365D] text-[#1B365D] hover:bg-slate-100 rounded-full h-11">
+                  <Button variant="ghost" asChild className="border border-[#1B365D] text-[#1B365D] hover:bg-slate-100 rounded-full h-10 sm:h-11 text-sm">
                     <Link to="/about">Learn More</Link>
                   </Button>
                 </motion.div>
