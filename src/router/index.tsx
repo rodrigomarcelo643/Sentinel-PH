@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import LoadingAnimation from "@/components/LoadingAnimation";
+import BHWNavbar from "@/components/BhwNavbar";
 import LandingPage from "@/pages/public/LandingPage";
 import PricingPage from "@/pages/public/PricingPage";
 
@@ -36,7 +37,10 @@ export default function AppRoutes() {
         path="/register"
         element={<div className="pt-20 p-8">Register Page</div>}
       />
-      
+      <Route
+        path="/bhw-dashboard"
+        element={<BHWNavbar/> }
+      />
       {/* Protected Routes */}
       <Route
         path="/dashboard"
