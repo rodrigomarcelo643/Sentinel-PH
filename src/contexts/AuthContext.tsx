@@ -1,8 +1,17 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { auth } from '@/lib/firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  type User as FirebaseUser
+} from 'firebase/auth';
 
 interface User {
-  email: string;
+  email: string | null;
   uid: string;
+  displayName?: string | null;
 }
 
 interface AuthContextType {
@@ -15,58 +24,48 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users database
-const MOCK_USERS = [
-  { email: 'admin@sentinelph.com', password: 'admin123', uid: 'mock-uid-1' },
-  { email: 'user@sentinelph.com', password: 'user123', uid: 'mock-uid-2' },
-];
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user on mount
-    const storedUser = localStorage.getItem('sentinelph_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          email: firebaseUser.email,
+          uid: firebaseUser.uid,
+          displayName: firebaseUser.displayName,
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return unsubscribe;
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const mockUser = MOCK_USERS.find(
-      u => u.email === email && u.password === password
-    );
-    
-    if (!mockUser) {
-      throw new Error('Invalid email or password');
-    }
-    
-    const user = { email: mockUser.email, uid: mockUser.uid };
-    setUser(user);
-    localStorage.setItem('sentinelph_user', JSON.stringify(user));
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    setUser({
+      email: userCredential.user.email,
+      uid: userCredential.user.uid,
+      displayName: userCredential.user.displayName,
+    });
   };
 
   const signup = async (email: string, password: string) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    if (MOCK_USERS.some(u => u.email === email)) {
-      throw new Error('Email already exists');
-    }
-    
-    const user = { email, uid: `mock-uid-${Date.now()}` };
-    setUser(user);
-    localStorage.setItem('sentinelph_user', JSON.stringify(user));
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    setUser({
+      email: userCredential.user.email,
+      uid: userCredential.user.uid,
+      displayName: userCredential.user.displayName,
+    });
   };
 
   const logout = async () => {
+    await signOut(auth);
     setUser(null);
-    localStorage.removeItem('sentinelph_user');
   };
 
   return (
