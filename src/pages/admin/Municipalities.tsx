@@ -73,7 +73,8 @@ export default function Municipalities() {
     const newId = Math.max(...municipalities.map(m => m.id)) + 1;
     setMunicipalities([...municipalities, { 
       id: newId, 
-      ...newMunicipality, 
+      ...newMunicipality,
+      barangays: Number(newMunicipality.barangays),
       status: 'Active' 
     }]);
     setNewMunicipality({ name: '', region: '', population: '', barangays: '', email: '', phone: '' });
