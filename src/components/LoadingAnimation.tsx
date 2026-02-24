@@ -6,7 +6,7 @@ export default function LoadingAnimation() {
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-100 flex items-center justify-center bg-white overflow-hidden"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-white overflow-hidden"
     >
       <div className="relative flex flex-col items-center justify-center w-full h-full">
         {/* BIGGER RADAR / SCANNING RINGS */}
