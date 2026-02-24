@@ -4,13 +4,15 @@
   "description": "SentinelPH Backend - Webhooks and RAG Processing",
   "main": "server.ts",
   "scripts": {
-    "dev": "ts-node-dev --respawn server.ts",
+    "dev": "ts-node server.ts",
     "start": "ts-node server.ts",
     "rag:prepare": "ts-node rag/prepare-rag.ts",
-    "rag:query": "ts-node rag/query-rag.ts"
+    "rag:query": "ts-node rag/query-rag.ts",
+    "add-admin": "ts-node scripts/add-admin.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.13.5",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.22.1",
