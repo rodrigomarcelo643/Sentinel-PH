@@ -297,7 +297,7 @@ export default function BHWs() {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 whitespace-nowrap"
                   onClick={() => handleSort('officeName')}
                 >
                   <div className="flex items-center gap-1">
@@ -306,7 +306,7 @@ export default function BHWs() {
                   </div>
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 whitespace-nowrap"
                   onClick={() => handleSort('municipality')}
                 >
                   <div className="flex items-center gap-1">
@@ -315,7 +315,7 @@ export default function BHWs() {
                   </div>
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 whitespace-nowrap"
                   onClick={() => handleSort('fullName')}
                 >
                   <div className="flex items-center gap-1">
@@ -325,6 +325,7 @@ export default function BHWs() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sentinels</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Subscription Status</th>
                 <th 
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('status')}
@@ -380,6 +381,9 @@ export default function BHWs() {
                       <Shield className="h-4 w-4 text-gray-400" />
                       <span>{bhw.sentinels}</span>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {getStatusBadge(bhw.subscriptionStatus || 'pending')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(bhw.status)}
@@ -557,6 +561,10 @@ export default function BHWs() {
                 <div>
                   <p className="text-sm font-medium text-gray-500">Subscription</p>
                   <p className="text-sm text-gray-900 capitalize">{selectedBHW.subscription}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Subscription Status</p>
+                  <p className="text-sm text-gray-900">{getStatusBadge(selectedBHW.subscriptionStatus || 'pending')}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Payment Method</p>
