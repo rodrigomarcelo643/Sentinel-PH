@@ -49,14 +49,17 @@ SentinelPH builds a community intelligence network that trains and equips everyd
 - 🛡️ **Multi-Layered Spam Prevention** - Rate limiting, behavior monitoring, AI filtering
 - 🎯 **Proximal Intelligence** - Catches outbreaks at pre-clinic stage
 - 🏆 **Incentive System** - Load credits, recognition badges, community rankings
+- 💳 **Subscription Management** - Track account and payment status separately
+- 🎨 **Enhanced Toast Notifications** - Progress bar, auto-close, smooth animations
 
 ## 🏗️ Tech Stack
 
 **Frontend:**
 - React 18.3 + TypeScript 5.6
 - Vite 6.0
-- Tailwind CSS
+- Tailwind CSS + Framer Motion
 - Progressive Web App (PWA)
+- Axios for HTTP requests
 
 **Backend & Database:**
 - Firebase (Auth, Firestore, Cloud Functions, Hosting)
@@ -82,19 +85,45 @@ SentinelPH builds a community intelligence network that trains and equips everyd
 SentinelPh/
 ├── src/                    # Frontend application
 │   ├── components/        # React components
-│   │   ├── ui/           # Base UI components (buttons, cards, etc.)
-│   │   ├── sentinel/     # Sentinel-specific components
-│   │   ├── bhw/          # BHW dashboard components
-│   │   └── maps/         # Map visualization components
-│   ├── services/         # Shared services (frontend & backend)
-│   │   ├── openAiService/      # AI categorization & spam detection
-│   │   ├── googleMapService/   # Maps integration
-│   │   └── cloudinaryService/  # Image upload
+│   │   ├── ui/           # Base UI components (toast, dialog, button, etc.)
+│   │   ├── auth/         # Authentication components (LoginDialog)
+│   │   └── sections/     # Page sections (HeroSection)
+│   ├── pages/            # Application pages
+│   │   ├── admin/        # Admin dashboard pages
+│   │   │   ├── AdminDashboard.tsx
+│   │   │   ├── BHWs.tsx           # BHW management with subscription status
+│   │   │   ├── Municipalities.tsx
+│   │   │   ├── Regions.tsx
+│   │   │   ├── Sentinels.tsx
+│   │   │   └── Map.tsx
+│   │   ├── bhw/          # BHW dashboard pages
+│   │   │   ├── BhwDashboard.tsx
+│   │   │   └── BhwSentinels.tsx
+│   │   └── public/       # Public pages
+│   │       ├── LandingPage.tsx
+│   │       ├── RegisterPage.tsx   # Registration with subscription status
+│   │       └── PricingPage.tsx
+│   ├── layouts/          # Layout components
+│   │   ├── admin/        # Admin layout
+│   │   ├── bhw/          # BHW layout
+│   │   └── municipal/    # Municipal layout
+│   ├── contexts/         # React contexts
+│   │   └── AuthContext.tsx        # Authentication with Firestore role fetching
+│   ├── services/         # Service integrations
+│   │   ├── openAiService/         # AI categorization (Axios-based)
+│   │   ├── googleMapService/      # Maps integration
+│   │   └── cloudinaryService/     # Image upload (Axios-based)
+│   ├── hooks/            # Custom React hooks
+│   │   ├── use-toast.ts           # Toast notification hook
+│   │   └── use-mobile.ts
+│   ├── router/           # React Router configuration
+│   │   └── index.tsx              # Routes with role-based protection
 │   ├── lib/              # Utility functions
 │   │   ├── utils.ts      # Helper functions (cn utility)
 │   │   └── firebase.ts   # Firebase client config
-│   ├── assets/           # Static assets
-│   └── App.tsx           # Main application
+│   ├── data/             # Static data
+│   │   └── regions.ts    # Philippine regions data
+│   └── assets/           # Static assets (images, fonts, sounds)
 │
 ├── backend/               # Backend services
 │   ├── webhooks/         # Webhook handlers
