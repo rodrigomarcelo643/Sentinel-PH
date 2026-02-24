@@ -203,6 +203,7 @@ export default function RegisterPage() {
         subscription: formData.subscription,
         paymentMethod: formData.paymentMethod,
         status: "pending",
+        subscriptionStatus: "pending",
         createdAt: serverTimestamp(),
         documentsCount: formData.documents.length,
       });
