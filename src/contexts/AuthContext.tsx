@@ -1,17 +1,21 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
   type User as FirebaseUser
 } from 'firebase/auth';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 interface User {
   email: string | null;
   uid: string;
   displayName?: string | null;
+  role?: string;
 }
 
 interface AuthContextType {
@@ -29,12 +33,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    // Set persistence to LOCAL (remember user)
+    setPersistence(auth, browserLocalPersistence);
+    
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        // Fetch role from Firestore
+        let userRole = null;
+        try {
+          const registrationsRef = collection(db, "registrations");
+          const regQuery = query(registrationsRef, where("uid", "==", firebaseUser.uid));
+          const regSnapshot = await getDocs(regQuery);
+          
+          if (!regSnapshot.empty) {
+            userRole = regSnapshot.docs[0].data().role;
+          } else {
+            const adminsRef = collection(db, "admins");
+            const adminQuery = query(adminsRef, where("uid", "==", firebaseUser.uid));
+            const adminSnapshot = await getDocs(adminQuery);
+            
+            if (!adminSnapshot.empty) {
+              userRole = adminSnapshot.docs[0].data().role || "admin";
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+        }
+        
         setUser({
           email: firebaseUser.email,
           uid: firebaseUser.uid,
           displayName: firebaseUser.displayName,
+          role: userRole,
         });
       } else {
         setUser(null);
@@ -47,10 +77,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    // Fetch role from Firestore
+    let userRole = null;
+    try {
+      const registrationsRef = collection(db, "registrations");
+      const regQuery = query(registrationsRef, where("uid", "==", userCredential.user.uid));
+      const regSnapshot = await getDocs(regQuery);
+      
+      if (!regSnapshot.empty) {
+        userRole = regSnapshot.docs[0].data().role;
+      } else {
+        const adminsRef = collection(db, "admins");
+        const adminQuery = query(adminsRef, where("uid", "==", userCredential.user.uid));
+        const adminSnapshot = await getDocs(adminQuery);
+        
+        if (!adminSnapshot.empty) {
+          userRole = adminSnapshot.docs[0].data().role || "admin";
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+    }
+    
     setUser({
       email: userCredential.user.email,
       uid: userCredential.user.uid,
       displayName: userCredential.user.displayName,
+      role: userRole,
     });
   };
 
