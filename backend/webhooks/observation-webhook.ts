@@ -1,8 +1,6 @@
 import express from 'express';
 import crypto from 'crypto';
 import { db } from '../config/firebase-admin';
-import { categorizeObservation, detectSpam } from '../../src/services/openAiService';
-import { queryRAGContext } from '../rag/prepare-rag';
 
 const router = express.Router();
 
@@ -27,18 +25,16 @@ router.post('/observation', async (req, res) => {
 
     const { observationId, sentinelId, description, type, location, barangay } = req.body;
 
-    const ragContext = await queryRAGContext(description, 3);
-    const contextText = ragContext.map(doc => doc.pageContent).join('\n');
-
-    const category = await categorizeObservation(`${description}\n\nContext: ${contextText}`);
-    const isSpam = await detectSpam(description);
+    // Removed RAG context query
+    const category = type || 'other';
+    const isSpam = false;
 
     await db.collection('observations').doc(observationId).update({
       aiCategory: category,
       spamScore: isSpam ? 1 : 0,
       status: isSpam ? 'spam' : 'pending',
       processedAt: new Date(),
-      ragContextUsed: ragContext.length > 0,
+      ragContextUsed: false,
     });
 
     const similarObservations = await db
