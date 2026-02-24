@@ -1,9 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { useState, useEffect } from "react";
-import LoadingAnimation from "@/components/LoadingAnimation";
+import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 import LandingPage from "@/pages/public/LandingPage";
 import PricingPage from "@/pages/public/PricingPage";
 import RegisterPage from "@/pages/public/RegisterPage";
@@ -17,51 +13,6 @@ import Municipalities from "@/pages/admin/Municipalities";
 import BHWs from "@/pages/admin/BHWs";
 import Sentinels from "@/pages/admin/Sentinels";
 import Map from "@/pages/admin/Map";
-
-function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: string }) {
-  const { user, loading: authLoading } = useAuth();
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      
-      try {
-        const registrationsRef = collection(db, "registrations");
-        const regQuery = query(registrationsRef, where("uid", "==", user.uid));
-        const regSnapshot = await getDocs(regQuery);
-        
-        if (!regSnapshot.empty) {
-          setUserRole(regSnapshot.docs[0].data().role);
-        } else {
-          const adminsRef = collection(db, "admins");
-          const adminQuery = query(adminsRef, where("uid", "==", user.uid));
-          const adminSnapshot = await getDocs(adminQuery);
-          
-          if (!adminSnapshot.empty) {
-            setUserRole(adminSnapshot.docs[0].data().role || "admin");
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching user role:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchUserRole();
-  }, [user]);
-  
-  if (authLoading || loading) return <LoadingAnimation />;
-  if (!user) return <Navigate to="/" replace />;
-  if (requiredRole && userRole !== requiredRole) return <Navigate to="/" replace />;
-  
-  return <>{children}</>;
-}
 
 export default function AppRoutes() {
   return (
