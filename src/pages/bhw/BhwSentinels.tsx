@@ -1,23 +1,44 @@
 import { motion } from 'framer-motion';
 import { Search, ChevronLeft, ChevronRight, Shield, Mail, Phone, ChevronUp, ChevronDown } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
 
-const dummySentinels = [
-  { id: 1, fullName: "Juan Dela Cruz", role: "Sari-Sari Store Owner", barangay: "Poblacion", municipality: "Cebu City", email: "juan@sentinel.ph", phone: "+63-917-123-4567", status: "approved", documentsCount: 3 },
-  { id: 2, fullName: "Maria Santos", role: "Tricycle Driver", barangay: "San Isidro", municipality: "Cebu City", email: "maria@sentinel.ph", phone: "+63-917-234-5678", status: "pending", documentsCount: 2 },
-  { id: 3, fullName: "Pedro Reyes", role: "Market Vendor", barangay: "Poblacion", municipality: "Cebu City", email: "pedro@sentinel.ph", phone: "+63-917-345-6789", status: "approved", documentsCount: 4 },
-  { id: 4, fullName: "Ana Garcia", role: "Barangay Tanod", barangay: "Bagong Silang", municipality: "Cebu City", email: "ana@sentinel.ph", phone: "+63-917-456-7890", status: "pending", documentsCount: 2 },
-  { id: 5, fullName: "Jose Ramos", role: "Religious Leader", barangay: "San Isidro", municipality: "Cebu City", email: "jose@sentinel.ph", phone: "+63-917-567-8901", status: "rejected", documentsCount: 1 },
-];
+interface Sentinel {
+  id: string;
+  fullName: string;
+  firstName: string;
+  lastName: string;
+  middleInitial?: string;
+  communityRole: string;
+  address: {
+    barangay: string;
+    municipality: string;
+    region: string;
+  };
+  email: string;
+  contactNumber: string;
+  status: string;
+  documents: {
+    selfieUrl: string;
+    validIdUrl: string;
+    idType: string;
+  };
+  uid: string;
+  createdAt: any;
+}
 
 export default function BhwSentinels() {
-  const [sentinels, setSentinels] = useState(dummySentinels);
+  const { user } = useAuth();
+  const [sentinels, setSentinels] = useState<Sentinel[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSentinel, setSelectedSentinel] = useState<any>(null);
@@ -29,16 +50,67 @@ export default function BhwSentinels() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const itemsPerPage = 10;
 
-  const handleApprove = (id: number) => {
-    setSentinels(sentinels.map(s => s.id === id ? { ...s, status: 'approved' } : s));
-    setIsApproveDialogOpen(false);
-    setSelectedSentinel(null);
+  useEffect(() => {
+    fetchSentinels();
+  }, [user]);
+
+  const fetchSentinels = async () => {
+    try {
+      setLoading(true);
+      const usersRef = collection(db, 'users');
+      const snapshot = await getDocs(usersRef);
+      
+      const sentinelsData = snapshot.docs
+        .map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            fullName: `${data.firstName} ${data.middleInitial ? data.middleInitial + ' ' : ''}${data.lastName}`,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            middleInitial: data.middleInitial,
+            communityRole: data.communityRole,
+            address: data.address,
+            email: data.email,
+            contactNumber: data.contactNumber,
+            status: data.status,
+            documents: data.documents,
+            uid: data.uid,
+            createdAt: data.createdAt
+          };
+        })
+        .filter(sentinel => sentinel.communityRole); // Filter out non-sentinels
+      
+      setSentinels(sentinelsData);
+    } catch (error) {
+      console.error('Error fetching sentinels:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCancel = (id: number) => {
-    setSentinels(sentinels.map(s => s.id === id ? { ...s, status: 'pending' } : s));
-    setIsCancelDialogOpen(false);
-    setSelectedSentinel(null);
+  const handleApprove = async (id: string) => {
+    try {
+      const userRef = doc(db, 'users', id);
+      await updateDoc(userRef, { status: 'approved' });
+      setSentinels(sentinels.map(s => s.id === id ? { ...s, status: 'approved' } : s));
+      setIsApproveDialogOpen(false);
+      setSelectedSentinel(null);
+    } catch (error) {
+      console.error('Error approving sentinel:', error);
+    }
+  };
+
+  const handleCancel = async (id: string) => {
+    try {
+      const userRef = doc(db, 'users', id);
+      await updateDoc(userRef, { status: 'pending' });
+      setSentinels(sentinels.map(s => s.id === id ? { ...s, status: 'pending' } : s));
+      setIsCancelDialogOpen(false);
+      setSelectedSentinel(null);
+    } catch (error) {
+      console.error('Error canceling sentinel:', error);
+    }
   };
 
   const filteredSentinels = useMemo(() => {
@@ -49,15 +121,15 @@ export default function BhwSentinels() {
     if (searchQuery) {
       filtered = filtered.filter(sentinel => 
         sentinel.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        sentinel.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        sentinel.barangay.toLowerCase().includes(searchQuery.toLowerCase())
+        sentinel.communityRole.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        sentinel.address.barangay.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     
     if (sortField) {
       filtered.sort((a, b) => {
-        const aVal = a[sortField] || '';
-        const bVal = b[sortField] || '';
+        const aVal = (a as any)[sortField] || '';
+        const bVal = (b as any)[sortField] || '';
         if (sortDirection === 'asc') {
           return aVal > bVal ? 1 : -1;
         } else {
@@ -77,6 +149,88 @@ export default function BhwSentinels() {
       setSortDirection('asc');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-2 bg-gray-50 min-h-screen">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-6"
+        >
+          <h1 className="text-3xl font-bold text-[#1B365D] mb-2">Community Sentinels</h1>
+          <p className="text-gray-600">Manage sentinel registrations and approvals</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-white rounded-xl shadow-sm border border-gray-100"
+        >
+          <div className="p-4 border-b">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-50 p-2 rounded-lg">
+                <Shield className="h-6 w-6 text-[#1B365D]" />
+              </div>
+              <div>
+                <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 w-24 bg-gray-100 rounded animate-pulse mt-1"></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {[...Array(5)].map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse"></div>
+                        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 w-28 bg-gray-200 rounded animate-pulse mb-1"></div>
+                      <div className="h-3 w-20 bg-gray-100 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-3 w-36 bg-gray-200 rounded animate-pulse mb-1"></div>
+                      <div className="h-3 w-28 bg-gray-100 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                        <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   const SortIcon = ({ field }: { field: string }) => {
     if (sortField !== field) {
@@ -185,23 +339,15 @@ export default function BhwSentinels() {
                 </th>
                 <th 
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('role')}
+                  onClick={() => handleSort('communityRole')}
                 >
                   <div className="flex items-center gap-1">
                     Role
-                    <SortIcon field="role" />
+                    <SortIcon field="communityRole" />
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Municipality</th>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('barangay')}
-                >
-                  <div className="flex items-center gap-1">
-                    Barangay
-                    <SortIcon field="barangay" />
-                  </div>
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                 <th 
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('status')}
@@ -226,20 +372,20 @@ export default function BhwSentinels() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <Avatar size="default">
-                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${sentinel.fullName}`} alt={sentinel.fullName} />
+                        <AvatarImage src={sentinel.documents?.selfieUrl} alt={sentinel.fullName} />
                         <AvatarFallback>{sentinel.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}</AvatarFallback>
                       </Avatar>
                       <span className="text-sm font-medium text-gray-900">{sentinel.fullName}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600">{sentinel.role}</span>
+                    <span className="text-sm text-gray-600">{sentinel.communityRole}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600">{sentinel.municipality}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600">{sentinel.barangay}</span>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm text-gray-900">{sentinel.address.municipality}</span>
+                      <span className="text-xs text-gray-500">{sentinel.address.barangay}</span>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
@@ -249,7 +395,7 @@ export default function BhwSentinels() {
                       </div>
                       <div className="flex items-center gap-2 text-xs text-gray-600">
                         <Phone className="h-3 w-3 text-gray-400" />
-                        <span>{sentinel.phone}</span>
+                        <span>{sentinel.contactNumber}</span>
                       </div>
                     </div>
                   </td>
@@ -353,16 +499,20 @@ export default function BhwSentinels() {
                   <p className="text-sm text-gray-900">{selectedSentinel.fullName}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Role</p>
-                  <p className="text-sm text-gray-900">{selectedSentinel.role}</p>
+                  <p className="text-sm font-medium text-gray-500">Community Role</p>
+                  <p className="text-sm text-gray-900">{selectedSentinel.communityRole}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Region</p>
+                  <p className="text-sm text-gray-900">{selectedSentinel.address.region}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Municipality</p>
-                  <p className="text-sm text-gray-900">{selectedSentinel.municipality}</p>
+                  <p className="text-sm text-gray-900">{selectedSentinel.address.municipality}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Barangay</p>
-                  <p className="text-sm text-gray-900">{selectedSentinel.barangay}</p>
+                  <p className="text-sm text-gray-900">{selectedSentinel.address.barangay}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Email</p>
@@ -370,17 +520,36 @@ export default function BhwSentinels() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Phone</p>
-                  <p className="text-sm text-gray-900">{selectedSentinel.phone}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Documents Uploaded</p>
-                  <p className="text-sm text-gray-900">{selectedSentinel.documentsCount} files</p>
+                  <p className="text-sm text-gray-900">{selectedSentinel.contactNumber}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Status</p>
                   <p className="text-sm text-gray-900">{getStatusBadge(selectedSentinel.status)}</p>
                 </div>
               </div>
+              
+              <div className="border-t pt-4">
+                <p className="text-sm font-medium text-gray-500 mb-3">Uploaded Documents</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-2">Selfie Photo</p>
+                    <img 
+                      src={selectedSentinel.documents?.selfieUrl} 
+                      alt="Selfie" 
+                      className="w-full h-48 object-cover rounded-lg border"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-2">Valid ID ({selectedSentinel.documents?.idType})</p>
+                    <img 
+                      src={selectedSentinel.documents?.validIdUrl} 
+                      alt="Valid ID" 
+                      className="w-full h-48 object-cover rounded-lg border"
+                    />
+                  </div>
+                </div>
+              </div>
+              
               <div className="flex justify-end gap-2 pt-4 border-t">
                 <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
                   Close

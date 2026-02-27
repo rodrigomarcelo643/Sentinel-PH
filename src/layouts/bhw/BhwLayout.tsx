@@ -36,7 +36,8 @@ export default function BhwLayout() {
   };
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'BHW User';
-  const userRole = user?.role || 'Barangay Health Worker';
+  const userRole = user?.role === 'bhw' ? 'Barangay Health Worker' : user?.role || 'User';
+  const userAvatar = user?.documents?.selfieUrl;
 
   const NavLink = ({ to, icon: Icon, label, onClick, isDesktop = false }: { to: string; icon: any; label: string; onClick?: () => void; isDesktop?: boolean }) => {
     const active = isActive(to);
@@ -152,7 +153,7 @@ export default function BhwLayout() {
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-3 p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors outline-none">
                 <Avatar size="default">
-                  <AvatarImage src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=100&h=100&fit=crop" alt={displayName} />
+                  <AvatarImage src={userAvatar} alt={displayName} />
                   <AvatarFallback>{getInitials(user?.displayName, user?.email)}</AvatarFallback>
                 </Avatar>
                 <div className="hidden md:flex flex-col items-start">
