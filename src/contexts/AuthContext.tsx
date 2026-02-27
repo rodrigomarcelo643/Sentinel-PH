@@ -16,6 +16,19 @@ interface User {
   uid: string;
   displayName?: string | null;
   role?: string;
+  firstName?: string;
+  lastName?: string;
+  middleInitial?: string;
+  documents?: {
+    selfieUrl?: string;
+    validIdUrl?: string;
+    idType?: string;
+  };
+  address?: {
+    barangay?: string;
+    municipality?: string;
+    region?: string;
+  };
 }
 
 interface AuthContextType {
@@ -38,33 +51,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Fetch role from Firestore
-        let userRole = null;
+        // Fetch role and user data from Firestore
+        let userData: any = null;
         try {
-          const registrationsRef = collection(db, "registrations");
-          const regQuery = query(registrationsRef, where("uid", "==", firebaseUser.uid));
-          const regSnapshot = await getDocs(regQuery);
+          const usersRef = collection(db, "users");
+          const userQuery = query(usersRef, where("uid", "==", firebaseUser.uid));
+          const userSnapshot = await getDocs(userQuery);
           
-          if (!regSnapshot.empty) {
-            userRole = regSnapshot.docs[0].data().role;
+          if (!userSnapshot.empty) {
+            userData = userSnapshot.docs[0].data();
           } else {
-            const adminsRef = collection(db, "admins");
-            const adminQuery = query(adminsRef, where("uid", "==", firebaseUser.uid));
-            const adminSnapshot = await getDocs(adminQuery);
+            const registrationsRef = collection(db, "registrations");
+            const regQuery = query(registrationsRef, where("uid", "==", firebaseUser.uid));
+            const regSnapshot = await getDocs(regQuery);
             
-            if (!adminSnapshot.empty) {
-              userRole = adminSnapshot.docs[0].data().role || "admin";
+            if (!regSnapshot.empty) {
+              userData = regSnapshot.docs[0].data();
+            } else {
+              const adminsRef = collection(db, "admins");
+              const adminQuery = query(adminsRef, where("uid", "==", firebaseUser.uid));
+              const adminSnapshot = await getDocs(adminQuery);
+              
+              if (!adminSnapshot.empty) {
+                userData = adminSnapshot.docs[0].data();
+              }
             }
           }
         } catch (error) {
-          console.error("Error fetching user role:", error);
+          console.error("Error fetching user data:", error);
         }
         
         setUser({
           email: firebaseUser.email,
           uid: firebaseUser.uid,
-          displayName: firebaseUser.displayName,
-          role: userRole,
+          displayName: userData?.firstName && userData?.lastName 
+            ? `${userData.firstName} ${userData.lastName}` 
+            : firebaseUser.displayName,
+          role: userData?.role,
+          firstName: userData?.firstName,
+          lastName: userData?.lastName,
+          middleInitial: userData?.middleInitial,
+          documents: userData?.documents,
+          address: userData?.address,
         });
       } else {
         setUser(null);
@@ -78,33 +106,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     
-    // Fetch role from Firestore
-    let userRole = null;
+    // Fetch user data from Firestore
+    let userData: any = null;
     try {
-      const registrationsRef = collection(db, "registrations");
-      const regQuery = query(registrationsRef, where("uid", "==", userCredential.user.uid));
-      const regSnapshot = await getDocs(regQuery);
+      const usersRef = collection(db, "users");
+      const userQuery = query(usersRef, where("uid", "==", userCredential.user.uid));
+      const userSnapshot = await getDocs(userQuery);
       
-      if (!regSnapshot.empty) {
-        userRole = regSnapshot.docs[0].data().role;
+      if (!userSnapshot.empty) {
+        userData = userSnapshot.docs[0].data();
       } else {
-        const adminsRef = collection(db, "admins");
-        const adminQuery = query(adminsRef, where("uid", "==", userCredential.user.uid));
-        const adminSnapshot = await getDocs(adminQuery);
+        const registrationsRef = collection(db, "registrations");
+        const regQuery = query(registrationsRef, where("uid", "==", userCredential.user.uid));
+        const regSnapshot = await getDocs(regQuery);
         
-        if (!adminSnapshot.empty) {
-          userRole = adminSnapshot.docs[0].data().role || "admin";
+        if (!regSnapshot.empty) {
+          userData = regSnapshot.docs[0].data();
+        } else {
+          const adminsRef = collection(db, "admins");
+          const adminQuery = query(adminsRef, where("uid", "==", userCredential.user.uid));
+          const adminSnapshot = await getDocs(adminQuery);
+          
+          if (!adminSnapshot.empty) {
+            userData = adminSnapshot.docs[0].data();
+          }
         }
       }
     } catch (error) {
-      console.error("Error fetching user role:", error);
+      console.error("Error fetching user data:", error);
     }
     
     setUser({
       email: userCredential.user.email,
       uid: userCredential.user.uid,
-      displayName: userCredential.user.displayName,
-      role: userRole,
+      displayName: userData?.firstName && userData?.lastName 
+        ? `${userData.firstName} ${userData.lastName}` 
+        : userCredential.user.displayName,
+      role: userData?.role,
+      firstName: userData?.firstName,
+      lastName: userData?.lastName,
+      middleInitial: userData?.middleInitial,
+      documents: userData?.documents,
+      address: userData?.address,
     });
   };
 
