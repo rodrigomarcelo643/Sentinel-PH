@@ -1,8 +1,11 @@
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
 import { Activity, Users, Bell, CheckCircle, AlertTriangle, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const observationData = [
   { day: 'Mon', observations: 12, verified: 10 },
@@ -26,6 +29,103 @@ const COLORS = ['#1B365D', '#CE1126', '#10b981', '#f59e0b', '#8b5cf6'];
 
 export default function BhwDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('week');
+  const [totalSentinels, setTotalSentinels] = useState(0);
+  const [activeSentinels, setActiveSentinels] = useState(0);
+  const [totalReports, setTotalReports] = useState(0);
+  const [pendingReports, setPendingReports] = useState(0);
+  const [verifiedToday, setVerifiedToday] = useState(0);
+  const [recentReports, setRecentReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch sentinels
+      const usersRef = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersRef);
+      const sentinelsData = usersSnapshot.docs.filter(doc => doc.data().communityRole);
+      setTotalSentinels(sentinelsData.length);
+      
+      // Count approved sentinels as active
+      const activeSentinelsCount = sentinelsData.filter(doc => doc.data().status === 'approved').length;
+      setActiveSentinels(activeSentinelsCount);
+      
+      // Fetch reports
+      const reportsRef = collection(db, 'symptomReports');
+      const reportsSnapshot = await getDocs(reportsRef);
+      setTotalReports(reportsSnapshot.size);
+      
+      // Count pending reports
+      const pendingCount = reportsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
+      setPendingReports(pendingCount);
+      
+      // Count verified today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const verifiedTodayCount = reportsSnapshot.docs.filter(doc => {
+        const data = doc.data();
+        if (data.status === 'verified' && data.createdAt) {
+          const reportDate = data.createdAt.toDate();
+          return reportDate >= today;
+        }
+        return false;
+      }).length;
+      setVerifiedToday(verifiedTodayCount);
+      
+      // Get recent reports (last 4) with user selfies
+      const reportsQuery = query(reportsRef, orderBy('createdAt', 'desc'), limit(4));
+      const recentSnapshot = await getDocs(reportsQuery);
+      const recentData = await Promise.all(
+        recentSnapshot.docs.map(async (reportDoc) => {
+          const reportData = reportDoc.data();
+          
+          // Fetch user selfie
+          let userSelfieUrl = '';
+          if (reportData.userId) {
+            try {
+              const usersRef = collection(db, 'users');
+              const userQuery = query(usersRef, where('uid', '==', reportData.userId));
+              const userSnapshot = await getDocs(userQuery);
+              
+              if (!userSnapshot.empty) {
+                const userData = userSnapshot.docs[0].data();
+                userSelfieUrl = userData.documents?.selfieUrl || '';
+              }
+            } catch (error) {
+              console.error('Error fetching user selfie:', error);
+            }
+          }
+          
+          return {
+            id: reportDoc.id,
+            ...reportData,
+            userSelfieUrl
+          };
+        })
+      );
+      setRecentReports(recentData);
+      
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return 'N/A';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric'
+    });
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -74,8 +174,8 @@ export default function BhwDashboard() {
         <motion.div variants={itemVariants} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Residents</p>
-              <h3 className="text-3xl font-bold text-[#1B365D]">1,847</h3>
+              <p className="text-sm text-gray-600 mb-1">Total Sentinels</p>
+              <h3 className="text-3xl font-bold text-[#1B365D]">{loading ? '...' : totalSentinels}</h3>
               <p className="text-xs text-gray-500 mt-1">Registered</p>
             </div>
             <div className="bg-blue-50 p-3 rounded-lg">
@@ -88,8 +188,8 @@ export default function BhwDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Active Sentinels</p>
-              <h3 className="text-3xl font-bold text-[#1B365D]">24</h3>
-              <p className="text-xs text-green-600 mt-1">↑ 3 this week</p>
+              <h3 className="text-3xl font-bold text-[#1B365D]">{loading ? '...' : activeSentinels}</h3>
+              <p className="text-xs text-green-600 mt-1">Approved</p>
             </div>
             <div className="bg-green-50 p-3 rounded-lg">
               <Activity className="h-8 w-8 text-green-600" />
@@ -100,8 +200,8 @@ export default function BhwDashboard() {
         <motion.div variants={itemVariants} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">New Observations</p>
-              <h3 className="text-3xl font-bold text-[#CE1126]">18</h3>
+              <p className="text-sm text-gray-600 mb-1">New Reports</p>
+              <h3 className="text-3xl font-bold text-[#CE1126]">{loading ? '...' : pendingReports}</h3>
               <p className="text-xs text-red-600 mt-1">Pending review</p>
             </div>
             <div className="bg-red-50 p-3 rounded-lg">
@@ -114,8 +214,8 @@ export default function BhwDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 mb-1">Verified Today</p>
-              <h3 className="text-3xl font-bold text-[#1B365D]">12</h3>
-              <p className="text-xs text-green-600 mt-1">↑ 92% accuracy</p>
+              <h3 className="text-3xl font-bold text-[#1B365D]">{loading ? '...' : verifiedToday}</h3>
+              <p className="text-xs text-green-600 mt-1">Reports verified</p>
             </div>
             <div className="bg-purple-50 p-3 rounded-lg">
               <CheckCircle className="h-8 w-8 text-purple-600" />
@@ -177,39 +277,61 @@ export default function BhwDashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.6 }}
       >
-        <h3 className="text-lg font-bold text-[#1B365D] mb-4">Recent Observations</h3>
-        <div className="space-y-4">
-          {[
-            { sentinel: 'Maria Santos', observation: 'Multiple children with fever in Purok 3', time: '2 hours ago', status: 'pending' },
-            { sentinel: 'Juan Dela Cruz', observation: 'Increased paracetamol purchases', time: '4 hours ago', status: 'verified' },
-            { sentinel: 'Rosa Garcia', observation: 'Several families boiling water', time: '6 hours ago', status: 'verified' },
-            { sentinel: 'Pedro Reyes', observation: 'Unusual cough symptoms reported', time: '8 hours ago', status: 'pending' },
-          ].map((item, index) => (
-            <div key={index} className="flex items-start gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className={`p-2 rounded-lg ${item.status === 'verified' ? 'bg-green-50' : 'bg-yellow-50'}`}>
-                {item.status === 'verified' ? (
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                ) : (
-                  <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="font-medium text-gray-900">{item.sentinel}</p>
-                  <span className="text-xs text-gray-500">{item.time}</span>
-                </div>
-                <p className="text-sm text-gray-600">{item.observation}</p>
-                <span className={`inline-block mt-2 px-2 py-1 text-xs rounded-full ${
-                  item.status === 'verified' 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {item.status === 'verified' ? 'Verified' : 'Pending Review'}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <h3 className="text-lg font-bold text-[#1B365D] mb-4">Recent Reports</h3>
+        {loading ? (
+          <div className="space-y-2">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-12 bg-gray-100 rounded animate-pulse"></div>
+            ))}
+          </div>
+        ) : recentReports.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Reporter</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {recentReports.map((report, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={report.userSelfieUrl} alt={report.userName} />
+                          <AvatarFallback className="text-xs">{report.userName?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium text-gray-900">{report.userName}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-xs">{report.description || 'No description'}</td>
+                    <td className="px-3 py-2 text-sm text-gray-500 whitespace-nowrap">
+                      {formatDate(report.createdAt)}
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        report.status === 'verified' 
+                          ? 'bg-green-100 text-green-700' 
+                          : report.status === 'rejected'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {report.status === 'verified' ? 'Verified' : report.status === 'rejected' ? 'Rejected' : 'Pending'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <p>No recent reports</p>
+          </div>
+        )}
       </motion.div>
     </div>
   );
