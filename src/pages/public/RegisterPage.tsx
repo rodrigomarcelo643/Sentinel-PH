@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { regions } from "@/data/regions";
-import { Upload, Check, CreditCard, Building2, UserCog, Mail, Phone, MapPin, User, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Shield, AlertCircle, Cloud, FileText, X, Loader2 } from "lucide-react";
+import { CloudUpload, Check, CreditCard, Building2, UserCog, Mail, Phone, MapPin, User, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Shield, AlertCircle, Cloud, FileText, X, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { uploadImage } from "@/services/cloudinaryService";
 
 const steps = [
   { number: 1, title: "Account Type", description: "Select your organization", icon: Building2 },
@@ -168,6 +169,23 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
+      // Upload documents to Cloudinary
+      toast({
+        title: "Uploading documents...",
+        description: "Please wait while we upload your documents.",
+      });
+
+      const documentUrls: string[] = [];
+      for (const file of formData.documents) {
+        try {
+          const url = await uploadImage(file);
+          documentUrls.push(url);
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          throw new Error(`Failed to upload ${file.name}`);
+        }
+      }
+
       // Map account type to role
       const roleMap: Record<string, string> = {
         regional: "regional_admin",
@@ -184,7 +202,7 @@ export default function RegisterPage() {
         formData.password
       );
 
-      // Save registration data to Firestore
+      // Save registration data to Firestore with document URLs
       await addDoc(collection(db, "registrations"), {
         uid: userCredential.user.uid,
         accountType: formData.accountType,
@@ -205,7 +223,8 @@ export default function RegisterPage() {
         status: "pending",
         subscriptionStatus: "pending",
         createdAt: serverTimestamp(),
-        documentsCount: formData.documents.length,
+        documentUrls: documentUrls,
+        documentsCount: documentUrls.length,
       });
 
       toast({
@@ -584,23 +603,50 @@ export default function RegisterPage() {
                   <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-[#1B365D] transition-all bg-gray-50 hover:bg-blue-50 cursor-pointer">
                     <input id="documents" type="file" multiple accept=".pdf,.png,.jpg,.jpeg" className="hidden" onChange={handleFileUpload} onBlur={() => handleBlur("documents")} />
                     <label htmlFor="documents" className="cursor-pointer flex flex-col items-center gap-4">
-                      <div className="bg-blue-100 p-4 rounded-full"><Cloud className="h-12 w-12 text-[#1B365D]" /></div>
+                      <div className="bg-blue-100 p-4 rounded-full"><CloudUpload className="h-12 w-12 text-[#1B365D]" /></div>
                       <div><p className="text-lg font-semibold text-[#1B365D] mb-1">Click to upload or drag and drop</p><p className="text-sm text-gray-500">PDF, PNG, JPG up to 10MB each</p></div>
-                      <Button type="button" variant="outline" className="mt-2 pointer-events-none"><Upload className="h-4 w-4 mr-2" />Browse Files</Button>
+                      <Button type="button" variant="outline" className="mt-2 pointer-events-none"><CloudUpload className="h-4 w-4 mr-2" />Browse Files</Button>
                     </label>
                   </div>
                   {touched.documents && errors.documents && (<p className="text-sm text-red-500 text-center">{errors.documents}</p>)}
-                  {formData.documents.length > 0 && (
+                  {formData.documents.length > 0 && ( 
                     <div className="space-y-3">
                       <h3 className="font-semibold text-gray-900">Uploaded Documents ({formData.documents.length})</h3>
-                      <div className="grid gap-3">
-                        {formData.documents.map((file, index) => (
-                          <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                            <FileText className="h-8 w-8 text-[#1B365D] flex-shrink-0" />
-                            <div className="flex-1 min-w-0"><p className="text-sm font-medium text-gray-900 truncate">{file.name}</p><p className="text-xs text-gray-500">{(file.size / 1024).toFixed(2)} KB</p></div>
-                            <Button type="button" variant="ghost" size="sm" onClick={() => removeFile(index)} className="text-red-600 hover:text-red-700 hover:bg-red-50"><X className="h-4 w-4" /></Button>
-                          </div>
-                        ))}
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {formData.documents.map((file, index) => {
+                          const isImage = file.type.startsWith('image/');
+                          const imageUrl = isImage ? URL.createObjectURL(file) : null;
+                          
+                          return (
+                            <div key={index} className="relative group">
+                              <div className="aspect-square rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-50">
+                                {isImage ? (
+                                  <img 
+                                    src={imageUrl!} 
+                                    alt={file.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex flex-col items-center justify-center">
+                                    <FileText className="h-12 w-12 text-[#1B365D] mb-2" />
+                                    <p className="text-xs text-gray-500 px-2 text-center truncate w-full">{file.name}</p>
+                                  </div>
+                                )}
+                              </div>
+                              <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => removeFile(index)} 
+                                className="absolute top-2 right-2 h-8 w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                              <p className="text-xs text-gray-600 mt-1 truncate">{file.name}</p>
+                              <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(2)} KB</p>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -825,43 +871,54 @@ export default function RegisterPage() {
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={currentStep === 1}
-                className="h-12 px-6 gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Previous
-              </Button>
-              
-              {currentStep < steps.length ? (
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              {currentStep === 1 ? (
                 <Button
                   onClick={handleNext}
-                  className="bg-[#1B365D] hover:bg-[#1B365D]/90 h-12 px-6 gap-2"
+                  className="w-full bg-[#1B365D] hover:bg-[#1B365D]/90 h-14 text-lg font-semibold"
                 >
-                  Next
-                  <ArrowRight className="h-4 w-4" />
+                  Continue
+                  <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               ) : (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="bg-green-600 hover:bg-green-700 h-12 px-6 gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleBack}
+                    className="h-14 text-lg font-semibold"
+                  >
+                    <ArrowLeft className="h-5 w-5 mr-2" />
+                    Previous
+                  </Button>
+                  
+                  {currentStep < steps.length ? (
+                    <Button
+                      onClick={handleNext}
+                      className="bg-[#1B365D] hover:bg-[#1B365D]/90 h-14 text-lg font-semibold"
+                    >
+                      Next
+                      <ArrowRight className="h-5 w-5 ml-2" />
+                    </Button>
                   ) : (
-                    <>
-                      <Check className="h-4 w-4" />
-                      Complete Registration
-                    </>
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={isSubmitting}
+                      className="bg-green-600 hover:bg-green-700 h-14 text-lg font-semibold"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-5 w-5 mr-2" />
+                          Complete Registration
+                        </>
+                      )}
+                    </Button>
                   )}
-                </Button>
+                </div>
               )}
             </div>
           </motion.div>
