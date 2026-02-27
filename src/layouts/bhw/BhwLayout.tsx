@@ -25,17 +25,14 @@ export default function BhwLayout() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const getInitials = (name?: string | null, email?: string | null) => {
-    if (name) {
-      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-    }
-    if (email) {
-      return email.slice(0, 2).toUpperCase();
+  const getInitials = (fullName?: string | null) => {
+    if (fullName) {
+      return fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     }
     return 'BH';
   };
 
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'BHW User';
+  const displayName = user?.displayName || 'BHW User';
   const userRole = user?.role === 'bhw' ? 'Barangay Health Worker' : user?.role || 'User';
   const userAvatar = user?.documents?.selfieUrl;
 
@@ -86,7 +83,7 @@ export default function BhwLayout() {
           <NavLink to="/bhw/settings" icon={Settings} label="Settings" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
         </nav>
       </div>
-      <div className="border-t p-4 bg-white">
+      <div className="border-t border-gray-200 p-4 bg-white">
         {isDesktop && sidebarCollapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -102,7 +99,7 @@ export default function BhwLayout() {
         ) : (
           <button
             onClick={() => setLogoutDialogOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg w-full hover:bg-red-50 active:bg-red-100 text-destructive transition-colors"
+            className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg w-full hover:bg-red-50 active:bg-red-100 text-destructive transition-colors"
           >
             <LogOut className="h-4 w-4" />
             <span className="text-sm">Logout</span>
@@ -154,7 +151,7 @@ export default function BhwLayout() {
               <DropdownMenuTrigger className="flex items-center gap-3 p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors outline-none">
                 <Avatar size="default">
                   <AvatarImage src={userAvatar} alt={displayName} />
-                  <AvatarFallback>{getInitials(user?.displayName, user?.email)}</AvatarFallback>
+                  <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
                 </Avatar>
                 <div className="hidden md:flex flex-col items-start">
                   <span className="text-sm font-medium text-gray-900">{displayName}</span>

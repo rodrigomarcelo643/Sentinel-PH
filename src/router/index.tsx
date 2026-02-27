@@ -9,6 +9,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import BhwDashboard from "@/pages/bhw/BhwDashboard";
 import BhwSentinels from "@/pages/bhw/BhwSentinels";
 import BhwReports from "@/pages/bhw/BhwReports";
+import BhwMap from "@/pages/bhw/BhwMap";
 import Regions from "@/pages/admin/Regions";
 import Municipalities from "@/pages/admin/Municipalities";
 import BHWs from "@/pages/admin/BHWs";
@@ -48,7 +49,7 @@ export default function AppRoutes() {
         <Route path="sentinels" element={<BhwSentinels />} />
         <Route path="observations" element={<div className="p-8"><h1 className="text-2xl font-bold">Observations</h1></div>} />
         <Route path="reports" element={<BhwReports />} />
-        <Route path="map" element={<div className="p-8"><h1 className="text-2xl font-bold">Map</h1></div>} />
+        <Route path="map" element={<BhwMap />} />
         <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>} />
       </Route>
       {/* Admin Routes */}
@@ -58,7 +59,7 @@ export default function AppRoutes() {
           <ProtectedRoute requiredRole="admin">
             <AdminLayout />
           </ProtectedRoute>
-        }
+         }
       >
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="regions" element={<Regions />} />
