@@ -1,5 +1,5 @@
 import { Outlet, useLocation, Link } from "react-router-dom";
-import { LayoutDashboard, Users, MapPin, LogOut, ChevronDown, FileText, Bell, Settings, Menu, PanelLeftClose, PanelLeft, User } from "lucide-react";
+import { LayoutDashboard, Users, MapPin, LogOut, ChevronDown, ShieldAlert, Bell, Settings, Menu, PanelLeftClose, PanelLeft, User } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -78,7 +78,7 @@ export default function BhwLayout() {
           <NavLink to="/bhw/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/sentinels" icon={Users} label="Sentinels" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/observations" icon={Bell} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/bhw/reports" icon={FileText} label="Reports" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/bhw/reports" icon={ShieldAlert } label="Reports" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/map" icon={MapPin} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/settings" icon={Settings} label="Settings" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
         </nav>
