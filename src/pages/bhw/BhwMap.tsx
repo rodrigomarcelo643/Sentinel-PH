@@ -23,7 +23,7 @@ interface SymptomReport {
   description: string;
   userName: string;
   status: string;
-  createdAt: any;
+  createdAt: any; 
   location: string;
   userId?: string;
   userSelfieUrl?: string;
@@ -102,12 +102,16 @@ export default function BhwMap() {
           return {
             id: reportDoc.id,
             ...reportData,
-            userSelfieUrl
-          };
+            userSelfieUrl,
+            latitude: reportData.latitude,
+            longitude: reportData.longitude
+          } as SymptomReport;
         })
       );
       
-      const data = reportsData.filter(report => report.latitude && report.longitude) as SymptomReport[];
+      const data = reportsData.filter((report): report is SymptomReport => 
+        typeof report.latitude === 'number' && typeof report.longitude === 'number'
+      );
       setReports(data);
     } catch (error) {
       console.error('Error fetching reports:', error);
@@ -184,8 +188,7 @@ export default function BhwMap() {
                     fillOpacity: 0.08,
                     strokeColor: '#10B981',
                     strokeOpacity: 0.6,
-                    strokeWeight: 2,
-                    strokeDashArray: [5, 5],
+                    strokeWeight: 2
                   }}
                 />
               )}
