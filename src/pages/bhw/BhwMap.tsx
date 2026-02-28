@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { GoogleMap, LoadScript, Marker, Circle, DirectionsRenderer } from '@react-google-maps/api';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { useEffect, useState, useRef } from 'react';
+import { GoogleMap, useLoadScript, Marker, Circle, DirectionsRenderer } from '@react-google-maps/api';
+import { collection, getDocs, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { motion } from 'framer-motion';
-import { MapPin, Activity } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Activity, Bell, X } from 'lucide-react';
 
 const mapContainerStyle = {
   width: '100%',
@@ -46,18 +46,40 @@ const getSeverityColor = (severity: 'low' | 'medium' | 'high') => {
 };
 
 export default function BhwMap() {
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+  });
+  
   const [reports, setReports] = useState<SymptomReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<SymptomReport | null>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [showNewCaseAlert, setShowNewCaseAlert] = useState(false);
+  const previousReportCount = useRef<number>(0);
 
   useEffect(() => {
-    fetchReports();
     getUserLocation();
-  }, []);
+    
+    // Real-time listener
+    const unsubscribe = onSnapshot(collection(db, 'symptomReports'), (snapshot) => {
+      const newCount = snapshot.size;
+      
+      // Show alert if new report detected
+      if (!loading && previousReportCount.current > 0 && newCount > previousReportCount.current) {
+        setShowNewCaseAlert(true);
+        setTimeout(() => setShowNewCaseAlert(false), 60000);
+      }
+      
+      previousReportCount.current = newCount;
+      fetchReports();
+    });
+
+    fetchReports();
+    
+    return () => unsubscribe();
+  }, [loading]);
 
   useEffect(() => {
     if (map) {
@@ -145,6 +167,13 @@ export default function BhwMap() {
     );
   };
 
+  if (loadError) return <div className="p-8 text-center text-red-600">Error loading maps</div>;
+  if (!isLoaded) return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="w-16 h-16 border-4 border-gray-200 border-t-[#1B365D] rounded-full animate-spin"></div>
+    </div>
+  );
+
   return (
     <div className="p-2 bg-gray-50 min-h-screen">
       <motion.div
@@ -153,48 +182,39 @@ export default function BhwMap() {
         transition={{ duration: 0.5 }}
         className="mb-6"
       >
-        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 shadow-md border border-blue-100">
+        <div className="bg-linear-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-sm p-6 shadow-md border border-blue-100">
           <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-lg shadow-sm">
+            <div className="bg-linear-to-br from-blue-500 to-indigo-600 p-3 rounded-lg shadow-sm">
               <MapPin className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-[#1B365D] to-indigo-600 bg-clip-text text-transparent mb-1">Symptom Reports Map</h1>
+              <h1 className="text-3xl font-bold bg-linear-to-r from-[#1B365D] to-indigo-600 bg-clip-text text-transparent mb-1">Symptom Reports Map</h1>
               <p className="text-gray-600 text-sm">Real-time visualization of community health observations</p>
             </div>
           </div>
         </div>
       </motion.div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative">
-        <LoadScript 
-          googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-          onLoad={() => setMapLoaded(true)}
-          loadingElement={
-            <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-              <div className="w-16 h-16 border-4 border-gray-200 border-t-[#1B365D] rounded-full animate-spin"></div>
-            </div>
-          }
+      <div className="bg-white shadow-sm border border-gray-100 overflow-hidden relative">
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          center={userLocation || center}
+          zoom={13}
+          onLoad={(map) => {
+            setMap(map);
+            map.setMapTypeId('satellite');
+          }}
+          options={{
+            mapTypeId: 'satellite',
+            styles: [
+              {
+                featureType: 'poi',
+                elementType: 'labels',
+                stylers: [{ visibility: 'off' }],
+              },
+            ],
+          }}
         >
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            center={userLocation || center}
-            zoom={13}
-            onLoad={(map) => {
-              setMap(map);
-              setMapLoaded(true);
-            }}
-            options={{
-              mapTypeId: 'satellite',
-              styles: [
-                {
-                  featureType: 'poi',
-                  elementType: 'labels',
-                  stylers: [{ visibility: 'off' }],
-                },
-              ],
-            }}
-          >
               {/* Barangay Coverage Circle - 1km radius */}
               {userLocation && (
                 <Circle
@@ -226,7 +246,7 @@ export default function BhwMap() {
               )}
 
               {/* User Location Marker */}
-              {userLocation && mapLoaded && (
+              {userLocation && (
                 <Marker
                   position={userLocation}
                   icon={{
@@ -244,7 +264,7 @@ export default function BhwMap() {
               )}
 
               {/* Symptom Report Markers */}
-              {mapLoaded && reports.map((report) => {
+              {reports.map((report) => {
                 const severity = getSeverity(report.symptoms?.length || 0);
                 const color = getSeverityColor(severity);
                 return (
@@ -287,23 +307,41 @@ export default function BhwMap() {
               })}
           </GoogleMap>
           
-          {/* Loading Indicator */}
-          {loading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-[999]">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-gray-200 border-t-[#1B365D] rounded-full animate-spin"></div>
-              </div>
-            </div>
-          )}
+          {/* New Case Alert - Inside Map */}
+          <AnimatePresence>
+            {showNewCaseAlert && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3 z-10"
+              >
+                <div className="relative flex h-8 w-8 items-center justify-center">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <MapPin className="relative h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm">New Report Added!</h4>
+                  <p className="text-xs text-green-50">Check the map for new pin</p>
+                </div>
+                <button
+                  onClick={() => setShowNewCaseAlert(false)}
+                  className="hover:bg-white/20 p-1 rounded transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           {/* Barangay Name - Top Left */}
-          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg border border-gray-200 border-l-4 border-l-[#1B365D] z-[1000]">
+          <div className="absolute top-15 left-2 bg-white/95 backdrop-blur-sm px-4 py-2 shadow-lg border border-gray-200 border-l-4 border-l-[#1B365D] ">
               <h3 className="font-bold text-sm text-[#1B365D]">Barangay Sambag I</h3>
               <p className="text-xs text-gray-600">Urgello Street, Cebu City</p>
             </div>
 
             {/* Legend - Inside Map on Bottom Left Side */}
-            <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-gray-200 border-l-4 border-l-[#CE1126] z-[1000]">
+            <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm p-4 shadow-lg border border-gray-200 border-l-4 border-l-[#CE1126] ">
               <h3 className="font-semibold text-sm text-gray-700 mb-3">Symptom Severity</h3>
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
@@ -329,14 +367,13 @@ export default function BhwMap() {
                 </div>
               </div>
             </div>
-          </LoadScript>
         </div>
 
       {selectedReport && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-8 right-8 bg-white p-6 rounded-xl shadow-2xl border border-gray-200 border-l-4 border-l-blue-400 max-w-md z-50"
+          className="fixed bottom-8 right-8 bg-white p-6  shadow-2xl border border-gray-200 border-l-4 border-l-blue-400 max-w-md z-50"
         >
           <button
             onClick={() => {
