@@ -1,6 +1,6 @@
 import { Outlet, useLocation, Link } from "react-router-dom";
-import { LayoutDashboard, Users, MapPin, LogOut, ChevronDown, ShieldAlert, Bell, Settings, Menu, PanelLeftClose, PanelLeft, User } from "lucide-react";
-import { useState } from "react";
+import { LayoutDashboard, Users, MapPin, LogOut, ChevronDown, ChevronUp, ShieldAlert, Eye, Settings, Menu, PanelLeftClose, PanelLeft, User, AlertTriangle, Megaphone } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,6 +16,24 @@ export default function BhwLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userMenuOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -41,10 +59,10 @@ export default function BhwLayout() {
     const content = (
       <Link
         to={to}
-        className={`flex items-center ${isDesktop && sidebarCollapsed ? 'justify-center' : 'gap-2'} px-3 py-1.5 rounded-lg text-sm transition-colors ${
+        className={`flex items-center ${isDesktop && sidebarCollapsed ? 'justify-center' : 'gap-2'} px-3 py-1.5 rounded-[2px] text-sm transition-colors border-l-4 ${
           active 
-            ? "bg-[#1B365D] text-white hover:bg-[#1B365D]/90" 
-            : "hover:bg-gray-100 active:bg-gray-200"
+            ? "border-l-[#1B365D] bg-blue-200 text-[#1B365D] font-medium" 
+            : "border-l-transparent hover:bg-gray-50 active:bg-gray-100"
         }`}
         onClick={onClick}
       >
@@ -77,10 +95,12 @@ export default function BhwLayout() {
         <nav className="space-y-1">
           <NavLink to="/bhw/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/sentinels" icon={Users} label="Sentinels" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/bhw/observations" icon={Bell} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/bhw/observations" icon={Eye} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/reports" icon={ShieldAlert } label="Reports" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/map" icon={MapPin} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/bhw/settings" icon={Settings} label="Settings" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/bhw/outbreak-response" icon={AlertTriangle} label="Outbreak Response" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/bhw/announcements" icon={Megaphone} label="Announcements" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          {/*<NavLink to="/bhw/settings" icon={Settings} label="Settings" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} /> */} 
         </nav>
       </div>
       <div className="border-t border-gray-200 p-4 bg-white">
@@ -88,22 +108,61 @@ export default function BhwLayout() {
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                onClick={() => setLogoutDialogOpen(true)}
-                className="flex items-center justify-center px-3 py-1.5 rounded-lg w-full hover:bg-red-50 active:bg-red-100 text-destructive transition-colors"
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center justify-center px-3 py-1.5 rounded-lg w-full hover:bg-gray-50 transition-colors relative"
               >
-                <LogOut className="h-4 w-4" />
+                <Avatar size="sm">
+                  <AvatarImage src={userAvatar} alt={displayName} />
+                  <AvatarFallback className="text-xs">{getInitials(user?.displayName)}</AvatarFallback>
+                </Avatar>
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right">Logout</TooltipContent>
+            <TooltipContent side="right">{displayName}</TooltipContent>
           </Tooltip>
         ) : (
-          <button
-            onClick={() => setLogoutDialogOpen(true)}
-            className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg w-full hover:bg-red-50 active:bg-red-100 text-destructive transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="text-sm">Logout</span>
-          </button>
+          <div className="relative" ref={menuRef}>
+            {userMenuOpen && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                <button
+                  onClick={() => {
+                    navigate('/bhw/settings');
+                    setUserMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-left"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span className="text-sm">Settings</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setLogoutDialogOpen(true);
+                    setUserMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-2 hover:bg-red-50 text-destructive text-left"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="text-sm">Logout</span>
+                </button>
+              </div>
+            )}
+            <button
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg w-full hover:bg-gray-50 transition-colors"
+            >
+              <Avatar size="sm">
+                <AvatarImage src={userAvatar} alt={displayName} />
+                <AvatarFallback className="text-xs">{getInitials(user?.displayName)}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
+                <p className="text-xs text-gray-500 truncate">{userRole}</p>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <ChevronUp className={`h-3 w-3 transition-colors ${userMenuOpen ? 'text-gray-900' : 'text-gray-400'}`} />
+                <ChevronDown className={`h-3 w-3 transition-colors ${!userMenuOpen ? 'text-gray-900' : 'text-gray-400'}`} />
+              </div>
+            </button>
+          </div>
         )}
       </div>
     </>
@@ -148,7 +207,7 @@ export default function BhwLayout() {
             
             {/* Profile Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-3 p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors outline-none">
+              <DropdownMenuTrigger className="flex items-center gap-3 cursor-pointer p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors outline-none">
                 <Avatar size="default">
                   <AvatarImage src={userAvatar} alt={displayName} />
                   <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
