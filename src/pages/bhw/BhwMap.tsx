@@ -52,11 +52,18 @@ export default function BhwMap() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
 
   useEffect(() => {
     fetchReports();
     getUserLocation();
   }, []);
+
+  useEffect(() => {
+    if (map) {
+      map.setMapTypeId('satellite');
+    }
+  }, [map]);
 
   const getUserLocation = () => {
     if (navigator.geolocation) {
@@ -139,7 +146,7 @@ export default function BhwMap() {
   };
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-2 bg-gray-50 min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -173,7 +180,12 @@ export default function BhwMap() {
             mapContainerStyle={mapContainerStyle}
             center={userLocation || center}
             zoom={13}
+            onLoad={(map) => {
+              setMap(map);
+              setMapLoaded(true);
+            }}
             options={{
+              mapTypeId: 'satellite',
               styles: [
                 {
                   featureType: 'poi',
