@@ -11,6 +11,7 @@ import BhwSentinels from "@/pages/bhw/BhwSentinels";
 import BhwReports from "@/pages/bhw/BhwReports";
 import BhwMap from "@/pages/bhw/BhwMap";
 import BhwObservations from "@/pages/bhw/BhwObservations";
+import QRScanner from "@/pages/bhw/QRScanner";
 import OutbreakResponse from "@/pages/bhw/OutbreakResponse";
 import Announcements from "@/pages/bhw/Announcements";
 import Regions from "@/pages/admin/Regions";
@@ -50,6 +51,7 @@ export default function AppRoutes() {
       >
         <Route path="dashboard" element={<BhwDashboard />} />
         <Route path="sentinels" element={<BhwSentinels />} />
+        <Route path="qr-scanner" element={<QRScanner />} />
         <Route path="observations" element={<BhwObservations />} />
         <Route path="reports" element={<BhwReports />} />
         <Route path="map" element={<BhwMap />} />
