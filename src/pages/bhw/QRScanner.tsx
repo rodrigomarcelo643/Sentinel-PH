@@ -4,10 +4,11 @@ import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp
 import { db } from "@/lib/firebase";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, X, User, MapPin, FileText, Activity, CheckCircle, Clock, Trash2, Scan, ChevronLeft, ChevronRight } from "lucide-react";
+import { Camera, X, User, MapPin, FileText, Activity, CheckCircle, Clock, Trash2, Scan, ChevronLeft, ChevronRight, Brain, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQRSync } from "@/hooks/useQRSync";
+import AIAnalysisModal from "@/components/ui/AIAnalysisModal";
 import beepSound from "@/assets/sounds/beep.mp3";
 
 interface UserData {
@@ -61,6 +62,7 @@ export default function QRScanner() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmDialog, setConfirmDialog] = useState<{ show: boolean; type: 'visit' | 'delete'; id?: string }>({ show: false, type: 'visit' });
+  const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const { toast } = useToast();
@@ -288,6 +290,18 @@ export default function QRScanner() {
           variant: "destructive",
         });
       }
+    }
+  };
+
+  const handleAIAnalysis = () => {
+    if (scannedData && (scannedData.symptomReports.length > 0)) {
+      setAiAnalysisOpen(true);
+    } else {
+      toast({
+        title: "No Data to Analyze",
+        description: "This resident has no symptom reports to analyze.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -958,10 +972,19 @@ export default function QRScanner() {
                 )}
               </div>
 
-              <Button onClick={handleMarkVisit} className="w-full cursor-pointer bg-green-600 hover:bg-green-700">
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Mark as Resident Visit
-              </Button>
+              <div className="flex gap-3 pt-4 border-t">
+                <Button onClick={handleMarkVisit} className="flex-1 cursor-pointer bg-green-600 hover:bg-green-700">
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Mark as Resident Visit
+                </Button>
+                <Button 
+                  onClick={handleAIAnalysis}
+                  className="flex-1 cursor-pointer bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                >
+                  <Brain className="mr-2 h-4 w-4" />
+                  AI Analysis
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -997,6 +1020,20 @@ export default function QRScanner() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* AI Analysis Modal */}
+      {scannedData && (
+        <AIAnalysisModal
+          open={aiAnalysisOpen}
+          onOpenChange={setAiAnalysisOpen}
+          selfReports={scannedData.symptomReports.filter(r => r.reportType === 'self')}
+          observedReports={scannedData.symptomReports.filter(r => r.reportType === 'observed')}
+          patientInfo={{
+            name: `${scannedData.userData.firstName} ${scannedData.userData.lastName}`,
+            location: `${scannedData.userData.address.barangay}, ${scannedData.userData.address.municipality}`
+          }}
+        />
+      )}
 
       {/* Image Modal */}
       <Dialog open={imageModal.open} onOpenChange={(open) => setImageModal({ ...imageModal, open })}>
