@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, X, User, MapPin, FileText, Activity, CheckCircle, Clock, Trash2, Scan, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import beepSound from "@/assets/sounds/beep.mp3";
 
 interface UserData {
   firstName: string;
@@ -61,6 +62,7 @@ export default function QRScanner() {
   const itemsPerPage = 10;
   const { toast } = useToast();
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const isProcessingRef = useRef(false);
 
   useEffect(() => {
     fetchVisits();
@@ -106,12 +108,9 @@ export default function QRScanner() {
     }
   };
 
-  const onScanSuccess = async (decodedText: string) => {
-    if (scannerRef.current) {
-      scannerRef.current.clear();
-      scannerRef.current = null;
-    }
-    setScanning(false);
+  const onScanSuccess = useCallback(async (decodedText: string) => {
+    if (isProcessingRef.current) return;
+    isProcessingRef.current = true;
 
     try {
       const qrId = decodedText.trim().replace(/"/g, '');
@@ -120,14 +119,32 @@ export default function QRScanner() {
 
       if (!querySnapshot.empty) {
         const data = querySnapshot.docs[0].data() as QRCodeData;
+        
+        // Play beep sound
+        const audio = new Audio(beepSound);
+        audio.play().catch(err => console.error('Error playing beep:', err));
+        
+        // Text-to-speech welcome message
+        const utterance = new SpeechSynthesisUtterance(`Welcome ${data.userData.firstName}`);
+        window.speechSynthesis.speak(utterance);
+        
+        // Stop scanner and show modal
+        if (scannerRef.current) {
+          scannerRef.current.clear().catch(console.error);
+          scannerRef.current = null;
+        }
+        setScanning(false);
         setScannedData(data);
         setModalOpen(true);
         setError(null);
+        isProcessingRef.current = false;
+        
         toast({
           title: "QR Code Scanned",
           description: `Resident: ${data.userData.firstName} ${data.userData.lastName}`,
         });
       } else {
+        isProcessingRef.current = false;
         setError("Invalid QR Code. Resident not found.");
         toast({
           title: "Invalid QR Code",
@@ -136,6 +153,7 @@ export default function QRScanner() {
         });
       }
     } catch (err) {
+      isProcessingRef.current = false;
       console.error("Error fetching QR data:", err);
       setError("Failed to fetch resident data. Please try again.");
       toast({
@@ -144,11 +162,11 @@ export default function QRScanner() {
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
 
-  const onScanError = (errorMessage: string) => {
+  const onScanError = useCallback((errorMessage: string) => {
     console.log("Scan error:", errorMessage);
-  };
+  }, []);
 
   const closeModal = () => {
     setModalOpen(false);
@@ -225,6 +243,7 @@ export default function QRScanner() {
     }
     setScanning(false);
     setError(null);
+    isProcessingRef.current = false;
   };
 
   // Pagination
