@@ -28,7 +28,7 @@ The Philippines has no shortage of health data—it has a shortage of the right 
 
 ## 💡 Solution
 
-SentinelPH builds a community intelligence network that trains everyday Filipinos—sari-sari store owners, tricycle drivers, market vendors, traditional hilots, and religious leaders—to become the first line of outbreak detection in their neighborhoods. Instead of repetitive questioning, BHWs simply scan a resident's QR code to instantly access their complete health profile, symptom history, and real-time health trends—transforming weeks of manual processing into seconds of digital intelligence with built-in safeguards that separate genuine signals from noise and misinformation.
+SentinelPH builds a community intelligence network that trains everyday Filipinos—sari-sari store owners, tricycle drivers, market vendors, traditional hilots, and religious leaders—to become the first line of outbreak detection in their neighborhoods. Each resident receives a unique QR code that health workers, partner clinics, and authorized healthcare providers can scan to instantly access complete health profiles, symptom history, and real-time health trends—transforming weeks of manual processing into seconds of digital intelligence with built-in safeguards that separate genuine signals from noise and misinformation.
 
 ## 👥 Target Users
 
@@ -65,7 +65,7 @@ SentinelPH builds a community intelligence network that trains everyday Filipino
   - Home screen with health summary and status overview
   - History section for tracking reported symptoms
   - Plus icon for quick symptom reporting (self-report vs observed)
-  - Profile with unique QR code for BHW scanning
+  - Profile with unique QR code for healthcare provider scanning
 - **Real-Time Information Feed**
   - Live announcements and outbreak alerts
   - BHW directories with hotlines and emergency contacts
