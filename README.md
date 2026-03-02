@@ -39,7 +39,53 @@ SentinelPH builds a community intelligence network that trains and equips everyd
 - Municipal & Provincial Health Officers
 - Department of Health & Epidemiologists
 
-## ✨ Key Features
+## ✨ MVP Core Features
+
+### 🏥 **BHW (Barangay Health Worker) Dashboard**
+- **Sentinel Management** - Approve/reject community sentinel applications with document verification
+- **Real-time Observations** - Live monitoring with 7-day trend analysis and symptom radar charts
+- **QR Code Scanner** - Instant resident lookup with live health data, symptom history, and trend visualization
+- **Interactive Mapping** - Real-time outbreak visualization with geographic clustering
+- **Outbreak Pattern Recognition** - AI-powered detection of disease patterns and anomalies
+- **Community Announcements** - Broadcast health advisories and alerts to residents
+
+### 👥 **Community Sentinel Network**
+- **Multi-Step Registration Process**
+  - Step 1: Personal verification (name, email, contact, region/municipality/barangay)
+  - Step 2: Document verification (valid ID upload + selfie verification)
+  - Step 3: Credential finalization and approval waiting status
+- **Mobile App Dashboard**
+  - Home screen with health summary and status overview
+  - History section for tracking reported symptoms
+  - Plus icon for quick symptom reporting (self-report vs observed)
+  - Profile with unique QR code for BHW scanning
+- **Real-Time Information Feed**
+  - Live announcements and outbreak alerts
+  - BHW directories with hotlines and emergency contacts
+  - Push notifications for health advisories
+- **Community Intelligence**
+  - Interactive map showing nearby verified reports (latest only)
+  - Anonymous community symptom visualization
+  - Geographic clustering of health observations
+- **Observation Reporting** - "What do you see?" approach vs. direct symptom reporting
+- **Incentive System** - Load credits and recognition for verified observations
+- **Two-Way Communication** - Receive acknowledgments and health advisories
+- **Future Integration** - Community forums for health discussions
+
+### 🔍 **Real-Time Intelligence**
+- **Live Data Sync** - Instant updates across all dashboards and mobile devices
+- **3-Sentinel Rule** - Multi-source validation before outbreak alerts
+- **AI Trust Scoring** - Validates sentinel reliability and filters spam
+- **Spatial Clustering** - DBSCAN algorithm for geographic pattern detection
+- **Predictive Analytics** - Early warning system for potential outbreaks
+
+### 📱 **Mobile-First Design**
+- **Progressive Web App (PWA)** - Works offline, low-bandwidth optimized
+- **Audio Feedback** - Beep sounds and text-to-speech for accessibility
+- **Real-time Notifications** - Instant alerts for new cases and announcements
+- **Cross-Platform** - Seamless experience across desktop, tablet, and mobile
+
+## 🎯 Key Innovations
 
 - 📱 **Mobile-First PWA** - Works offline, low-bandwidth optimized
 - 🔒 **AI-Powered Trust Scoring** - Validates sentinel reliability (0-100 score)
