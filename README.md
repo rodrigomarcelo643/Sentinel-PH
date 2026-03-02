@@ -26,12 +26,9 @@ The Philippines has no shortage of health data—it has a shortage of the right 
 - **Information Silos** - Resident health histories scattered across different systems with no centralized access
 - **Delayed Response** - Critical time lost between symptom onset and official health response
 
-**SentinelPH Solution:**
-Instead of repetitive questioning, BHWs simply scan a resident's QR code to instantly access their complete health profile, symptom history, and real-time health trends—transforming weeks of manual processing into seconds of digital intelligence.
-
 ## 💡 Solution
 
-SentinelPH builds a community intelligence network that trains and equips everyday Filipinos—including sari-sari store owners, tricycle drivers, market vendors, traditional hilots, and religious leaders—to become the first line of outbreak detection in their own neighborhoods with built-in safeguards that separate genuine signals from noise and misinformation.
+SentinelPH builds a community intelligence network that trains everyday Filipinos—sari-sari store owners, tricycle drivers, market vendors, traditional hilots, and religious leaders—to become the first line of outbreak detection in their neighborhoods. Instead of repetitive questioning, BHWs simply scan a resident's QR code to instantly access their complete health profile, symptom history, and real-time health trends—transforming weeks of manual processing into seconds of digital intelligence with built-in safeguards that separate genuine signals from noise and misinformation.
 
 ## 👥 Target Users
 
