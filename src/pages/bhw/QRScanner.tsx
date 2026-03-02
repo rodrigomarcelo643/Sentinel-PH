@@ -532,91 +532,338 @@ export default function QRScanner() {
           </div>
 
           {scannedData && (
-            <div className="p-4 space-y-3">
-              <div className="bg-gray-50 rounded-[2px] p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <User className="h-4 w-4 text-[#1B365D]" />
-                  <h3 className="font-semibold text-base text-gray-900">Personal Details</h3>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <p className="text-xs text-gray-600">Full Name</p>
-                    <p className="font-medium text-sm">
-                      {scannedData.userData.firstName} {scannedData.userData.middleInitial} {scannedData.userData.lastName}
+            <div className="p-4 space-y-4">
+              {/* Two Column Layout: Personal Info + Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Left Side - Personal Information */}
+                <div className="space-y-3">
+                  <div className="bg-gray-50 rounded-[2px] p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <User className="h-4 w-4 text-[#1B365D]" />
+                      <h3 className="font-semibold text-base text-gray-900">Personal Details</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-xs text-gray-600">Full Name</p>
+                        <p className="font-medium text-sm">
+                          {scannedData.userData.firstName} {scannedData.userData.middleInitial} {scannedData.userData.lastName}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">QR ID</p>
+                        <p className="font-medium font-mono text-sm">{scannedData.qrId}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Email</p>
+                        <p className="font-medium text-sm">{scannedData.userData.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Contact Number</p>
+                        <p className="font-medium text-sm">{scannedData.userData.contactNumber}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Community Role</p>
+                        <p className="font-medium text-sm">{scannedData.userData.communityRole}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Status</p>
+                        <span className={`inline-block px-2 py-1 rounded-[2px] text-xs font-medium ${
+                          scannedData.userData.status === "approved" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                        }`}>
+                          {scannedData.userData.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-[2px] p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <MapPin className="h-4 w-4 text-[#1B365D]" />
+                      <h3 className="font-semibold text-base text-gray-900">Address</h3>
+                    </div>
+                    <p className="text-gray-700 text-sm">
+                      {scannedData.userData.address.barangay}, {scannedData.userData.address.municipality}, {scannedData.userData.address.region}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600">QR ID</p>
-                    <p className="font-medium font-mono text-sm">{scannedData.qrId}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600">Email</p>
-                    <p className="font-medium text-sm">{scannedData.userData.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600">Contact Number</p>
-                    <p className="font-medium text-sm">{scannedData.userData.contactNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600">Community Role</p>
-                    <p className="font-medium text-sm">{scannedData.userData.communityRole}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600">Status</p>
-                    <span className={`inline-block px-2 py-1 rounded-[2px] text-xs font-medium ${
-                      scannedData.userData.status === "approved" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                    }`}>
-                      {scannedData.userData.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
 
-              <div className="bg-gray-50 rounded-[2px] p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <MapPin className="h-4 w-4 text-[#1B365D]" />
-                  <h3 className="font-semibold text-base text-gray-900">Address</h3>
-                </div>
-                <p className="text-gray-700 text-sm">
-                  {scannedData.userData.address.barangay}, {scannedData.userData.address.municipality}, {scannedData.userData.address.region}
-                </p>
-              </div>
-
-              <div className="bg-gray-50 rounded-[2px] p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="h-4 w-4 text-[#1B365D]" />
-                  <h3 className="font-semibold text-base text-gray-900">Documents</h3>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <p className="text-xs text-gray-600 mb-1">ID Type</p>
-                    <p className="font-medium text-sm">{scannedData.userData.documents.idType}</p>
-                  </div>
-                  {scannedData.userData.documents.validIdUrl && (
-                    <div className="flex-shrink-0">
-                      <p className="text-xs text-gray-600 mb-1">Valid ID</p>
-                      <img 
-                        src={scannedData.userData.documents.validIdUrl} 
-                        alt="Valid ID" 
-                        className="w-32 h-32 object-cover rounded-[2px] cursor-pointer hover:opacity-80 transition-opacity" 
-                        onClick={() => setImageModal({ open: true, url: scannedData.userData.documents.validIdUrl, title: 'Valid ID' })}
-                      />
+                  <div className="bg-gray-50 rounded-[2px] p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileText className="h-4 w-4 text-[#1B365D]" />
+                      <h3 className="font-semibold text-base text-gray-900">Documents</h3>
                     </div>
-                  )}
-                  {scannedData.userData.documents.selfieUrl && (
-                    <div className="flex-shrink-0">
-                      <p className="text-xs text-gray-600 mb-1">Selfie</p>
-                      <img 
-                        src={scannedData.userData.documents.selfieUrl} 
-                        alt="Selfie" 
-                        className="w-32 h-32 object-cover rounded-[2px] cursor-pointer hover:opacity-80 transition-opacity" 
-                        onClick={() => setImageModal({ open: true, url: scannedData.userData.documents.selfieUrl, title: 'Selfie' })}
-                      />
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <p className="text-xs text-gray-600 mb-1">ID Type</p>
+                        <p className="font-medium text-sm">{scannedData.userData.documents.idType}</p>
+                      </div>
+                      {scannedData.userData.documents.validIdUrl && (
+                        <div className="flex-shrink-0">
+                          <p className="text-xs text-gray-600 mb-1">Valid ID</p>
+                          <img 
+                            src={scannedData.userData.documents.validIdUrl} 
+                            alt="Valid ID" 
+                            className="w-20 h-20 object-cover rounded-[2px] cursor-pointer hover:opacity-80 transition-opacity" 
+                            onClick={() => setImageModal({ open: true, url: scannedData.userData.documents.validIdUrl, title: 'Valid ID' })}
+                          />
+                        </div>
+                      )}
+                      {scannedData.userData.documents.selfieUrl && (
+                        <div className="flex-shrink-0">
+                          <p className="text-xs text-gray-600 mb-1">Selfie</p>
+                          <img 
+                            src={scannedData.userData.documents.selfieUrl} 
+                            alt="Selfie" 
+                            className="w-20 h-20 object-cover rounded-[2px] cursor-pointer hover:opacity-80 transition-opacity" 
+                            onClick={() => setImageModal({ open: true, url: scannedData.userData.documents.selfieUrl, title: 'Selfie' })}
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                </div>
+
+                {/* Right Side - Charts and Trends */}
+                <div className="space-y-3">
+                  <div className="bg-gray-50 rounded-[2px] p-3">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Activity className="h-4 w-4 text-[#1B365D]" />
+                      <h3 className="font-semibold text-base text-gray-900">Health Trends</h3>
+                    </div>
+                    
+                    {/* Report Stats */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="bg-white rounded-[2px] p-3 border">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-600">
+                            {scannedData.symptomReports?.filter(r => r.reportType === 'self').length || 0}
+                          </div>
+                          <div className="text-xs text-gray-600">Self Reports</div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-[2px] p-3 border">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">
+                            {scannedData.symptomReports?.filter(r => r.reportType === 'observed').length || 0}
+                          </div>
+                          <div className="text-xs text-gray-600">Observed</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Simple Bar Chart */}
+                    <div className="bg-white rounded-[2px] p-3 border">
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">Report Activity (Last 7 Days)</h4>
+                      <div className="flex items-end justify-between h-20 gap-1">
+                        {(() => {
+                          const last7Days = Array.from({ length: 7 }, (_, i) => {
+                            const date = new Date();
+                            date.setDate(date.getDate() - (6 - i));
+                            return date;
+                          });
+                          
+                          return last7Days.map((date, index) => {
+                            const dayReports = scannedData.symptomReports?.filter(report => {
+                              const reportDate = report.createdAt?.toDate?.() || new Date(report.createdAt || 0);
+                              return reportDate.toDateString() === date.toDateString();
+                            }).length || 0;
+                            
+                            const maxHeight = Math.max(...last7Days.map(d => {
+                              return scannedData.symptomReports?.filter(r => {
+                                const rd = r.createdAt?.toDate?.() || new Date(r.createdAt || 0);
+                                return rd.toDateString() === d.toDateString();
+                              }).length || 0;
+                            }), 1);
+                            
+                            const height = maxHeight > 0 ? (dayReports / maxHeight) * 60 : 0;
+                            
+                            return (
+                              <div key={index} className="flex flex-col items-center flex-1">
+                                <div 
+                                  className="bg-[#1B365D] rounded-t-sm w-full min-h-[4px] transition-all"
+                                  style={{ height: `${Math.max(height, 4)}px` }}
+                                  title={`${dayReports} reports on ${date.toLocaleDateString()}`}
+                                ></div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  {date.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1)}
+                                </div>
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Line Chart - Same as Observations */}
+                    <div className="bg-white rounded-[2px] p-3 border">
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">7-Day Trend Analysis</h4>
+                      <div className="relative h-32">
+                        <svg className="w-full h-full" viewBox="0 0 300 120">
+                          {(() => {
+                            const last7Days = Array.from({ length: 7 }, (_, i) => {
+                              const date = new Date();
+                              date.setDate(date.getDate() - (6 - i));
+                              return date;
+                            });
+                            
+                            const dataPoints = last7Days.map(date => {
+                              const dayReports = scannedData.symptomReports?.filter(report => {
+                                const reportDate = report.createdAt?.toDate?.() || new Date(report.createdAt || 0);
+                                return reportDate.toDateString() === date.toDateString();
+                              }).length || 0;
+                              return dayReports;
+                            });
+                            
+                            const verifiedPoints = last7Days.map(date => {
+                              const dayVerified = scannedData.symptomReports?.filter(report => {
+                                const reportDate = report.createdAt?.toDate?.() || new Date(report.createdAt || 0);
+                                return reportDate.toDateString() === date.toDateString() && report.status === 'verified';
+                              }).length || 0;
+                              return dayVerified;
+                            });
+                            
+                            const maxValue = Math.max(...dataPoints, ...verifiedPoints, 1);
+                            const width = 300;
+                            const height = 120;
+                            const padding = 20;
+                            
+                            // Create paths for lines
+                            const totalPath = dataPoints.map((value, index) => {
+                              const x = padding + (index * (width - 2 * padding)) / (dataPoints.length - 1);
+                              const y = height - padding - ((value / maxValue) * (height - 2 * padding));
+                              return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
+                            }).join(' ');
+                            
+                            const verifiedPath = verifiedPoints.map((value, index) => {
+                              const x = padding + (index * (width - 2 * padding)) / (verifiedPoints.length - 1);
+                              const y = height - padding - ((value / maxValue) * (height - 2 * padding));
+                              return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
+                            }).join(' ');
+                            
+                            return (
+                              <>
+                                {/* Grid lines */}
+                                <defs>
+                                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#f3f4f6" strokeWidth="1"/>
+                                  </pattern>
+                                </defs>
+                                <rect width="100%" height="100%" fill="url(#grid)" />
+                                
+                                {/* Total Reports Line */}
+                                <path
+                                  d={totalPath}
+                                  fill="none"
+                                  stroke="#3B82F6"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                
+                                {/* Verified Reports Line */}
+                                <path
+                                  d={verifiedPath}
+                                  fill="none"
+                                  stroke="#10B981"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                
+                                {/* Total Reports Data points */}
+                                {dataPoints.map((value, index) => {
+                                  const x = padding + (index * (width - 2 * padding)) / (dataPoints.length - 1);
+                                  const y = height - padding - ((value / maxValue) * (height - 2 * padding));
+                                  return (
+                                    <circle
+                                      key={`total-${index}`}
+                                      cx={x}
+                                      cy={y}
+                                      r="3"
+                                      fill="#3B82F6"
+                                    >
+                                      <title>{`${last7Days[index].toLocaleDateString()}: ${value} total reports`}</title>
+                                    </circle>
+                                  );
+                                })}
+                                
+                                {/* Verified Reports Data points */}
+                                {verifiedPoints.map((value, index) => {
+                                  const x = padding + (index * (width - 2 * padding)) / (verifiedPoints.length - 1);
+                                  const y = height - padding - ((value / maxValue) * (height - 2 * padding));
+                                  return (
+                                    <circle
+                                      key={`verified-${index}`}
+                                      cx={x}
+                                      cy={y}
+                                      r="3"
+                                      fill="#10B981"
+                                    >
+                                      <title>{`${last7Days[index].toLocaleDateString()}: ${value} verified reports`}</title>
+                                    </circle>
+                                  );
+                                })}
+                                
+                                {/* Y-axis labels */}
+                                <text x="5" y="25" fontSize="10" fill="#6b7280" textAnchor="start">{maxValue}</text>
+                                <text x="5" y="105" fontSize="10" fill="#6b7280" textAnchor="start">0</text>
+                                
+                                {/* Legend */}
+                                <g transform="translate(220, 15)">
+                                  <circle cx="0" cy="0" r="3" fill="#3B82F6" />
+                                  <text x="8" y="4" fontSize="10" fill="#6b7280">Total</text>
+                                  <circle cx="0" cy="15" r="3" fill="#10B981" />
+                                  <text x="8" y="19" fontSize="10" fill="#6b7280">Verified</text>
+                                </g>
+                              </>
+                            );
+                          })()}
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* Status Distribution */}
+                    <div className="bg-white rounded-[2px] p-3 border">
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">Report Status</h4>
+                      <div className="space-y-2">
+                        {(() => {
+                          const verified = scannedData.symptomReports?.filter(r => r.status === 'verified').length || 0;
+                          const pending = scannedData.symptomReports?.filter(r => r.status === 'pending').length || 0;
+                          const total = verified + pending;
+                          
+                          return (
+                            <>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                  <span className="text-sm text-gray-700">Verified</span>
+                                </div>
+                                <span className="text-sm font-medium">{verified}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                  <span className="text-sm text-gray-700">Pending</span>
+                                </div>
+                                <span className="text-sm font-medium">{pending}</span>
+                              </div>
+                              {total > 0 && (
+                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                  <div 
+                                    className="bg-green-500 h-2 rounded-full transition-all"
+                                    style={{ width: `${(verified / total) * 100}%` }}
+                                  ></div>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
+              {/* Bottom Section - Symptom Reports History (Full Width) */}
               <div className="bg-gray-50 rounded-[2px] p-3">
                 <div className="flex items-center gap-2 mb-2">
                   <Activity className="h-4 w-4 text-[#1B365D]" />
