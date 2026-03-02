@@ -19,6 +19,16 @@
 
 The Philippines has no shortage of health data—it has a shortage of the right data at the right time. The current approach to outbreak detection is reactive, seeing outbreaks only after hospital admissions spike—when it's already too late for prevention. Communities themselves—the people who notice the first fever, the first child with diarrhea, the first neighbor who looks sick—have no structured way to share what they see.
 
+**Current System Inefficiencies:**
+- **Manual Reporting Delays** - Paper-based reports take weeks to process and reach health authorities
+- **Health Center Bottlenecks** - Long waiting times during outbreak investigations while cases multiply
+- **Repetitive Data Collection** - BHWs repeatedly ask the same questions during health visits, wasting valuable time
+- **Information Silos** - Resident health histories scattered across different systems with no centralized access
+- **Delayed Response** - Critical time lost between symptom onset and official health response
+
+**SentinelPH Solution:**
+Instead of repetitive questioning, BHWs simply scan a resident's QR code to instantly access their complete health profile, symptom history, and real-time health trends—transforming weeks of manual processing into seconds of digital intelligence.
+
 ## 💡 Solution
 
 SentinelPH builds a community intelligence network that trains and equips everyday Filipinos—including sari-sari store owners, tricycle drivers, market vendors, traditional hilots, and religious leaders—to become the first line of outbreak detection in their own neighborhoods with built-in safeguards that separate genuine signals from noise and misinformation.
