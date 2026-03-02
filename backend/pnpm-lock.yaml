@@ -29,6 +29,9 @@ importers:
       firebase-admin:
         specifier: ^13.6.1
         version: 13.6.1
+      firebase-functions:
+        specifier: ^7.0.6
+        version: 7.0.6(firebase-admin@13.6.1)
       helmet:
         specifier: ^7.1.0
         version: 7.2.0
@@ -1115,6 +1118,23 @@ packages:
   firebase-admin@13.6.1:
     resolution: {integrity: sha512-Zgc6yPtmPxAZo+FoK6LMG6zpSEsoSK8ifIR+IqF4oWuC3uWZU40OjxgfLTSFcsRlj/k/wD66zNv2UiTRreCNSw==}
     engines: {node: '>=18'}
+
+  firebase-functions@7.0.6:
+    resolution: {integrity: sha512-RZLxrY4wkL0c9YuwU/NyBa3XzsFkWZjMC7Q1PEyKl9F+VTTeiLuukjfSu2G+E2nbbxZcokDTB5z7anc8e9mSBA==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    peerDependencies:
+      '@apollo/server': ^5.2.0
+      '@as-integrations/express4': ^1.1.2
+      firebase-admin: ^11.10.0 || ^12.0.0 || ^13.0.0
+      graphql: ^16.12.0
+    peerDependenciesMeta:
+      '@apollo/server':
+        optional: true
+      '@as-integrations/express4':
+        optional: true
+      graphql:
+        optional: true
 
   firebase@12.9.0:
     resolution: {integrity: sha512-CwwTYoqZg6KxygPOaaJqIc4aoLvo0RCRrXoln9GoxLE8QyAwTydBaSLGVlR4WPcuOgN3OEL0tJLT1H4IU/dv7w==}
@@ -3114,6 +3134,17 @@ snapshots:
       '@google-cloud/storage': 7.19.0
     transitivePeerDependencies:
       - encoding
+      - supports-color
+
+  firebase-functions@7.0.6(firebase-admin@13.6.1):
+    dependencies:
+      '@types/cors': 2.8.19
+      '@types/express': 4.17.25
+      cors: 2.8.6
+      express: 4.22.1
+      firebase-admin: 13.6.1
+      protobufjs: 7.5.4
+    transitivePeerDependencies:
       - supports-color
 
   firebase@12.9.0:
