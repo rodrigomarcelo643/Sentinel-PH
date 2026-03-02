@@ -1,5 +1,5 @@
 import { Outlet, useLocation, Link } from "react-router-dom";
-import { LayoutDashboard, Users, MapPin, LogOut, ChevronDown, ChevronUp, ShieldAlert, Eye, Settings, Menu, PanelLeftClose, PanelLeft, User, AlertTriangle, Megaphone, QrCode } from "lucide-react";
+import { LayoutDashboard, Users, MapPinned, LogOut, ChevronDown, ChevronUp, ShieldAlert, Settings,Telescope, PanelLeftClose, PanelLeft, User, AlertTriangle, Megaphone, QrCode } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -66,7 +66,7 @@ export default function BhwLayout() {
         }`}
         onClick={onClick}
       >
-        <Icon className="h-4 w-4 flex-shrink-0" />
+        <Icon className="h-4 w-4 shrink-0" />
         {!(isDesktop && sidebarCollapsed) && <span className="text-sm">{label}</span>}
       </Link>
     );
@@ -95,10 +95,10 @@ export default function BhwLayout() {
         <nav className="space-y-1">
           <NavLink to="/bhw/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/sentinels" icon={Users} label="Sentinels" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/bhw/observations" icon={Telescope} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/qr-scanner" icon={QrCode} label="QR Scanner" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/bhw/observations" icon={Eye} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/reports" icon={ShieldAlert } label="Reports" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/bhw/map" icon={MapPin} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/bhw/map" icon={MapPinned} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/outbreak-response" icon={AlertTriangle} label="Outbreak Response" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/announcements" icon={Megaphone} label="Announcements" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           {/*<NavLink to="/bhw/settings" icon={Settings} label="Settings" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} /> */} 
