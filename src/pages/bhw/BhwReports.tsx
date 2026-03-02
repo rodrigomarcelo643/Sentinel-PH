@@ -104,6 +104,13 @@ export default function BhwReports() {
       setReports(reports.map(r => r.id === id ? { ...r, status: 'verified' } : r));
       setIsVerifyDialogOpen(false);
       setSelectedReport(null);
+      
+      // Sync QR code after status update
+      const report = reports.find(r => r.id === id);
+      if (report?.userId) {
+        const { syncUserQRCode } = await import('@/services/qrSyncService');
+        await syncUserQRCode(report.userId);
+      }
     } catch (error) {
       console.error('Error verifying report:', error);
     }
@@ -120,6 +127,13 @@ export default function BhwReports() {
       setIsRejectDialogOpen(false);
       setSelectedReport(null);
       setRejectionReason('');
+      
+      // Sync QR code after status update
+      const report = reports.find(r => r.id === id);
+      if (report?.userId) {
+        const { syncUserQRCode } = await import('@/services/qrSyncService');
+        await syncUserQRCode(report.userId);
+      }
     } catch (error) {
       console.error('Error rejecting report:', error);
     }

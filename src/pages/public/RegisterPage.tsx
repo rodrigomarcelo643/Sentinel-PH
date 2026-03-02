@@ -11,9 +11,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, setDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { uploadImage } from "@/services/cloudinaryService";
+import { syncUserQRCode } from "@/services/qrSyncService";
 
 const steps = [
   { number: 1, title: "Account Type", description: "Select your organization", icon: Building2 },
@@ -226,6 +227,21 @@ export default function RegisterPage() {
         documentUrls: documentUrls,
         documentsCount: documentUrls.length,
       });
+
+      // Create user document
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        uid: userCredential.user.uid,
+        firstName: formData.fullName.split(' ')[0],
+        lastName: formData.fullName.split(' ').slice(1).join(' '),
+        email: formData.email,
+        contactNumber: formData.phone,
+        role: userRole,
+        status: "pending",
+        createdAt: serverTimestamp()
+      });
+
+      // Sync QR code if exists
+      await syncUserQRCode(userCredential.user.uid);
 
       toast({
         variant: "success",

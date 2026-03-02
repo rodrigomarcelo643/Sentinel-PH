@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, X, User, MapPin, FileText, Activity, CheckCircle, Clock, Trash2, Scan, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQRSync } from "@/hooks/useQRSync";
 import beepSound from "@/assets/sounds/beep.mp3";
 
 interface UserData {
@@ -49,11 +50,13 @@ interface Visit {
 
 export default function QRScanner() {
   const { user } = useAuth();
+  useQRSync(); // Auto-sync QR codes when symptom reports change
   const [scanning, setScanning] = useState(false);
   const [scannedData, setScannedData] = useState<QRCodeData | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportTab, setReportTab] = useState<'self' | 'observed'>('self');
+  const [visibleReports, setVisibleReports] = useState(10);
   const [imageModal, setImageModal] = useState<{ open: boolean; url: string; title: string }>({ open: false, url: '', title: '' });
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,19 +117,67 @@ export default function QRScanner() {
 
     try {
       const qrId = decodedText.trim().replace(/"/g, '');
-      const q = query(collection(db, "userQRCodes"), where("qrId", "==", qrId));
-      const querySnapshot = await getDocs(q);
+      
+      const qrQuery = query(collection(db, "userQRCodes"), where("qrId", "==", qrId));
+      const qrSnapshot = await getDocs(qrQuery);
 
-      if (!querySnapshot.empty) {
-        const data = querySnapshot.docs[0].data() as QRCodeData;
+      if (!qrSnapshot.empty) {
+        const qrData = qrSnapshot.docs[0].data();
+        const userUid = qrData.userData?.uid || qrData.uid || qrData.userId;
         
-        // Play beep sound
+        if (!userUid) {
+          throw new Error("User ID not found in QR code");
+        }
+
+        let userData: UserData;
+        let symptomReports: any[] = [];
+
+        const userQuery = query(collection(db, "users"), where("uid", "==", userUid));
+        const userSnapshot = await getDocs(userQuery);
+        
+        if (!userSnapshot.empty) {
+          userData = { ...userSnapshot.docs[0].data(), uid: userUid } as UserData;
+          
+          try {
+            const reportsQuery = query(
+              collection(db, "symptomReports"),
+              where("userId", "==", userUid),
+              orderBy("createdAt", "desc")
+            );
+            const reportsSnapshot = await getDocs(reportsQuery);
+            symptomReports = reportsSnapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+          } catch (reportErr) {
+            console.log("Using cached symptom reports");
+            symptomReports = qrData.symptomReports || [];
+          }
+        } else {
+          userData = qrData.userData as UserData;
+          symptomReports = qrData.symptomReports || [];
+        }
+        
+        const liveData: QRCodeData = {
+          qrId,
+          userData,
+          symptomReports,
+          createdAt: qrData.createdAt,
+          updatedAt: serverTimestamp()
+        };
+        
+        // Play beep sound first
         const audio = new Audio(beepSound);
-        audio.play().catch(err => console.error('Error playing beep:', err));
-        
-        // Text-to-speech welcome message
-        const utterance = new SpeechSynthesisUtterance(`Welcome ${data.userData.firstName}`);
-        window.speechSynthesis.speak(utterance);
+        audio.play().then(() => {
+          // Text-to-speech after beep completes
+          const utterance = new SpeechSynthesisUtterance(`Welcome ${userData.firstName}`);
+          window.speechSynthesis.speak(utterance);
+        }).catch(err => {
+          console.error('Error playing beep:', err);
+          // Still play TTS even if beep fails
+          const utterance = new SpeechSynthesisUtterance(`Welcome ${userData.firstName}`);
+          window.speechSynthesis.speak(utterance);
+        });
         
         // Stop scanner and show modal
         if (scannerRef.current) {
@@ -134,14 +185,14 @@ export default function QRScanner() {
           scannerRef.current = null;
         }
         setScanning(false);
-        setScannedData(data);
+        setScannedData(liveData);
         setModalOpen(true);
         setError(null);
         isProcessingRef.current = false;
         
         toast({
           title: "QR Code Scanned",
-          description: `Resident: ${data.userData.firstName} ${data.userData.lastName}`,
+          description: `Resident: ${userData.firstName} ${userData.lastName}`,
         });
       } else {
         isProcessingRef.current = false;
@@ -152,25 +203,29 @@ export default function QRScanner() {
           variant: "destructive",
         });
       }
-    } catch (err) {
+    } catch (err: any) {
       isProcessingRef.current = false;
       console.error("Error fetching QR data:", err);
-      setError("Failed to fetch resident data. Please try again.");
+      setError(err.message || "Failed to fetch resident data. Please try again.");
       toast({
         title: "Error",
-        description: "Failed to fetch resident data.",
+        description: err.message || "Failed to fetch resident data.",
         variant: "destructive",
       });
     }
   }, [toast]);
 
   const onScanError = useCallback((errorMessage: string) => {
-    console.log("Scan error:", errorMessage);
+    // Ignore common scanning errors to reduce console noise
+    if (!errorMessage.includes('NotFoundException')) {
+      console.log("Scan error:", errorMessage);
+    }
   }, []);
 
   const closeModal = () => {
     setModalOpen(false);
     setScannedData(null);
+    setVisibleReports(10);
   };
 
   const handleMarkVisit = async () => {
@@ -572,23 +627,29 @@ export default function QRScanner() {
                 
                 <div className="flex gap-6 border-b border-gray-300 mb-3 relative">
                   <button
-                    onClick={() => setReportTab('self')}
+                    onClick={() => {
+                      setReportTab('self');
+                      setVisibleReports(10);
+                    }}
                     className={`pb-2 text-sm font-medium transition-colors relative cursor-pointer ${
                       reportTab === 'self' ? 'text-[#1B365D]' : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    Self-Reported
+                    Self-Reported ({scannedData.symptomReports?.filter(r => r.reportType === 'self').length || 0})
                     {reportTab === 'self' && (
                       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1B365D]"></div>
                     )}
                   </button>
                   <button
-                    onClick={() => setReportTab('observed')}
+                    onClick={() => {
+                      setReportTab('observed');
+                      setVisibleReports(10);
+                    }}
                     className={`pb-2 text-sm font-medium transition-colors relative cursor-pointer ${
                       reportTab === 'observed' ? 'text-[#1B365D]' : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    Observed
+                    Observed ({scannedData.symptomReports?.filter(r => r.reportType === 'observed').length || 0})
                     {reportTab === 'observed' && (
                       <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1B365D]"></div>
                     )}
@@ -597,33 +658,56 @@ export default function QRScanner() {
 
                 {scannedData.symptomReports && scannedData.symptomReports.length > 0 ? (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {scannedData.symptomReports
-                      .filter(report => report.reportType === reportTab)
-                      .map((report, index) => (
-                        <div key={index} className="bg-white rounded-[2px] p-3 border">
-                          <div className="flex justify-between items-start mb-2">
-                            <span className={`text-xs px-2 py-1 rounded-[2px] ${
-                              report.status === "verified" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                            }`}>
-                              {report.status}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {report.createdAt?.toDate?.()?.toLocaleDateString() || "N/A"}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-700 mb-2">{report.description}</p>
-                          <div className="flex flex-wrap gap-1">
-                            {report.symptoms?.map((symptom: string, idx: number) => (
-                              <span key={idx} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-[2px]">
-                                {symptom}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
+                    {(() => {
+                      const filteredReports = scannedData.symptomReports
+                        .filter(report => report.reportType === reportTab)
+                        .sort((a, b) => {
+                          const aDate = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
+                          const bDate = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
+                          return bDate.getTime() - aDate.getTime();
+                        });
+                      
+                      const displayedReports = filteredReports.slice(0, visibleReports);
+                      const hasMore = filteredReports.length > visibleReports;
+                      
+                      return (
+                        <>
+                          {displayedReports.map((report, index) => (
+                            <div key={index} className="bg-white rounded-[2px] p-3 border">
+                              <div className="flex justify-between items-start mb-2">
+                                <span className={`text-xs px-2 py-1 rounded-[2px] ${
+                                  report.status === "verified" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                                }`}>
+                                  {report.status}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {report.createdAt?.toDate?.()?.toLocaleDateString() || "N/A"}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-700 mb-2">{report.description}</p>
+                              <div className="flex flex-wrap gap-1">
+                                {report.symptoms?.map((symptom: string, idx: number) => (
+                                  <span key={idx} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-[2px]">
+                                    {symptom}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                          {hasMore && (
+                            <button
+                              onClick={() => setVisibleReports(prev => prev + 10)}
+                              className="w-full py-2 text-sm text-[#1B365D] hover:bg-gray-50 rounded-[2px] border border-dashed border-gray-300 cursor-pointer"
+                            >
+                              Load More ({filteredReports.length - visibleReports} remaining)
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-sm">No symptom reports available</p>
+                  <p className="text-gray-500 text-sm">No {reportTab === 'self' ? 'self-reported' : 'observed'} symptom reports available</p>
                 )}
               </div>
 
