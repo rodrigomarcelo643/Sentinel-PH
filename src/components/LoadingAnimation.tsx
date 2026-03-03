@@ -51,7 +51,7 @@ export default function LoadingAnimation() {
             className="flex justify-center items-center"
           >
             <img
-              src="/sentinel_ph_logo.png"
+              src="/transparent_sentinel_ph_logo.png"
               alt="SentinelPH"
               className="h-32 md:h-40 w-auto "
             />
