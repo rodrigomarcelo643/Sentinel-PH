@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import LandingPage from "@/pages/public/LandingPage";
 import PricingPage from "@/pages/public/PricingPage";
@@ -19,36 +19,29 @@ import Municipalities from "@/pages/admin/Municipalities";
 import BHWs from "@/pages/admin/BHWs";
 import Sentinels from "@/pages/admin/Sentinels";
 import Map from "@/pages/admin/Map";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AppRoutes() {
+  const { user } = useAuth();
+  
   return (
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
-      <Route
-        path="/about"
-        element={<div className="pt-20 p-8">About Page</div>}
-      />
+      <Route path="/about" element={<div className="pt-20 p-8">About Page</div>} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/map" element={<div className="pt-20 p-8">Map Page</div>} />
-      <Route
-        path="/region/:regionId"
-        element={<div className="pt-20 p-8">Region Page</div>}
-      />
-      <Route
-        path="/signin"
-        element={<div className="pt-20 p-8">Sign In Page</div>}
-      />
+      <Route path="/region/:regionId" element={<div className="pt-20 p-8">Region Page</div>} />
+      <Route path="/signin" element={<div className="pt-20 p-8">Sign In Page</div>} />
       <Route path="/register" element={<RegisterPage />} />
+      
       {/* BHW Routes */}
-      <Route
-        path="/bhw"
-        element={
-          <ProtectedRoute requiredRole="bhw">
-            <BhwLayout />
-          </ProtectedRoute>
-        }
-      >
+      <Route path="/bhw" element={
+        <ProtectedRoute requiredRole="bhw">
+          <BhwLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<BhwDashboard />} />
         <Route path="sentinels" element={<BhwSentinels />} />
         <Route path="qr-scanner" element={<QRScanner />} />
@@ -59,15 +52,14 @@ export default function AppRoutes() {
         <Route path="announcements" element={<Announcements />} />
         <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>} />
       </Route>
+      
       {/* Admin Routes */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout />
-          </ProtectedRoute>
-         }
-      >
+      <Route path="/admin" element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="regions" element={<Regions />} />
         <Route path="municipalities" element={<Municipalities />} />
@@ -80,15 +72,15 @@ export default function AppRoutes() {
         <Route path="map" element={<Map />} />
         <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>} />
       </Route>
-      {/* Protected Routes */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <div className="pt-20 p-8">Dashboard (Protected)</div>
-          </ProtectedRoute>
-        }
-      />
+      
+      {/* Dashboard redirect based on role */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          {user?.role === "admin" ? <Navigate to="/admin/dashboard" replace /> :
+           user?.role === "bhw" ? <Navigate to="/bhw/dashboard" replace /> :
+           <div className="pt-20 p-8">Dashboard (Protected)</div>}
+        </ProtectedRoute>
+      } />
     </Routes>
   );
 }
