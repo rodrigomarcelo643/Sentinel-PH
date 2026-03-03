@@ -30,7 +30,9 @@ The Philippines has no shortage of health data—it has a shortage of the right 
 
 ## 💡 Solution
 
-SentinelPH builds a community intelligence network that trains everyday Filipinos—sari-sari store owners, tricycle drivers, market vendors, traditional hilots, and religious leaders—to become the first line of outbreak detection in their neighborhoods. Each resident receives a unique QR code that health workers, partner clinics, and authorized healthcare providers can scan to instantly access complete health profiles, symptom history, and real-time health trends—transforming weeks of manual processing into seconds of digital intelligence with built-in safeguards that separate genuine signals from noise and misinformation.
+SentinelPH builds a community intelligence network that trains everyday Filipinos—sari-sari store owners, tricycle drivers, market vendors, traditional hilots, and religious leaders—to become the first line of outbreak detection in their neighborhoods. Each resident receives a unique QR code that health workers, partner clinics, and authorized healthcare providers can scan to instantly access complete health profiles, self-reported symptoms, verified health trends, and real-time pattern analysis—transforming weeks of manual processing into seconds of digital intelligence with built-in safeguards that separate genuine signals from noise and misinformation.
+
+**Digital QR Health Passport:** When residents visit potential healthcare partners (clinics, hospitals, pharmacies), their QR code provides instant access to all self-reported symptoms, verified health trends, and pattern analysis—eliminating repetitive questioning and enabling faster, more informed medical responses based on comprehensive health data rather than starting from scratch each visit.
 
 ## 👥 Target Users
 
