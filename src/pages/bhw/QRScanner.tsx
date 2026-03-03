@@ -4,7 +4,7 @@ import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp
 import { db } from "@/lib/firebase";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, X, User, MapPin, FileText, Activity, CheckCircle, Clock, Trash2, Scan, ChevronLeft, ChevronRight, Brain, Zap } from "lucide-react";
+import { Camera, X, User, MapPin, FileText, Activity, CheckCircle, Clock, Trash2, Scan, ChevronLeft, ChevronRight, Brain, Zap, Eye, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQRSync } from "@/hooks/useQRSync";
@@ -40,6 +40,20 @@ interface QRCodeData {
   updatedAt: any;
 }
 
+interface SavedAnalysis {
+  id: string;
+  patientUid: string;
+  patientName: string;
+  patientLocation: string;
+  analysisResult: any;
+  selfReportsCount: number;
+  observedReportsCount: number;
+  totalReports: number;
+  analyzedBy: string;
+  createdAt: any;
+  reportDate: string;
+}
+
 interface Visit {
   id: string;
   residentName: string;
@@ -62,6 +76,10 @@ export default function QRScanner() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmDialog, setConfirmDialog] = useState<{ show: boolean; type: 'visit' | 'delete'; id?: string }>({ show: false, type: 'visit' });
+  const [activeTab, setActiveTab] = useState<'visits' | 'analyses'>('visits');
+  const [savedAnalyses, setSavedAnalyses] = useState<SavedAnalysis[]>([]);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<SavedAnalysis | null>(null);
+  const [analysisViewOpen, setAnalysisViewOpen] = useState(false);
   const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -71,6 +89,7 @@ export default function QRScanner() {
 
   useEffect(() => {
     fetchVisits();
+    fetchSavedAnalyses();
   }, []);
 
   useEffect(() => {
@@ -270,29 +289,69 @@ export default function QRScanner() {
       }
     } else if (confirmDialog.type === 'delete' && confirmDialog.id) {
       try {
-        await deleteDoc(doc(db, 'residentVisits', confirmDialog.id));
-        
-        setConfirmDialog({ show: false, type: 'visit' });
-        
-        setTimeout(() => {
-          toast({
-            title: "Visit Deleted",
-            description: "Visit record has been removed.",
-          });
-        }, 100);
-        
-        fetchVisits();
+        if (confirmDialog.id.startsWith('analysis_')) {
+          // Delete analysis
+          const analysisId = confirmDialog.id.replace('analysis_', '');
+          await deleteDoc(doc(db, 'aiAnalysisReports', analysisId));
+          
+          setConfirmDialog({ show: false, type: 'visit' });
+          
+          setTimeout(() => {
+            toast({
+              title: "Analysis Deleted",
+              description: "AI analysis report has been removed.",
+            });
+          }, 100);
+          
+          fetchSavedAnalyses();
+        } else {
+          // Delete visit
+          await deleteDoc(doc(db, 'residentVisits', confirmDialog.id));
+          
+          setConfirmDialog({ show: false, type: 'visit' });
+          
+          setTimeout(() => {
+            toast({
+              title: "Visit Deleted",
+              description: "Visit record has been removed.",
+            });
+          }, 100);
+          
+          fetchVisits();
+        }
       } catch (error) {
-        console.error('Error deleting visit:', error);
+        console.error('Error deleting record:', error);
         toast({
           title: "Error",
-          description: "Failed to delete visit.",
+          description: "Failed to delete record.",
           variant: "destructive",
         });
       }
     }
   };
 
+  const fetchSavedAnalyses = async () => {
+    try {
+      const analysesRef = collection(db, 'aiAnalysisReports');
+      const q = query(analysesRef, orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as SavedAnalysis[];
+      setSavedAnalyses(data);
+    } catch (error) {
+      console.error('Error fetching saved analyses:', error);
+    }
+  };
+
+  const handleDeleteAnalysis = async (analysisId: string) => {
+    setConfirmDialog({ show: true, type: 'delete', id: analysisId });
+  };
+  const viewSavedAnalysis = (analysis: SavedAnalysis) => {
+    setSelectedAnalysis(analysis);
+    setAnalysisViewOpen(true);
+  };
   const handleAIAnalysis = () => {
     if (scannedData && (scannedData.symptomReports.length > 0)) {
       setAiAnalysisOpen(true);
@@ -338,6 +397,33 @@ export default function QRScanner() {
             </div>
           </div>
 
+          {/* Tab Navigation */}
+          <div className="mb-6">
+            <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit">
+              <button
+                onClick={() => setActiveTab('visits')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'visits'
+                    ? 'bg-white text-[#1B365D] shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Clock className="mr-2 h-4 w-4 inline" />
+                Recent Visits
+              </button>
+              <button
+                onClick={() => setActiveTab('analyses')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'analyses'
+                    ? 'bg-white text-[#1B365D] shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Brain className="mr-2 h-4 w-4 inline" />
+                Saved Analyses
+              </button>
+            </div>
+          </div>
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-[2px] p-4 border border-blue-100">
@@ -346,8 +432,8 @@ export default function QRScanner() {
                   <Clock className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total Visits</p>
-                  <p className="text-2xl font-bold text-gray-900">{visits.length}</p>
+                  <p className="text-sm text-gray-600">Total {activeTab === 'visits' ? 'Visits' : 'Analyses'}</p>
+                  <p className="text-2xl font-bold text-gray-900">{activeTab === 'visits' ? visits.length : savedAnalyses.length}</p>
                 </div>
               </div>
             </div>
@@ -357,9 +443,17 @@ export default function QRScanner() {
                   <CheckCircle className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Today</p>
+                  <p className="text-sm text-gray-600">{activeTab === 'visits' ? 'Today' : 'This Week'}</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {visits.filter(v => v.visitDate?.toDate?.()?.toDateString() === new Date().toDateString()).length}
+                    {activeTab === 'visits' 
+                      ? visits.filter(v => v.visitDate?.toDate?.()?.toDateString() === new Date().toDateString()).length
+                      : savedAnalyses.filter(a => {
+                          const analysisDate = a.createdAt?.toDate?.() || new Date(a.reportDate);
+                          const weekAgo = new Date();
+                          weekAgo.setDate(weekAgo.getDate() - 7);
+                          return analysisDate >= weekAgo;
+                        }).length
+                    }
                   </p>
                 </div>
               </div>
@@ -372,106 +466,213 @@ export default function QRScanner() {
                 <div>
                   <p className="text-sm text-gray-600">Unique Residents</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {new Set(visits.map(v => v.qrId)).size}
+                    {activeTab === 'visits' 
+                      ? new Set(visits.map(v => v.qrId)).size
+                      : new Set(savedAnalyses.map(a => a.patientUid)).size
+                    }
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Visits Table */}
-          <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex items-center gap-2">
-              <Clock className="h-5 w-5 text-[#1B365D]" />
-              <h2 className="text-lg font-semibold text-gray-900">Recent Visits</h2>
-            </div>
-            
-            {loading ? (
-              <div className="p-12 text-center">
-                <div className="w-16 h-16 border-4 border-gray-200 border-t-[#1B365D] rounded-full animate-spin mx-auto"></div>
+          {/* Content based on active tab */}
+          {activeTab === 'visits' ? (
+            /* Visits Table */
+            <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-4 border-b border-gray-200 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-[#1B365D]" />
+                <h2 className="text-lg font-semibold text-gray-900">Recent Visits</h2>
               </div>
-            ) : visits.length === 0 ? (
-              <div className="p-12 text-center">
-                <Camera className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No Visits Yet</h3>
-                <p className="text-gray-600">Start scanning QR codes to track resident visits.</p>
-              </div>
-            ) : (
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Resident Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      QR ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Visit Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Scanned By
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {paginatedVisits.map((visit, index) => (
-                    <tr key={visit.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          {visit.selfieUrl ? (
-                            <img 
-                              src={visit.selfieUrl} 
-                              alt={visit.residentName}
-                              className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                              <User className="h-5 w-5 text-gray-500" />
-                            </div>
-                          )}
-                          <span className="text-sm font-medium text-gray-900">{visit.residentName}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-mono text-gray-700">
-                        {visit.qrId}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {visit.visitDate?.toDate?.()?.toLocaleString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        }) || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
-                        {visit.scannedBy}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleDeleteVisit(visit.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-[2px] transition-colors cursor-pointer"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </td>
+              
+              {loading ? (
+                <div className="p-12 text-center">
+                  <div className="w-16 h-16 border-4 border-gray-200 border-t-[#1B365D] rounded-full animate-spin mx-auto"></div>
+                </div>
+              ) : visits.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Camera className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">No Visits Yet</h3>
+                  <p className="text-gray-600">Start scanning QR codes to track resident visits.</p>
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Resident Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        QR ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Visit Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Scanned By
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {paginatedVisits.map((visit, index) => (
+                      <tr key={visit.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {visit.selfieUrl ? (
+                              <img 
+                                src={visit.selfieUrl} 
+                                alt={visit.residentName}
+                                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                <User className="h-5 w-5 text-gray-500" />
+                              </div>
+                            )}
+                            <span className="text-sm font-medium text-gray-900">{visit.residentName}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm font-mono text-gray-700">
+                          {visit.qrId}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {visit.visitDate?.toDate?.()?.toLocaleString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) || 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {visit.scannedBy}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => handleDeleteVisit(visit.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-[2px] transition-colors cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          ) : (
+            /* Saved Analyses Table */
+            <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-4 border-b border-gray-200 flex items-center gap-2">
+                <Brain className="h-5 w-5 text-[#1B365D]" />
+                <h2 className="text-lg font-semibold text-gray-900">Saved AI Analyses</h2>
+              </div>
+              
+              {loading ? (
+                <div className="p-12 text-center">
+                  <div className="w-16 h-16 border-4 border-gray-200 border-t-[#1B365D] rounded-full animate-spin mx-auto"></div>
+                </div>
+              ) : savedAnalyses.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Brain className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">No Analyses Yet</h3>
+                  <p className="text-gray-600">AI analyses will appear here after scanning and analyzing resident data.</p>
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Patient Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Risk Level
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Reports
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Analysis Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Analyzed By
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {savedAnalyses.slice(startIndex, startIndex + itemsPerPage).map((analysis) => (
+                      <tr key={analysis.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div>
+                            <span className="text-sm font-medium text-gray-900">{analysis.patientName}</span>
+                            <p className="text-xs text-gray-500">{analysis.patientLocation}</p>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            analysis.analysisResult.riskLevel === 'critical' ? 'bg-red-100 text-red-800' :
+                            analysis.analysisResult.riskLevel === 'high' ? 'bg-orange-100 text-orange-800' :
+                            analysis.analysisResult.riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {analysis.analysisResult.riskLevel.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          <div className="flex gap-2">
+                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                              {analysis.selfReportsCount} Self
+                            </span>
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                              {analysis.observedReportsCount} Observed
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {analysis.createdAt?.toDate?.()?.toLocaleDateString() || analysis.reportDate}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          {analysis.analyzedBy}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => viewSavedAnalysis(analysis)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-[2px] transition-colors cursor-pointer"
+                              title="View Analysis"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAnalysis(`analysis_${analysis.id}`)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-[2px] transition-colors cursor-pointer"
+                              title="Delete Analysis"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
 
           {/* Pagination */}
-          {!loading && visits.length > 0 && (
+          {!loading && (activeTab === 'visits' ? visits.length > 0 : savedAnalyses.length > 0) && (
             <div className="px-6 py-4 border-t flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="text-sm text-gray-600">
-                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, visits.length)} of {visits.length} visits
+                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, activeTab === 'visits' ? visits.length : savedAnalyses.length)} of {activeTab === 'visits' ? visits.length : savedAnalyses.length} {activeTab === 'visits' ? 'visits' : 'analyses'}
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -484,7 +685,7 @@ export default function QRScanner() {
                   <ChevronLeft className="h-4 w-4" />
                   Prev
                 </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
+                {Array.from({ length: Math.ceil((activeTab === 'visits' ? visits.length : savedAnalyses.length) / itemsPerPage) }, (_, i) => i + 1).map(number => (
                   <Button
                     key={number}
                     variant={currentPage === number ? "default" : "outline"}
@@ -498,8 +699,8 @@ export default function QRScanner() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil((activeTab === 'visits' ? visits.length : savedAnalyses.length) / itemsPerPage), prev + 1))}
+                  disabled={currentPage === Math.ceil((activeTab === 'visits' ? visits.length : savedAnalyses.length) / itemsPerPage)}
                   className="cursor-pointer"
                 >
                   Next
@@ -998,6 +1199,8 @@ export default function QRScanner() {
             <p className="text-gray-600 mb-6">
               {confirmDialog.type === 'visit'
                 ? 'Are you sure you want to mark this as a resident visit?'
+                : confirmDialog.id?.startsWith('analysis_')
+                ? 'Are you sure you want to delete this AI analysis report? This action cannot be undone.'
                 : 'Are you sure you want to delete this visit record? This action cannot be undone.'}
             </p>
             <div className="flex gap-3 justify-end">
@@ -1030,9 +1233,232 @@ export default function QRScanner() {
           observedReports={scannedData.symptomReports.filter(r => r.reportType === 'observed')}
           patientInfo={{
             name: `${scannedData.userData.firstName} ${scannedData.userData.lastName}`,
+            uid: scannedData.userData.uid,
             location: `${scannedData.userData.address.barangay}, ${scannedData.userData.address.municipality}`
           }}
         />
+      )}
+
+      {/* Saved Analysis View Modal */}
+      {selectedAnalysis && (
+        <Dialog open={analysisViewOpen} onOpenChange={setAnalysisViewOpen}>
+          <DialogContent className="!max-w-[95vw] !w-[95vw] max-h-[90vh] overflow-y-auto p-0">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
+                  <History className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-bold">Saved AI Analysis</DialogTitle>
+                  <p className="text-sm text-gray-600">
+                    Patient: {selectedAnalysis.patientName} | 
+                    Date: {selectedAnalysis.createdAt?.toDate?.()?.toLocaleDateString() || selectedAnalysis.reportDate}
+                  </p>
+                </div>
+              </div>
+              <Button onClick={() => setAnalysisViewOpen(false)} variant="ghost" size="icon">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="p-6">
+              {/* Display saved analysis results */}
+              <div className="space-y-6">
+                {/* Risk Assessment Header */}
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-gray-900">Risk Assessment</h3>
+                    <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                      selectedAnalysis.analysisResult.riskLevel === 'critical' ? 'bg-red-100 text-red-800' :
+                      selectedAnalysis.analysisResult.riskLevel === 'high' ? 'bg-orange-100 text-orange-800' :
+                      selectedAnalysis.analysisResult.riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {selectedAnalysis.analysisResult.riskLevel.toUpperCase()} RISK
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-900 mb-1">
+                        {selectedAnalysis.analysisResult.riskPercentage}%
+                      </div>
+                      <p className="text-sm text-gray-600">Risk Level</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-600 mb-1">
+                        {selectedAnalysis.selfReportsCount}
+                      </div>
+                      <p className="text-sm text-gray-600">Self Reports</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600 mb-1">
+                        {selectedAnalysis.observedReportsCount}
+                      </div>
+                      <p className="text-sm text-gray-600">Observed</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-purple-600 mb-1">
+                        {selectedAnalysis.totalReports}
+                      </div>
+                      <p className="text-sm text-gray-600">Total Reports</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Two Column Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-6">
+                    {/* Potential Conditions */}
+                    {selectedAnalysis.analysisResult.potentialConditions && selectedAnalysis.analysisResult.potentialConditions.length > 0 && (
+                      <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Activity className="h-5 w-5 text-red-500" />
+                          <h4 className="font-semibold text-gray-900">Potential Conditions</h4>
+                        </div>
+                        <div className="space-y-3">
+                          {selectedAnalysis.analysisResult.potentialConditions.map((condition: any, index: number) => (
+                            <div key={index} className="border rounded-lg p-3">
+                              <div className="flex justify-between items-start mb-2">
+                                <h5 className="font-medium text-gray-900">{condition.condition}</h5>
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  condition.severity === 'severe' ? 'bg-red-100 text-red-800' :
+                                  condition.severity === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-green-100 text-green-800'
+                                }`}>
+                                  {condition.severity}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all"
+                                  style={{ width: `${condition.probability}%` }}
+                                ></div>
+                              </div>
+                              <p className="text-sm text-gray-600 mt-1">{condition.probability}% probability</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Recommendations */}
+                    {selectedAnalysis.analysisResult.recommendations && selectedAnalysis.analysisResult.recommendations.length > 0 && (
+                      <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <CheckCircle className="h-5 w-5 text-blue-500" />
+                          <h4 className="font-semibold text-gray-900">Recommendations</h4>
+                        </div>
+                        <div className="space-y-3">
+                          {selectedAnalysis.analysisResult.recommendations
+                            .sort((a: any, b: any) => a.priority - b.priority)
+                            .map((rec: any, index: number) => (
+                            <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
+                              <div className={`p-1 rounded-full ${
+                                rec.type === 'immediate' ? 'bg-red-100' :
+                                rec.type === 'followup' ? 'bg-yellow-100' : 'bg-blue-100'
+                              }`}>
+                                {rec.type === 'immediate' ? <Clock className="h-4 w-4 text-red-600" /> :
+                                 rec.type === 'followup' ? <Activity className="h-4 w-4 text-yellow-600" /> :
+                                 <CheckCircle className="h-4 w-4 text-blue-600" />}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                    rec.type === 'immediate' ? 'bg-red-100 text-red-800' :
+                                    rec.type === 'followup' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-blue-100 text-blue-800'
+                                  }`}>
+                                    {rec.type}
+                                  </span>
+                                  <span className="text-xs text-gray-500">Priority {rec.priority}</span>
+                                </div>
+                                <p className="text-sm text-gray-700">{rec.action}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-6">
+                    {/* Specialist Recommendations */}
+                    {selectedAnalysis.analysisResult.specialistRecommendations && selectedAnalysis.analysisResult.specialistRecommendations.length > 0 && (
+                      <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <User className="h-5 w-5 text-green-500" />
+                          <h4 className="font-semibold text-gray-900">Specialist Recommendations</h4>
+                        </div>
+                        <div className="space-y-3">
+                          {selectedAnalysis.analysisResult.specialistRecommendations.map((spec: any, index: number) => (
+                            <div key={index} className="border rounded-lg p-4">
+                              <div className="flex justify-between items-start mb-2">
+                                <h5 className="font-medium text-gray-900">{spec.specialty}</h5>
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  spec.urgency === 'emergency' ? 'bg-red-100 text-red-800' :
+                                  spec.urgency === 'urgent' ? 'bg-orange-100 text-orange-800' :
+                                  'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {spec.urgency}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-600">{spec.reason}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Health Trends */}
+                    {selectedAnalysis.analysisResult.trends && (
+                      <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Activity className="h-5 w-5 text-purple-500" />
+                          <h4 className="font-semibold text-gray-900">Health Trends</h4>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-full ${
+                              selectedAnalysis.analysisResult.trends.improving ? 'bg-green-100' :
+                              selectedAnalysis.analysisResult.trends.worsening ? 'bg-red-100' :
+                              'bg-gray-100'
+                            }`}>
+                              {selectedAnalysis.analysisResult.trends.improving ? 
+                                <CheckCircle className="h-4 w-4 text-green-600" /> :
+                                selectedAnalysis.analysisResult.trends.worsening ? 
+                                <X className="h-4 w-4 text-red-600" /> :
+                                <Clock className="h-4 w-4 text-gray-600" />
+                              }
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {selectedAnalysis.analysisResult.trends.improving ? 'Improving' :
+                                 selectedAnalysis.analysisResult.trends.worsening ? 'Worsening' :
+                                 'Stable'}
+                              </p>
+                              <p className="text-sm text-gray-600">{selectedAnalysis.analysisResult.trends.pattern}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* AI Summary */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100 p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Brain className="h-5 w-5 text-blue-600" />
+                    <h4 className="font-semibold text-gray-900">AI Summary</h4>
+                  </div>
+                  <p className="text-gray-700 leading-relaxed">{selectedAnalysis.analysisResult.summary}</p>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Image Modal */}
