@@ -41,61 +41,74 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const USER_STORAGE_KEY = 'sentinelph_user';
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    // Initialize from localStorage
+    try {
+      const stored = localStorage.getItem(USER_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
+  const fetchUserData = async (firebaseUser: FirebaseUser): Promise<any> => {
+    try {
+      const collections = [
+        { ref: collection(db, "users"), priority: 1 },
+        { ref: collection(db, "registrations"), priority: 2 },
+        { ref: collection(db, "admins"), priority: 3 }
+      ];
+
+      for (const { ref } of collections) {
+        const q = query(ref, where("uid", "==", firebaseUser.uid));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          return snapshot.docs[0].data();
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      return null;
+    }
+  };
+
+  const updateUser = (firebaseUser: FirebaseUser | null, userData: any = null) => {
+    if (firebaseUser) {
+      const newUser: User = {
+        email: firebaseUser.email,
+        uid: firebaseUser.uid,
+        displayName: userData?.firstName && userData?.lastName 
+          ? `${userData.firstName} ${userData.lastName}` 
+          : firebaseUser.displayName,
+        role: userData?.role,
+        firstName: userData?.firstName,
+        lastName: userData?.lastName,
+        middleInitial: userData?.middleInitial,
+        documents: userData?.documents,
+        address: userData?.address,
+      };
+      setUser(newUser);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+    } else {
+      setUser(null);
+      localStorage.removeItem(USER_STORAGE_KEY);
+    }
+  };
+
   useEffect(() => {
-    // Set persistence to LOCAL (remember user)
     setPersistence(auth, browserLocalPersistence);
     
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Fetch role and user data from Firestore
-        let userData: any = null;
-        try {
-          const usersRef = collection(db, "users");
-          const userQuery = query(usersRef, where("uid", "==", firebaseUser.uid));
-          const userSnapshot = await getDocs(userQuery);
-          
-          if (!userSnapshot.empty) {
-            userData = userSnapshot.docs[0].data();
-          } else {
-            const registrationsRef = collection(db, "registrations");
-            const regQuery = query(registrationsRef, where("uid", "==", firebaseUser.uid));
-            const regSnapshot = await getDocs(regQuery);
-            
-            if (!regSnapshot.empty) {
-              userData = regSnapshot.docs[0].data();
-            } else {
-              const adminsRef = collection(db, "admins");
-              const adminQuery = query(adminsRef, where("uid", "==", firebaseUser.uid));
-              const adminSnapshot = await getDocs(adminQuery);
-              
-              if (!adminSnapshot.empty) {
-                userData = adminSnapshot.docs[0].data();
-              }
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-        
-        setUser({
-          email: firebaseUser.email,
-          uid: firebaseUser.uid,
-          displayName: userData?.firstName && userData?.lastName 
-            ? `${userData.firstName} ${userData.lastName}` 
-            : firebaseUser.displayName,
-          role: userData?.role,
-          firstName: userData?.firstName,
-          lastName: userData?.lastName,
-          middleInitial: userData?.middleInitial,
-          documents: userData?.documents,
-          address: userData?.address,
-        });
+        const userData = await fetchUserData(firebaseUser);
+        updateUser(firebaseUser, userData);
       } else {
-        setUser(null);
+        updateUser(null);
       }
       setLoading(false);
     });
@@ -105,50 +118,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    
-    // Fetch user data from Firestore
-    let userData: any = null;
-    try {
-      const usersRef = collection(db, "users");
-      const userQuery = query(usersRef, where("uid", "==", userCredential.user.uid));
-      const userSnapshot = await getDocs(userQuery);
-      
-      if (!userSnapshot.empty) {
-        userData = userSnapshot.docs[0].data();
-      } else {
-        const registrationsRef = collection(db, "registrations");
-        const regQuery = query(registrationsRef, where("uid", "==", userCredential.user.uid));
-        const regSnapshot = await getDocs(regQuery);
-        
-        if (!regSnapshot.empty) {
-          userData = regSnapshot.docs[0].data();
-        } else {
-          const adminsRef = collection(db, "admins");
-          const adminQuery = query(adminsRef, where("uid", "==", userCredential.user.uid));
-          const adminSnapshot = await getDocs(adminQuery);
-          
-          if (!adminSnapshot.empty) {
-            userData = adminSnapshot.docs[0].data();
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-    
-    setUser({
-      email: userCredential.user.email,
-      uid: userCredential.user.uid,
-      displayName: userData?.firstName && userData?.lastName 
-        ? `${userData.firstName} ${userData.lastName}` 
-        : userCredential.user.displayName,
-      role: userData?.role,
-      firstName: userData?.firstName,
-      lastName: userData?.lastName,
-      middleInitial: userData?.middleInitial,
-      documents: userData?.documents,
-      address: userData?.address,
-    });
+    const userData = await fetchUserData(userCredential.user);
+    updateUser(userCredential.user, userData);
   };
 
   const signup = async (email: string, password: string) => {
@@ -162,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await signOut(auth);
-    setUser(null);
+    updateUser(null);
   };
 
   return (
