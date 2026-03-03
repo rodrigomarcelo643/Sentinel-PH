@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Search, ChevronLeft, ChevronRight, FileText, MapPin, Calendar, ChevronUp, ChevronDown, Eye, CheckCircle, XCircle, MoreVertical } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, FileText, MapPin, Calendar, ChevronUp, ChevronDown, Eye, CheckCircle, XCircle, MoreVertical, Brain, AlertTriangle } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { collection, getDocs, query, orderBy, where, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { patternAnalysisService, type PatternAnalysisResult } from '@/services/patternAnalysisService';
+import { PatternAnalysisModal } from '@/components/ui/PatternAnalysisModal';
+import { useToast } from '@/hooks/use-toast';
 
 interface SymptomReport {
   id: string;
@@ -46,6 +49,12 @@ export default function BhwReports() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [reportTypeFilter, setReportTypeFilter] = useState<string>('all');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<PatternAnalysisResult | null>(null);
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
+  const [isOutbreakDialogOpen, setIsOutbreakDialogOpen] = useState(false);
+  const [outbreakSeverity, setOutbreakSeverity] = useState<'low' | 'medium' | 'high'>('medium');
+  const { toast } = useToast();
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -139,6 +148,141 @@ export default function BhwReports() {
     }
   };
 
+  const handleMarkAsOutbreak = async (severity: 'low' | 'medium' | 'high') => {
+    if (!selectedReport) return;
+    
+    try {
+      const { addDoc, collection } = await import('firebase/firestore');
+      const outbreakAlert = {
+        id: `outbreak_${Date.now()}`,
+        title: `${severity.toUpperCase()} Risk Outbreak Alert - ${selectedReport.symptoms[0] || 'Unknown'}`,
+        riskLevel: severity.toUpperCase(),
+        riskScore: severity === 'high' ? 8 : severity === 'medium' ? 5 : 3,
+        totalReports: 1,
+        affectedResidents: 1,
+        clusters: 1,
+        topDiseases: [selectedReport.symptoms[0] || 'Unknown Disease'],
+        recommendations: [
+          'Investigate additional cases in the area',
+          'Conduct contact tracing',
+          'Monitor for similar symptoms',
+          'Alert local health authorities'
+        ],
+        createdAt: new Date(),
+        status: 'pending',
+        reportId: selectedReport.id,
+        location: selectedReport.barangay || selectedReport.location,
+        symptoms: selectedReport.symptoms
+      };
+
+      await addDoc(collection(db, 'outbreakAlerts'), outbreakAlert);
+      
+      toast({
+        title: "Outbreak Alert Created",
+        description: `Report marked as ${severity} risk outbreak and saved to outbreak response.`,
+        variant: "default"
+      });
+      
+      setIsOutbreakDialogOpen(false);
+      setSelectedReport(null);
+    } catch (error) {
+      console.error('Error creating outbreak alert:', error);
+      toast({
+        title: "Failed to Create Alert",
+        description: "Could not create outbreak alert. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSaveOutbreakAlert = async (analysis: PatternAnalysisResult) => {
+    try {
+      const { addDoc, collection } = await import('firebase/firestore');
+      const outbreakAlert = {
+        id: `outbreak_${Date.now()}`,
+        title: `${analysis.outbreakRisk} Risk Outbreak Alert`,
+        riskLevel: analysis.outbreakRisk,
+        riskScore: analysis.riskScore,
+        totalReports: analysis.totalReports,
+        affectedResidents: analysis.affectedResidents,
+        clusters: analysis.clusters.length,
+        topDiseases: analysis.diseases.slice(0, 3).map(d => d.disease),
+        recommendations: analysis.aiRecommendations || [],
+        createdAt: new Date(),
+        status: 'pending',
+        analysisData: analysis
+      };
+
+      await addDoc(collection(db, 'outbreakAlerts'), outbreakAlert);
+      
+      toast({
+        title: "Outbreak Alert Saved",
+        description: "Alert has been saved to outbreak response system.",
+        variant: "default"
+      });
+      
+      setIsAnalysisModalOpen(false);
+    } catch (error) {
+      console.error('Error saving outbreak alert:', error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save outbreak alert. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePatternAnalysis = async () => {
+    try {
+      setIsAnalyzing(true);
+      setIsAnalysisModalOpen(true);
+      
+      const analysisData = reports
+        .filter(r => r.status === 'verified')
+        .map(report => ({
+          id: report.id,
+          symptoms: report.symptoms,
+          location: {
+            lat: report.latitude,
+            lng: report.longitude
+          },
+          timestamp: report.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+          barangay: report.barangay || 'Unknown',
+          municipality: report.location || 'Unknown',
+          residentId: report.userId
+        }));
+
+      if (analysisData.length === 0) {
+        toast({
+          title: "No Data Available",
+          description: "No verified reports found for pattern analysis.",
+          variant: "destructive"
+        });
+        setIsAnalysisModalOpen(false);
+        return;
+      }
+
+      const result = await patternAnalysisService.analyzePatterns(analysisData);
+      setAnalysisResult(result);
+      
+      toast({
+        title: "Pattern Analysis Complete",
+        description: `Analysis completed. Outbreak risk: ${result.outbreakRisk}`,
+        variant: result.outbreakRisk === 'HIGH' || result.outbreakRisk === 'CRITICAL' ? "destructive" : "default"
+      });
+    } catch (error) {
+      console.error('Error analyzing patterns:', error);
+      toast({
+        title: "Analysis Failed",
+        description: "Failed to analyze patterns. Please try again.",
+        variant: "destructive"
+      });
+      setIsAnalysisModalOpen(false);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const filteredReports = useMemo(() => {
     let filtered = reports;
     
@@ -193,84 +337,6 @@ export default function BhwReports() {
       minute: '2-digit'
     });
   };
-
-  if (loading) {
-    return (
-      <div className="p-2 bg-gray-50 min-h-screen">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6"
-        >
-          <h1 className="text-3xl font-bold text-[#1B365D] mb-2">Symptom Reports</h1>
-          <p className="text-gray-600">Review and manage community health reports</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white rounded-xl shadow-sm border border-gray-100"
-        >
-          <div className="p-4 border-b">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-50 p-2 rounded-lg">
-                <FileText className="h-6 w-6 text-[#1B365D]" />
-              </div>
-              <div>
-                <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-4 w-24 bg-gray-100 rounded animate-pulse mt-1"></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reporter</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symptoms</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {[...Array(5)].map((_, i) => (
-                  <tr key={i}>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-40 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-36 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   const SortIcon = ({ field }: { field: string }) => {
     if (sortField !== field) {
@@ -346,6 +412,23 @@ export default function BhwReports() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <Button
+              onClick={handlePatternAnalysis}
+              disabled={isAnalyzing || reports.filter(r => r.status === 'verified').length === 0}
+              className="bg-purple-600 hover:bg-purple-700 text-white order-first sm:order-none"
+            >
+              {isAnalyzing ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Brain className="h-4 w-4 mr-2" />
+                  Analyze Patterns
+                </>
+              )}
+            </Button>
             <Select value={reportTypeFilter} onValueChange={setReportTypeFilter}>
               <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="Report Type" />
@@ -508,6 +591,17 @@ export default function BhwReports() {
                             >
                               <XCircle className="h-4 w-4 mr-2" />
                               Reject Report
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedReport(report);
+                                setIsOutbreakDialogOpen(true);
+                              }}
+                              className="text-orange-600"
+                            >
+                              <AlertTriangle className="h-4 w-4 mr-2" />
+                              Mark as Outbreak
                             </DropdownMenuItem>
                           </>
                         )}
@@ -692,6 +786,82 @@ export default function BhwReports() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={isOutbreakDialogOpen} onOpenChange={setIsOutbreakDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark as Outbreak</AlertDialogTitle>
+            <AlertDialogDescription>
+              Mark this report from <strong>{selectedReport?.userName}</strong> as an outbreak alert.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <label className="text-sm font-medium text-gray-700 mb-2 block">
+              Outbreak Severity Level
+            </label>
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="severity"
+                  value="low"
+                  checked={outbreakSeverity === 'low'}
+                  onChange={(e) => setOutbreakSeverity(e.target.value as 'low' | 'medium' | 'high')}
+                  className="text-green-600"
+                />
+                <span className="text-sm text-green-600 font-medium">LOW - Isolated case requiring monitoring</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="severity"
+                  value="medium"
+                  checked={outbreakSeverity === 'medium'}
+                  onChange={(e) => setOutbreakSeverity(e.target.value as 'low' | 'medium' | 'high')}
+                  className="text-yellow-600"
+                />
+                <span className="text-sm text-yellow-600 font-medium">MEDIUM - Potential outbreak requiring investigation</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="severity"
+                  value="high"
+                  checked={outbreakSeverity === 'high'}
+                  onChange={(e) => setOutbreakSeverity(e.target.value as 'low' | 'medium' | 'high')}
+                  className="text-red-600"
+                />
+                <span className="text-sm text-red-600 font-medium">HIGH - Confirmed outbreak requiring immediate response</span>
+              </label>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setOutbreakSeverity('medium')}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => handleMarkAsOutbreak(outbreakSeverity)}
+              className={`${
+                outbreakSeverity === 'high' ? 'bg-red-600 hover:bg-red-700' :
+                outbreakSeverity === 'medium' ? 'bg-yellow-600 hover:bg-yellow-700' :
+                'bg-green-600 hover:bg-green-700'
+              }`}
+            >
+              Create {outbreakSeverity.toUpperCase()} Alert
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <PatternAnalysisModal
+        isOpen={isAnalysisModalOpen}
+        onClose={() => {
+          setIsAnalysisModalOpen(false);
+          setAnalysisResult(null);
+          setIsAnalyzing(false);
+        }}
+        analysis={analysisResult}
+        isLoading={isAnalyzing}
+        onSaveOutbreakAlert={handleSaveOutbreakAlert}
+      />
     </div>
   );
 }
