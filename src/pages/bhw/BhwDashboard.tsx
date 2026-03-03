@@ -1,5 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
-import { Activity, Users, Bell, CheckCircle, Brain } from 'lucide-react';
+import { Activity, Users, Bell, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -127,20 +127,7 @@ export default function BhwDashboard() {
     }
   };
 
-  const handlePatternAnalysis = async () => {
-    setAnalysisLoading(true);
-    setShowPatternAnalysis(true);
-    
-    try {
-      const analysis = await analyzeHealthPatterns();
-      setPatternAnalysis(analysis);
-      showPatternAnalysisToast(analysis.totalReports, analysis.outbreakRisk);
-    } catch (error) {
-      console.error('Error analyzing patterns:', error);
-    } finally {
-      setAnalysisLoading(false);
-    }
-  };
+
 
   const handleCreateAnnouncement = async (announcementData: OutbreakAnnouncementData, analysisData: PatternAnalysisResult) => {
     try {
