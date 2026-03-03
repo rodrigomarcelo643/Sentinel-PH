@@ -79,7 +79,6 @@ SentinelPH builds a community intelligence network that trains everyday Filipino
   - Anonymous community symptom visualization
   - Geographic clustering of health observations
 - **Observation Reporting** - "What do you see?" approach vs. direct symptom reporting
-- **Incentive System** - Load credits and recognition for verified observations
 - **Two-Way Communication** - Receive acknowledgments and health advisories
 - **Future Integration** - Community forums for health discussions
 
@@ -88,7 +87,7 @@ SentinelPH builds a community intelligence network that trains everyday Filipino
 - **3-Sentinel Rule** - Multi-source validation before outbreak alerts
 - **AI Trust Scoring** - Validates sentinel reliability and filters spam
 - **Spatial Clustering** - DBSCAN algorithm for geographic pattern detection
-- **Predictive Analytics** - Early warning system for potential outbreaks
+- **Predictive Analytics** - Early w  arning system for potential outbreaks
 
 ### 📱 **Mobile-First Design**
 - **Progressive Web App (PWA)** - Works offline, low-bandwidth optimized
