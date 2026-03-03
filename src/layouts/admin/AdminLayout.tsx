@@ -1,5 +1,5 @@
 import { Outlet, useLocation, Link } from "react-router-dom";
-import { LayoutDashboard, Users, MapPin, LogOut, ChevronDown, Building2, MapPinned, UserCog, Shield, Bell, AlertTriangle, Settings, Menu, PanelLeftClose, PanelLeft, User, Globe, CreditCard } from "lucide-react";
+import { LayoutDashboard, Users, MapPin, LogOut, ChevronDown, MapPinned, UserCog, Shield, Bell, AlertTriangle, Settings, PanelLeftClose, PanelLeft, User, Globe, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -16,16 +16,11 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [usersOpen, setUsersOpen] = useState(false);
-  const [regionsOpen, setRegionsOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
-  const regions = [
-    "NCR", "CAR", "Region I", "Region II", "Region III", "Region IV-A", 
-    "Region IV-B", "Region V", "Region VI", "Region VII", "Region VIII",
-    "Region IX", "Region X", "Region XI", "Region XII", "Region XIII", "BARMM"
-  ];
+
 
   const handleLogout = async () => {
     await logout();

@@ -23,7 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Menu, ChevronDown, MapPin, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, ChevronDown, MapPin, LogOut, LayoutDashboard } from "lucide-react";
 import LoginDialog from "@/components/auth/LoginDialog";
 
 const regions = [

@@ -100,14 +100,6 @@ class AIAnalysisService {
       ...observedReports.flatMap(r => r.symptoms)
     ];
 
-    const recentReports = [...selfReports, ...observedReports]
-      .sort((a, b) => {
-        const aDate = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
-        const bDate = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
-        return bDate.getTime() - aDate.getTime();
-      })
-      .slice(0, 10);
-
     return `
 Analyze the following symptom reports for a community health surveillance system in the Philippines:
 

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { regions } from "@/data/regions";
-import { CloudUpload, Check, CreditCard, Building2, UserCog, Mail, Phone, MapPin, User, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Shield, AlertCircle, Cloud, FileText, X, Loader2 } from "lucide-react";
+import { CloudUpload, Check, CreditCard, Building2, UserCog, Mail, Phone, MapPin, User, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Shield, AlertCircle, FileText, X, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";

@@ -1,15 +1,23 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, deleteDoc } from "firebase/firestore";
+import { doc, collection, query, where, getDocs, addDoc, serverTimestamp, orderBy, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, X, User, MapPin, FileText, Activity, CheckCircle, Clock, Trash2, Scan, ChevronLeft, ChevronRight, Brain, Zap, Eye, History } from "lucide-react";
+import { X, History, Brain, User, Activity, CheckCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQRSync } from "@/hooks/useQRSync";
 import AIAnalysisModal from "@/components/ui/AIAnalysisModal";
 import beepSound from "@/assets/sounds/beep.mp3";
+import QRScannerHeader from "@/components/qr-scanner/QRScannerHeader";
+import TabNavigation from "@/components/qr-scanner/TabNavigation";
+import StatsCards from "@/components/qr-scanner/StatsCards";
+import VisitsTable from "@/components/qr-scanner/VisitsTable";
+import AnalysesTable from "@/components/qr-scanner/AnalysesTable";
+import Pagination from "@/components/qr-scanner/Pagination";
+import ScannerInterface from "@/components/qr-scanner/ScannerInterface";
+import ResidentModal from "@/components/qr-scanner/ResidentModal";
 
 interface UserData {
   firstName: string;
@@ -70,9 +78,6 @@ export default function QRScanner() {
   const [scannedData, setScannedData] = useState<QRCodeData | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [reportTab, setReportTab] = useState<'self' | 'observed'>('self');
-  const [visibleReports, setVisibleReports] = useState(10);
-  const [imageModal, setImageModal] = useState<{ open: boolean; url: string; title: string }>({ open: false, url: '', title: '' });
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmDialog, setConfirmDialog] = useState<{ show: boolean; type: 'visit' | 'delete'; id?: string }>({ show: false, type: 'visit' });
@@ -82,6 +87,7 @@ export default function QRScanner() {
   const [analysisViewOpen, setAnalysisViewOpen] = useState(false);
   const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [imageModal, setImageModal] = useState<{ open: boolean; url: string; title: string }>({ open: false, url: '', title: '' });
   const itemsPerPage = 10;
   const { toast } = useToast();
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
@@ -246,7 +252,6 @@ export default function QRScanner() {
   const closeModal = () => {
     setModalOpen(false);
     setScannedData(null);
-    setVisibleReports(10);
   };
 
   const handleMarkVisit = async () => {
@@ -375,7 +380,6 @@ export default function QRScanner() {
   };
 
   // Pagination
-  const totalPages = Math.ceil(visits.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedVisits = visits.slice(startIndex, startIndex + itemsPerPage);
 
@@ -383,813 +387,51 @@ export default function QRScanner() {
     <div className="h-full flex flex-col">
       {!scanning && (
         <div className="p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">QR Code Scanner</h1>
-              <p className="text-gray-600 mt-2">Scan resident QR codes and track visits</p>
-            </div>
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#1B365D] to-[#2d4a7c] rounded-[2px] blur opacity-25 group-hover:opacity-75 transition duration-200"></div>
-              <Button onClick={() => setScanning(true)} className="relative bg-gradient-to-r rounded-[2px]! from-[#1B365D] to-[#2d4a7c] hover:from-[#152a4a] hover:to-[#1B365D] text-white px-6 py-6 cursor-pointer shadow-lg">
-                <Scan className="mr-2 h-5 w-5" />
-                <span className="font-semibold">Start Scanning</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Tab Navigation */}
-          <div className="mb-6">
-            <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit">
-              <button
-                onClick={() => setActiveTab('visits')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'visits'
-                    ? 'bg-white text-[#1B365D] shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Clock className="mr-2 h-4 w-4 inline" />
-                Recent Visits
-              </button>
-              <button
-                onClick={() => setActiveTab('analyses')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === 'analyses'
-                    ? 'bg-white text-[#1B365D] shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Brain className="mr-2 h-4 w-4 inline" />
-                Saved Analyses
-              </button>
-            </div>
-          </div>
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-[2px] p-4 border border-blue-100">
-              <div className="flex items-center gap-3">
-                <div className="bg-[#1B365D] p-3 rounded-[2px]">
-                  <Clock className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total {activeTab === 'visits' ? 'Visits' : 'Analyses'}</p>
-                  <p className="text-2xl font-bold text-gray-900">{activeTab === 'visits' ? visits.length : savedAnalyses.length}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-[2px] p-4 border border-green-100">
-              <div className="flex items-center gap-3">
-                <div className="bg-green-600 p-3 rounded-[2px]">
-                  <CheckCircle className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">{activeTab === 'visits' ? 'Today' : 'This Week'}</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {activeTab === 'visits' 
-                      ? visits.filter(v => v.visitDate?.toDate?.()?.toDateString() === new Date().toDateString()).length
-                      : savedAnalyses.filter(a => {
-                          const analysisDate = a.createdAt?.toDate?.() || new Date(a.reportDate);
-                          const weekAgo = new Date();
-                          weekAgo.setDate(weekAgo.getDate() - 7);
-                          return analysisDate >= weekAgo;
-                        }).length
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-[2px] p-4 border border-purple-100">
-              <div className="flex items-center gap-3">
-                <div className="bg-purple-600 p-3 rounded-[2px]">
-                  <User className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Unique Residents</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {activeTab === 'visits' 
-                      ? new Set(visits.map(v => v.qrId)).size
-                      : new Set(savedAnalyses.map(a => a.patientUid)).size
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <QRScannerHeader onStartScanning={() => setScanning(true)} />
+          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <StatsCards activeTab={activeTab} visits={visits} savedAnalyses={savedAnalyses} />
 
           {/* Content based on active tab */}
           {activeTab === 'visits' ? (
-            /* Visits Table */
-            <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-4 border-b border-gray-200 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-[#1B365D]" />
-                <h2 className="text-lg font-semibold text-gray-900">Recent Visits</h2>
-              </div>
-              
-              {loading ? (
-                <div className="p-12 text-center">
-                  <div className="w-16 h-16 border-4 border-gray-200 border-t-[#1B365D] rounded-full animate-spin mx-auto"></div>
-                </div>
-              ) : visits.length === 0 ? (
-                <div className="p-12 text-center">
-                  <Camera className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">No Visits Yet</h3>
-                  <p className="text-gray-600">Start scanning QR codes to track resident visits.</p>
-                </div>
-              ) : (
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Resident Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        QR ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Visit Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Scanned By
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {paginatedVisits.map((visit, index) => (
-                      <tr key={visit.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            {visit.selfieUrl ? (
-                              <img 
-                                src={visit.selfieUrl} 
-                                alt={visit.residentName}
-                                className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                <User className="h-5 w-5 text-gray-500" />
-                              </div>
-                            )}
-                            <span className="text-sm font-medium text-gray-900">{visit.residentName}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm font-mono text-gray-700">
-                          {visit.qrId}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">
-                          {visit.visitDate?.toDate?.()?.toLocaleString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          }) || 'N/A'}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">
-                          {visit.scannedBy}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <button
-                            onClick={() => handleDeleteVisit(visit.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-[2px] transition-colors cursor-pointer"
-                            title="Delete"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+            <VisitsTable 
+              visits={paginatedVisits} 
+              loading={loading} 
+              onDeleteVisit={(visitId) => handleDeleteVisit(visitId)} 
+            />
           ) : (
-            /* Saved Analyses Table */
-            <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-4 border-b border-gray-200 flex items-center gap-2">
-                <Brain className="h-5 w-5 text-[#1B365D]" />
-                <h2 className="text-lg font-semibold text-gray-900">Saved AI Analyses</h2>
-              </div>
-              
-              {loading ? (
-                <div className="p-12 text-center">
-                  <div className="w-16 h-16 border-4 border-gray-200 border-t-[#1B365D] rounded-full animate-spin mx-auto"></div>
-                </div>
-              ) : savedAnalyses.length === 0 ? (
-                <div className="p-12 text-center">
-                  <Brain className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">No Analyses Yet</h3>
-                  <p className="text-gray-600">AI analyses will appear here after scanning and analyzing resident data.</p>
-                </div>
-              ) : (
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Patient Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Risk Level
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Reports
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Analysis Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Analyzed By
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {savedAnalyses.slice(startIndex, startIndex + itemsPerPage).map((analysis) => (
-                      <tr key={analysis.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div>
-                            <span className="text-sm font-medium text-gray-900">{analysis.patientName}</span>
-                            <p className="text-xs text-gray-500">{analysis.patientLocation}</p>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            analysis.analysisResult.riskLevel === 'critical' ? 'bg-red-100 text-red-800' :
-                            analysis.analysisResult.riskLevel === 'high' ? 'bg-orange-100 text-orange-800' :
-                            analysis.analysisResult.riskLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {analysis.analysisResult.riskLevel.toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">
-                          <div className="flex gap-2">
-                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                              {analysis.selfReportsCount} Self
-                            </span>
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
-                              {analysis.observedReportsCount} Observed
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">
-                          {analysis.createdAt?.toDate?.()?.toLocaleDateString() || analysis.reportDate}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700">
-                          {analysis.analyzedBy}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => viewSavedAnalysis(analysis)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-[2px] transition-colors cursor-pointer"
-                              title="View Analysis"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteAnalysis(`analysis_${analysis.id}`)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-[2px] transition-colors cursor-pointer"
-                              title="Delete Analysis"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+            <AnalysesTable 
+              savedAnalyses={savedAnalyses.slice(startIndex, startIndex + itemsPerPage)} 
+              loading={loading} 
+              onViewAnalysis={(analysis) => viewSavedAnalysis(analysis)} 
+              onDeleteAnalysis={(analysisId) => handleDeleteAnalysis(analysisId)} 
+            />
           )}
 
           {/* Pagination */}
           {!loading && (activeTab === 'visits' ? visits.length > 0 : savedAnalyses.length > 0) && (
-            <div className="px-6 py-4 border-t flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div className="text-sm text-gray-600">
-                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, activeTab === 'visits' ? visits.length : savedAnalyses.length)} of {activeTab === 'visits' ? visits.length : savedAnalyses.length} {activeTab === 'visits' ? 'visits' : 'analyses'}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="cursor-pointer"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Prev
-                </Button>
-                {Array.from({ length: Math.ceil((activeTab === 'visits' ? visits.length : savedAnalyses.length) / itemsPerPage) }, (_, i) => i + 1).map(number => (
-                  <Button
-                    key={number}
-                    variant={currentPage === number ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(number)}
-                    className={`cursor-pointer ${currentPage === number ? "bg-[#1B365D] hover:bg-[#1B365D]/90" : ""}`}
-                  >
-                    {number}
-                  </Button>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil((activeTab === 'visits' ? visits.length : savedAnalyses.length) / itemsPerPage), prev + 1))}
-                  disabled={currentPage === Math.ceil((activeTab === 'visits' ? visits.length : savedAnalyses.length) / itemsPerPage)}
-                  className="cursor-pointer"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <Pagination 
+              currentPage={currentPage}
+              totalItems={activeTab === 'visits' ? visits.length : savedAnalyses.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              itemType={activeTab === 'visits' ? 'visits' : 'analyses'}
+            />
           )}
         </div>
       )}
 
       {scanning && (
-        <div className="fixed inset-0 z-50 bg-black flex flex-col p-4">
-          <div className="flex justify-between items-center p-4 bg-gray-900 text-white rounded-t-lg">
-            <div className="text-sm">Point QR code to the camera</div>
-            <div className="flex items-center gap-3">
-              <img src="/sentinel_ph_logo.png" alt="SentinelPH" className="h-8" />
-            </div>
-            <Button onClick={handleStopScanning} variant="destructive" size="sm" className="rounded-[2px]!">
-              Stop Scanning
-            </Button>
-          </div>
-          <div className="flex-1 overflow-hidden rounded-b-lg">
-            <div id="qr-reader" className="w-full h-full"></div>
-          </div>
-          {error && (
-            <div className="absolute bottom-8 left-8 right-8 bg-red-500 text-white rounded-lg p-3">
-              <p className="text-sm font-medium">{error}</p>
-            </div>
-          )}
-        </div>
+        <ScannerInterface error={error} onStopScanning={handleStopScanning} />
       )}
 
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="!max-w-[95vw] !w-[95vw] max-h-[90vh] overflow-y-auto p-0">
-          <div className="sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-10">
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-[#1B365D]" />
-              <DialogTitle className="text-xl">Resident Information</DialogTitle>
-            </div>
-            <Button onClick={closeModal} variant="ghost" size="icon" className="cursor-pointer">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {scannedData && (
-            <div className="p-4 space-y-4">
-              {/* Two Column Layout: Personal Info + Charts */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Left Side - Personal Information */}
-                <div className="space-y-3">
-                  <div className="bg-gray-50 rounded-[2px] p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <User className="h-4 w-4 text-[#1B365D]" />
-                      <h3 className="font-semibold text-base text-gray-900">Personal Details</h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <p className="text-xs text-gray-600">Full Name</p>
-                        <p className="font-medium text-sm">
-                          {scannedData.userData.firstName} {scannedData.userData.middleInitial} {scannedData.userData.lastName}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">QR ID</p>
-                        <p className="font-medium font-mono text-sm">{scannedData.qrId}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">Email</p>
-                        <p className="font-medium text-sm">{scannedData.userData.email}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">Contact Number</p>
-                        <p className="font-medium text-sm">{scannedData.userData.contactNumber}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">Community Role</p>
-                        <p className="font-medium text-sm">{scannedData.userData.communityRole}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-600">Status</p>
-                        <span className={`inline-block px-2 py-1 rounded-[2px] text-xs font-medium ${
-                          scannedData.userData.status === "approved" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                        }`}>
-                          {scannedData.userData.status}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 rounded-[2px] p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <MapPin className="h-4 w-4 text-[#1B365D]" />
-                      <h3 className="font-semibold text-base text-gray-900">Address</h3>
-                    </div>
-                    <p className="text-gray-700 text-sm">
-                      {scannedData.userData.address.barangay}, {scannedData.userData.address.municipality}, {scannedData.userData.address.region}
-                    </p>
-                  </div>
-
-                  <div className="bg-gray-50 rounded-[2px] p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FileText className="h-4 w-4 text-[#1B365D]" />
-                      <h3 className="font-semibold text-base text-gray-900">Documents</h3>
-                    </div>
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <p className="text-xs text-gray-600 mb-1">ID Type</p>
-                        <p className="font-medium text-sm">{scannedData.userData.documents.idType}</p>
-                      </div>
-                      {scannedData.userData.documents.validIdUrl && (
-                        <div className="flex-shrink-0">
-                          <p className="text-xs text-gray-600 mb-1">Valid ID</p>
-                          <img 
-                            src={scannedData.userData.documents.validIdUrl} 
-                            alt="Valid ID" 
-                            className="w-20 h-20 object-cover rounded-[2px] cursor-pointer hover:opacity-80 transition-opacity" 
-                            onClick={() => setImageModal({ open: true, url: scannedData.userData.documents.validIdUrl, title: 'Valid ID' })}
-                          />
-                        </div>
-                      )}
-                      {scannedData.userData.documents.selfieUrl && (
-                        <div className="flex-shrink-0">
-                          <p className="text-xs text-gray-600 mb-1">Selfie</p>
-                          <img 
-                            src={scannedData.userData.documents.selfieUrl} 
-                            alt="Selfie" 
-                            className="w-20 h-20 object-cover rounded-[2px] cursor-pointer hover:opacity-80 transition-opacity" 
-                            onClick={() => setImageModal({ open: true, url: scannedData.userData.documents.selfieUrl, title: 'Selfie' })}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Side - Charts and Trends */}
-                <div className="space-y-3">
-                  <div className="bg-gray-50 rounded-[2px] p-3">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Activity className="h-4 w-4 text-[#1B365D]" />
-                      <h3 className="font-semibold text-base text-gray-900">Health Trends</h3>
-                    </div>
-                    
-                    {/* Report Stats */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div className="bg-white rounded-[2px] p-3 border">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-blue-600">
-                            {scannedData.symptomReports?.filter(r => r.reportType === 'self').length || 0}
-                          </div>
-                          <div className="text-xs text-gray-600">Self Reports</div>
-                        </div>
-                      </div>
-                      <div className="bg-white rounded-[2px] p-3 border">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">
-                            {scannedData.symptomReports?.filter(r => r.reportType === 'observed').length || 0}
-                          </div>
-                          <div className="text-xs text-gray-600">Observed</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Simple Bar Chart */}
-                    <div className="bg-white rounded-[2px] p-3 border">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">Report Activity (Last 7 Days)</h4>
-                      <div className="flex items-end justify-between h-20 gap-1">
-                        {(() => {
-                          const last7Days = Array.from({ length: 7 }, (_, i) => {
-                            const date = new Date();
-                            date.setDate(date.getDate() - (6 - i));
-                            return date;
-                          });
-                          
-                          return last7Days.map((date, index) => {
-                            const dayReports = scannedData.symptomReports?.filter(report => {
-                              const reportDate = report.createdAt?.toDate?.() || new Date(report.createdAt || 0);
-                              return reportDate.toDateString() === date.toDateString();
-                            }).length || 0;
-                            
-                            const maxHeight = Math.max(...last7Days.map(d => {
-                              return scannedData.symptomReports?.filter(r => {
-                                const rd = r.createdAt?.toDate?.() || new Date(r.createdAt || 0);
-                                return rd.toDateString() === d.toDateString();
-                              }).length || 0;
-                            }), 1);
-                            
-                            const height = maxHeight > 0 ? (dayReports / maxHeight) * 60 : 0;
-                            
-                            return (
-                              <div key={index} className="flex flex-col items-center flex-1">
-                                <div 
-                                  className="bg-[#1B365D] rounded-t-sm w-full min-h-[4px] transition-all"
-                                  style={{ height: `${Math.max(height, 4)}px` }}
-                                  title={`${dayReports} reports on ${date.toLocaleDateString()}`}
-                                ></div>
-                                <div className="text-xs text-gray-500 mt-1">
-                                  {date.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1)}
-                                </div>
-                              </div>
-                            );
-                          });
-                        })()}
-                      </div>
-                    </div>
-
-                    {/* Line Chart - Same as Observations */}
-                    <div className="bg-white rounded-[2px] p-3 border">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">7-Day Trend Analysis</h4>
-                      <div className="relative h-32">
-                        <svg className="w-full h-full" viewBox="0 0 300 120">
-                          {(() => {
-                            const last7Days = Array.from({ length: 7 }, (_, i) => {
-                              const date = new Date();
-                              date.setDate(date.getDate() - (6 - i));
-                              return date;
-                            });
-                            
-                            const dataPoints = last7Days.map(date => {
-                              const dayReports = scannedData.symptomReports?.filter(report => {
-                                const reportDate = report.createdAt?.toDate?.() || new Date(report.createdAt || 0);
-                                return reportDate.toDateString() === date.toDateString();
-                              }).length || 0;
-                              return dayReports;
-                            });
-                            
-                            const verifiedPoints = last7Days.map(date => {
-                              const dayVerified = scannedData.symptomReports?.filter(report => {
-                                const reportDate = report.createdAt?.toDate?.() || new Date(report.createdAt || 0);
-                                return reportDate.toDateString() === date.toDateString() && report.status === 'verified';
-                              }).length || 0;
-                              return dayVerified;
-                            });
-                            
-                            const maxValue = Math.max(...dataPoints, ...verifiedPoints, 1);
-                            const width = 300;
-                            const height = 120;
-                            const padding = 20;
-                            
-                            // Create paths for lines
-                            const totalPath = dataPoints.map((value, index) => {
-                              const x = padding + (index * (width - 2 * padding)) / (dataPoints.length - 1);
-                              const y = height - padding - ((value / maxValue) * (height - 2 * padding));
-                              return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
-                            }).join(' ');
-                            
-                            const verifiedPath = verifiedPoints.map((value, index) => {
-                              const x = padding + (index * (width - 2 * padding)) / (verifiedPoints.length - 1);
-                              const y = height - padding - ((value / maxValue) * (height - 2 * padding));
-                              return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
-                            }).join(' ');
-                            
-                            return (
-                              <>
-                                {/* Grid lines */}
-                                <defs>
-                                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#f3f4f6" strokeWidth="1"/>
-                                  </pattern>
-                                </defs>
-                                <rect width="100%" height="100%" fill="url(#grid)" />
-                                
-                                {/* Total Reports Line */}
-                                <path
-                                  d={totalPath}
-                                  fill="none"
-                                  stroke="#3B82F6"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                
-                                {/* Verified Reports Line */}
-                                <path
-                                  d={verifiedPath}
-                                  fill="none"
-                                  stroke="#10B981"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                
-                                {/* Total Reports Data points */}
-                                {dataPoints.map((value, index) => {
-                                  const x = padding + (index * (width - 2 * padding)) / (dataPoints.length - 1);
-                                  const y = height - padding - ((value / maxValue) * (height - 2 * padding));
-                                  return (
-                                    <circle
-                                      key={`total-${index}`}
-                                      cx={x}
-                                      cy={y}
-                                      r="3"
-                                      fill="#3B82F6"
-                                    >
-                                      <title>{`${last7Days[index].toLocaleDateString()}: ${value} total reports`}</title>
-                                    </circle>
-                                  );
-                                })}
-                                
-                                {/* Verified Reports Data points */}
-                                {verifiedPoints.map((value, index) => {
-                                  const x = padding + (index * (width - 2 * padding)) / (verifiedPoints.length - 1);
-                                  const y = height - padding - ((value / maxValue) * (height - 2 * padding));
-                                  return (
-                                    <circle
-                                      key={`verified-${index}`}
-                                      cx={x}
-                                      cy={y}
-                                      r="3"
-                                      fill="#10B981"
-                                    >
-                                      <title>{`${last7Days[index].toLocaleDateString()}: ${value} verified reports`}</title>
-                                    </circle>
-                                  );
-                                })}
-                                
-                                {/* Y-axis labels */}
-                                <text x="5" y="25" fontSize="10" fill="#6b7280" textAnchor="start">{maxValue}</text>
-                                <text x="5" y="105" fontSize="10" fill="#6b7280" textAnchor="start">0</text>
-                                
-                                {/* Legend */}
-                                <g transform="translate(220, 15)">
-                                  <circle cx="0" cy="0" r="3" fill="#3B82F6" />
-                                  <text x="8" y="4" fontSize="10" fill="#6b7280">Total</text>
-                                  <circle cx="0" cy="15" r="3" fill="#10B981" />
-                                  <text x="8" y="19" fontSize="10" fill="#6b7280">Verified</text>
-                                </g>
-                              </>
-                            );
-                          })()}
-                        </svg>
-                      </div>
-                    </div>
-
-                    {/* Status Distribution */}
-                    <div className="bg-white rounded-[2px] p-3 border">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">Report Status</h4>
-                      <div className="space-y-2">
-                        {(() => {
-                          const verified = scannedData.symptomReports?.filter(r => r.status === 'verified').length || 0;
-                          const pending = scannedData.symptomReports?.filter(r => r.status === 'pending').length || 0;
-                          const total = verified + pending;
-                          
-                          return (
-                            <>
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                                  <span className="text-sm text-gray-700">Verified</span>
-                                </div>
-                                <span className="text-sm font-medium">{verified}</span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                                  <span className="text-sm text-gray-700">Pending</span>
-                                </div>
-                                <span className="text-sm font-medium">{pending}</span>
-                              </div>
-                              {total > 0 && (
-                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                                  <div 
-                                    className="bg-green-500 h-2 rounded-full transition-all"
-                                    style={{ width: `${(verified / total) * 100}%` }}
-                                  ></div>
-                                </div>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Section - Symptom Reports History (Full Width) */}
-              <div className="bg-gray-50 rounded-[2px] p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Activity className="h-4 w-4 text-[#1B365D]" />
-                  <h3 className="font-semibold text-base text-gray-900">
-                    Symptom Reports History ({scannedData.symptomReports?.length || 0})
-                  </h3>
-                </div>
-                
-                <div className="flex gap-6 border-b border-gray-300 mb-3 relative">
-                  <button
-                    onClick={() => {
-                      setReportTab('self');
-                      setVisibleReports(10);
-                    }}
-                    className={`pb-2 text-sm font-medium transition-colors relative cursor-pointer ${
-                      reportTab === 'self' ? 'text-[#1B365D]' : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    Self-Reported ({scannedData.symptomReports?.filter(r => r.reportType === 'self').length || 0})
-                    {reportTab === 'self' && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1B365D]"></div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setReportTab('observed');
-                      setVisibleReports(10);
-                    }}
-                    className={`pb-2 text-sm font-medium transition-colors relative cursor-pointer ${
-                      reportTab === 'observed' ? 'text-[#1B365D]' : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    Observed ({scannedData.symptomReports?.filter(r => r.reportType === 'observed').length || 0})
-                    {reportTab === 'observed' && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1B365D]"></div>
-                    )}
-                  </button>
-                </div>
-
-                {scannedData.symptomReports && scannedData.symptomReports.length > 0 ? (
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {(() => {
-                      const filteredReports = scannedData.symptomReports
-                        .filter(report => report.reportType === reportTab)
-                        .sort((a, b) => {
-                          const aDate = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
-                          const bDate = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
-                          return bDate.getTime() - aDate.getTime();
-                        });
-                      
-                      const displayedReports = filteredReports.slice(0, visibleReports);
-                      const hasMore = filteredReports.length > visibleReports;
-                      
-                      return (
-                        <>
-                          {displayedReports.map((report, index) => (
-                            <div key={index} className="bg-white rounded-[2px] p-3 border">
-                              <div className="flex justify-between items-start mb-2">
-                                <span className={`text-xs px-2 py-1 rounded-[2px] ${
-                                  report.status === "verified" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                                }`}>
-                                  {report.status}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {report.createdAt?.toDate?.()?.toLocaleDateString() || "N/A"}
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-700 mb-2">{report.description}</p>
-                              <div className="flex flex-wrap gap-1">
-                                {report.symptoms?.map((symptom: string, idx: number) => (
-                                  <span key={idx} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-[2px]">
-                                    {symptom}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                          {hasMore && (
-                            <button
-                              onClick={() => setVisibleReports(prev => prev + 10)}
-                              className="w-full py-2 text-sm text-[#1B365D] hover:bg-gray-50 rounded-[2px] border border-dashed border-gray-300 cursor-pointer"
-                            >
-                              Load More ({filteredReports.length - visibleReports} remaining)
-                            </button>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm">No {reportTab === 'self' ? 'self-reported' : 'observed'} symptom reports available</p>
-                )}
-              </div>
-
-              <div className="flex gap-3 pt-4 border-t">
-                <Button onClick={handleMarkVisit} className="flex-1 cursor-pointer bg-green-600 hover:bg-green-700">
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Mark as Resident Visit
-                </Button>
-                <Button 
-                  onClick={handleAIAnalysis}
-                  className="flex-1 cursor-pointer bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                >
-                  <Brain className="mr-2 h-4 w-4" />
-                  AI Analysis
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <ResidentModal 
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        scannedData={scannedData}
+        onMarkVisit={handleMarkVisit}
+        onAIAnalysis={handleAIAnalysis}
+        onImageClick={(url, title) => setImageModal({ open: true, url, title })}
+      />
 
       {/* Confirmation Dialog */}
       <Dialog open={confirmDialog.show} onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, show: open })}>

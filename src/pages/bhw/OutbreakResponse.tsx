@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, TrendingUp, Users, MapPin, Clock, CheckCircle, XCircle, Send, Activity, Megaphone, Plus, X, Info, Siren, Package, Droplet, Upload, Trash2 } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Users, MapPin, Clock, CheckCircle, Send, Activity, Megaphone, X, Info, Siren, Package, Droplet, Upload, Trash2 } from 'lucide-react';
 import { collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';

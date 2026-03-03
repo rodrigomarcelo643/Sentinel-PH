@@ -104,11 +104,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPersistence(auth, browserLocalPersistence);
     
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      // Only update if this is the active tab or if there's no stored user
+      const isActiveTab = document.visibilityState === 'visible' || !localStorage.getItem(USER_STORAGE_KEY);
+      
       if (firebaseUser) {
         const userData = await fetchUserData(firebaseUser);
-        updateUser(firebaseUser, userData);
+        if (isActiveTab) {
+          updateUser(firebaseUser, userData);
+        }
       } else {
-        updateUser(null);
+        if (isActiveTab) {
+          updateUser(null);
+        }
       }
       setLoading(false);
     });

@@ -1,5 +1,5 @@
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
-import { Activity, Users, Bell, CheckCircle, AlertTriangle, TrendingUp, Brain, Megaphone } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
+import { Activity, Users, Bell, CheckCircle, Brain } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,7 +8,7 @@ import { collection, getDocs, query, where, orderBy, limit, addDoc, serverTimest
 import { db } from '@/lib/firebase';
 import { PatternAnalysisModal } from '@/components/ui/PatternAnalysisModal';
 import { analyzeHealthPatterns, type PatternAnalysisResult } from '@/services/patternAnalysisService';
-import { generateOutbreakAnnouncement, type OutbreakAnnouncementData } from '@/services/outbreakAnnouncementService';
+import { type OutbreakAnnouncementData } from '@/services/outbreakAnnouncementService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { showAnnouncementCreatedToast, showPatternAnalysisToast } from '@/services/toastService';
@@ -39,7 +39,7 @@ export default function BhwDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('week');
   const [totalSentinels, setTotalSentinels] = useState(0);
   const [activeSentinels, setActiveSentinels] = useState(0);
-  const [totalReports, setTotalReports] = useState(0);
+
   const [pendingReports, setPendingReports] = useState(0);
   const [verifiedToday, setVerifiedToday] = useState(0);
   const [recentReports, setRecentReports] = useState<any[]>([]);
@@ -69,7 +69,6 @@ export default function BhwDashboard() {
       // Fetch reports
       const reportsRef = collection(db, 'symptomReports');
       const reportsSnapshot = await getDocs(reportsRef);
-      setTotalReports(reportsSnapshot.size);
       
       // Count pending reports
       const pendingCount = reportsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
@@ -197,13 +196,6 @@ export default function BhwDashboard() {
             <p className="text-gray-600">Monitor community health observations in your barangay</p>
           </div>
           <div className="flex gap-3">
-            <button
-              onClick={handlePatternAnalysis}
-              className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              <Brain className="h-4 w-4" />
-              <span>Analyze Patterns</span>
-            </button>
             <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select Period" />
@@ -314,7 +306,7 @@ export default function BhwDashboard() {
                 fill="#8884d8"
                 dataKey="value"
               >
-                {symptomData.map((entry, index) => (
+                {symptomData.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

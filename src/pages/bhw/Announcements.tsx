@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Megaphone, Plus, Send, AlertCircle, Info, CheckCircle, X, ChevronLeft, ChevronRight, Calendar, Package, Siren, Droplet, Edit2, Trash2, Activity, Upload, Image } from 'lucide-react';
-import { collection, getDocs, addDoc, serverTimestamp, orderBy, query, Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { Megaphone, Plus, Send, AlertCircle, Info, X, ChevronLeft, ChevronRight, Calendar, Package, Siren, Droplet, Edit2, Trash2, Activity, Upload } from 'lucide-react';
+import { collection, getDocs, addDoc, serverTimestamp, orderBy, query, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { uploadImage } from '@/services/cloudinaryService';
@@ -538,7 +538,7 @@ export default function Announcements() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {['Title', 'Type', 'Priority', 'Date', 'Created By', 'Actions'].map((header, i) => (
+                  {['Title', 'Type', 'Priority', 'Date', 'Created By', 'Actions'].map((_, i) => (
                     <th key={i} className="px-6 py-4 text-left">
                       <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
                     </th>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Search, ChevronLeft, ChevronRight, MapPin, Users, Building2 } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Users, Building2 } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

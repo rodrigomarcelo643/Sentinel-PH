@@ -19,7 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Menu, User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { Menu, LogOut, Settings, ChevronDown } from "lucide-react";
 
 export default function BhwNavbar() {
   const [open, setOpen] = useState(false);

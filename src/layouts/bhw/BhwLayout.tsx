@@ -95,10 +95,10 @@ export default function BhwLayout() {
         <nav className="space-y-1">
           <NavLink to="/bhw/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/sentinels" icon={Users} label="Sentinels" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/bhw/observations" icon={Telescope} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/bhw/qr-scanner" icon={QrCode} label="QR Scanner" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/reports" icon={ShieldAlert } label="Reports" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/map" icon={MapPinned} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/bhw/observations" icon={Telescope} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/bhw/qr-scanner" icon={QrCode} label="QR Scanner" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/outbreak-response" icon={AlertTriangle} label="Outbreak Response" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/bhw/announcements" icon={Megaphone} label="Announcements" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           {/*<NavLink to="/bhw/settings" icon={Settings} label="Settings" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} /> */} 

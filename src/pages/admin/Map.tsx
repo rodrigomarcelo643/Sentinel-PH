@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { MapPin, Maximize2, Minimize2, Navigation } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -16,7 +16,7 @@ const outbreakReports = [
 // Function to generate OpenStreetMap iframe URL with markers
 const getCebuMapEmbedUrl = () => {
   const center = '10.3157,123.8854'; // Cebu City center
-  const zoom = 12;
+
   
   // Create markers for each report using OpenStreetMap query format
   // This adds pins for each location
@@ -28,10 +28,7 @@ const getCebuMapEmbedUrl = () => {
   return `https://www.openstreetmap.org/export/embed.html?bbox=123.75%2C10.15%2C124.05%2C10.55&layer=mapnik&marker=${center}${markers}`;
 };
 
-// Alternative: Use a more visual map with better styling (still free)
-const getCebuMapWithStyle = () => {
-  return `https://www.openstreetmap.org/export/embed.html?bbox=123.75%2C10.15%2C124.05%2C10.55&layer=transportmap&marker=10.3157%2C123.8854`;
-};
+
 
 export default function Map() {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
@@ -193,9 +190,9 @@ export default function Map() {
             acc[report.location].total += report.count;
             acc[report.location].reports.push(report);
             
-            const severityValue = { high: 3, medium: 2, low: 1 };
-            if (severityValue[report.severity] > severityValue[acc[report.location].highestSeverity]) {
-              acc[report.location].highestSeverity = report.severity;
+            const severityValue: Record<'high' | 'medium' | 'low', number> = { high: 3, medium: 2, low: 1 };
+            if (severityValue[report.severity as 'high' | 'medium' | 'low'] > severityValue[acc[report.location].highestSeverity]) {
+              acc[report.location].highestSeverity = report.severity as 'high' | 'medium' | 'low';
             }
             
             return acc;

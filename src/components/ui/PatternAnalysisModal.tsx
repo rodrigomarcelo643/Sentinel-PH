@@ -1,7 +1,7 @@
 import React from 'react';
-import { X, AlertTriangle, TrendingUp, MapPin, Activity, Users, Calendar, Shield, Brain, Megaphone, Send } from 'lucide-react';
+import { X, AlertTriangle, TrendingUp, MapPin, Activity, Users, Calendar, Shield, Brain, Megaphone } from 'lucide-react';
 import { Button } from './button';
-import type { PatternAnalysisResult, ClusterData, DiseasePattern, AnomalyData, PredictionData } from '../../services/patternAnalysisService';
+import type { PatternAnalysisResult } from '../../services/patternAnalysisService';
 import { generateOutbreakAnnouncement, type OutbreakAnnouncementData } from '../../services/outbreakAnnouncementService';
 
 interface PatternAnalysisModalProps {

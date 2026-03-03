@@ -35,9 +35,8 @@ interface SymptomReport {
 }
 
 export default function BhwReports() {
-  const { user } = useAuth();
+  const { } = useAuth();
   const [reports, setReports] = useState<SymptomReport[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedReport, setSelectedReport] = useState<SymptomReport | null>(null);
@@ -63,7 +62,6 @@ export default function BhwReports() {
 
   const fetchReports = async () => {
     try {
-      setLoading(true);
       const reportsRef = collection(db, 'symptomReports');
       const q = query(reportsRef, orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
@@ -102,7 +100,6 @@ export default function BhwReports() {
     } catch (error) {
       console.error('Error fetching reports:', error);
     } finally {
-      setLoading(false);
     }
   };
 

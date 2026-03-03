@@ -3,7 +3,7 @@ import { GoogleMap, useLoadScript, Marker, Circle, DirectionsRenderer } from '@r
 import { collection, getDocs, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Activity, Bell, X } from 'lucide-react';
+import { MapPin, X } from 'lucide-react';
 
 const mapContainerStyle = {
   width: '100%',
@@ -149,23 +149,7 @@ export default function BhwMap() {
     }
   };
 
-  const PulsingPin = ({ severity }: { severity: 'low' | 'medium' | 'high' }) => {
-    const color = getSeverityColor(severity);
-    return (
-      <div className="relative">
-        <div 
-          className="absolute inset-0 rounded-full animate-ping opacity-75"
-          style={{ backgroundColor: color, width: '24px', height: '24px' }}
-        />
-        <MapPin 
-          className="relative z-10" 
-          fill={color} 
-          color={color} 
-          size={24}
-        />
-      </div>
-    );
-  };
+
 
   if (loadError) return <div className="p-8 text-center text-red-600">Error loading maps</div>;
   if (!isLoaded) return (
@@ -235,12 +219,21 @@ export default function BhwMap() {
                 <DirectionsRenderer 
                   directions={directions}
                   options={{
-                    suppressMarkers: true,
+                    suppressMarkers: false,
                     polylineOptions: {
                       strokeColor: '#3B82F6',
-                      strokeWeight: 6,
+                      strokeWeight: 4,
                       strokeOpacity: 0.8,
                     },
+                    markerOptions: {
+                      icon: {
+                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                          <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="10" cy="10" r="8" fill="#3B82F6" stroke="white" stroke-width="2"/>
+                          </svg>
+                        `),
+                      }
+                    }
                   }}
                 />
               )}
@@ -273,7 +266,7 @@ export default function BhwMap() {
                     position={{ lat: report.latitude, lng: report.longitude }}
                     onClick={() => {
                       setSelectedReport(report);
-                      if (userLocation) {
+                      if (userLocation && map) {
                         const directionsService = new google.maps.DirectionsService();
                         directionsService.route(
                           {
@@ -282,8 +275,29 @@ export default function BhwMap() {
                             travelMode: google.maps.TravelMode.DRIVING,
                           },
                           (result, status) => {
-                            if (status === google.maps.DirectionsStatus.OK) {
+                            console.log('Directions status:', status); // Debug log
+                            if (status === google.maps.DirectionsStatus.OK && result) {
                               setDirections(result);
+                            } else {
+                              console.error('Directions request failed:', status);
+                              // Show user-friendly error
+                              alert(`Directions failed: ${status}. Please check if Directions API is enabled.`);
+                              // Fallback to walking if driving fails
+                              directionsService.route(
+                                {
+                                  origin: userLocation,
+                                  destination: { lat: report.latitude, lng: report.longitude },
+                                  travelMode: google.maps.TravelMode.WALKING,
+                                },
+                                (walkResult, walkStatus) => {
+                                  console.log('Walking directions status:', walkStatus);
+                                  if (walkStatus === google.maps.DirectionsStatus.OK && walkResult) {
+                                    setDirections(walkResult);
+                                  } else {
+                                    console.error('Walking directions also failed:', walkStatus);
+                                  }
+                                }
+                              );
                             }
                           }
                         );

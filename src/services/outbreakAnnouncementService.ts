@@ -9,7 +9,7 @@ export interface OutbreakAnnouncementData {
 }
 
 export const generateOutbreakAnnouncement = (analysis: PatternAnalysisResult): OutbreakAnnouncementData => {
-  const { outbreakRisk, diseases, totalReports, affectedResidents, clusters } = analysis;
+  const { outbreakRisk, diseases } = analysis;
   
   // Determine priority based on risk level
   const priority = outbreakRisk === 'CRITICAL' ? 'high' : 

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, RadialBarChart, RadialBar, Legend, BarChart, Bar, CartesianGrid, LineChart, Line } from 'recharts';
-import { TrendingUp, Users, Activity, AlertTriangle, CheckCircle, Bell, X, UserCheck } from 'lucide-react';
+import { TrendingUp, Users, Activity, AlertTriangle, CheckCircle, Bell, X } from 'lucide-react';
 import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 

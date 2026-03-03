@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import LandingPage from "@/pages/public/LandingPage";
+import AboutPage from "@/pages/public/AboutPage";
+import PublicMapPage from "@/pages/public/PublicMapPage";
+import RegionPage from "@/pages/public/RegionPage";
 import PricingPage from "@/pages/public/PricingPage";
 import RegisterPage from "@/pages/public/RegisterPage";
 import AdminLayout from "@/layouts/admin/AdminLayout";
@@ -28,10 +31,10 @@ export default function AppRoutes() {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/about" element={<div className="pt-20 p-8">About Page</div>} />
+      <Route path="/about" element={<AboutPage />} />
       <Route path="/pricing" element={<PricingPage />} />
-      <Route path="/map" element={<div className="pt-20 p-8">Map Page</div>} />
-      <Route path="/region/:regionId" element={<div className="pt-20 p-8">Region Page</div>} />
+      <Route path="/map" element={<PublicMapPage />} />
+      <Route path="/region/:regionId" element={<RegionPage />} />
       <Route path="/signin" element={<div className="pt-20 p-8">Sign In Page</div>} />
       <Route path="/register" element={<RegisterPage />} />
       

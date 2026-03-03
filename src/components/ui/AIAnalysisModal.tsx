@@ -452,7 +452,6 @@ export default function AIAnalysisModal({
                                   strokeWidth="12"
                                   strokeLinecap="round"
                                   strokeDasharray={circumference}
-                                  strokeDashoffset={circumference - observedStroke}
                                   strokeDashoffset={circumference - selfStroke - observedStroke}
                                   className="transition-all duration-500"
                                 />

@@ -28,7 +28,7 @@ export default function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const { toast } = useToast();
+  const { } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {

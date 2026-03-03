@@ -8,7 +8,7 @@ import LoadingAnimation from "./components/LoadingAnimation";
 import { Toaster } from "@/components/ui/toaster";
 
 function AppContent() {
-  const { user } = useAuth();
+  const { } = useAuth();
   const location = useLocation();
   
   // Hide navbar on dashboard routes and register page
