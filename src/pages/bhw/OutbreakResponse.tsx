@@ -1,9 +1,22 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, TrendingUp, Users, MapPin, Clock, CheckCircle, XCircle, Send, Activity } from 'lucide-react';
-import { collection, getDocs, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { AlertTriangle, TrendingUp, Users, MapPin, Clock, CheckCircle, XCircle, Send, Activity, Megaphone, Plus, X, Info, Siren, Package, Droplet, Upload, Trash2 } from 'lucide-react';
+import { collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { generateOutbreakAnnouncement, type OutbreakAnnouncementData } from '@/services/outbreakAnnouncementService';
+import { useNavigate } from 'react-router-dom';
+import { showAnnouncementCreatedToast } from '@/services/toastService';
+import { uploadImage } from '@/services/cloudinaryService';
+
+const ANNOUNCEMENT_TYPES = [
+  { value: 'health_advisory', label: 'Health Advisory', icon: Info },
+  { value: 'outbreak_alert', label: 'Outbreak Alert', icon: Siren },
+  { value: 'medical_supplies', label: 'Medical Supplies Arriving', icon: Package },
+  { value: 'water_advisory', label: 'Water Advisory', icon: Droplet },
+  { value: 'vaccination_drive', label: 'Vaccination Drive', icon: AlertTriangle },
+  { value: 'other', label: 'Other (Specify)', icon: Megaphone }
+];
 
 interface OutbreakAlert {
   id: string;
@@ -11,20 +24,39 @@ interface OutbreakAlert {
   location: string;
   severity: 'low' | 'medium' | 'high';
   cases: number;
-  residents: string[];
+  residents: string[] | number;
   trend: 'increasing' | 'stable' | 'decreasing';
   detectedAt: any;
   status: 'pending' | 'ongoing' | 'resolved';
   respondedAt?: any;
   respondedBy?: string;
+  title?: string;
+  riskScore?: number;
+  clusters?: number;
+  recommendations?: string[];
+  analysisData?: any;
 }
 
 export default function OutbreakResponse() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [alerts, setAlerts] = useState<OutbreakAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'pending' | 'ongoing' | 'resolved'>('pending');
-  const [confirmDialog, setConfirmDialog] = useState<{ show: boolean; alertId: string; action: 'respond' | 'resolve' }>({ show: false, alertId: '', action: 'respond' });
+  const [confirmDialog, setConfirmDialog] = useState<{ show: boolean; alertId: string; action: 'respond' | 'resolve' | 'delete' }>({ show: false, alertId: '', action: 'respond' });
+  const [announcementDialog, setAnnouncementDialog] = useState<{ show: boolean; data: OutbreakAnnouncementData | null; analysisData: any }>({ show: false, data: null, analysisData: null });
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    message: '',
+    type: 'outbreak_alert',
+    customType: '',
+    priority: 'high' as 'low' | 'medium' | 'high',
+    imageUrl: ''
+  });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     fetchOutbreakAlerts();
@@ -32,70 +64,28 @@ export default function OutbreakResponse() {
 
   const fetchOutbreakAlerts = async () => {
     try {
-      // Check if outbreaks collection exists, if not analyze and create
-      const outbreaksRef = collection(db, 'outbreaks');
-      const outbreaksSnapshot = await getDocs(outbreaksRef);
+      // Only fetch saved outbreak alerts from pattern analysis
+      const alertsRef = collection(db, 'outbreakAlerts');
+      const alertsSnapshot = await getDocs(alertsRef);
       
-      if (outbreaksSnapshot.empty) {
-        // Analyze symptom reports for patterns
-        const reportsRef = collection(db, 'symptomReports');
-        const snapshot = await getDocs(reportsRef);
-        const reports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        // Group by symptoms and location
-        const patterns: Record<string, any> = {};
-        reports.forEach((report: any) => {
-          report.symptoms?.forEach((symptom: string) => {
-            const key = `${symptom}-${report.location}`;
-            if (!patterns[key]) {
-              patterns[key] = {
-                symptom,
-                location: report.location,
-                cases: 0,
-                residents: [],
-                recentCases: 0,
-                reports: []
-              };
-            }
-            patterns[key].cases++;
-            patterns[key].residents.push(report.userName);
-            patterns[key].reports.push(report);
-            
-            // Count recent cases (last 7 days)
-            if (report.createdAt) {
-              const reportDate = report.createdAt.toDate();
-              const weekAgo = new Date();
-              weekAgo.setDate(weekAgo.getDate() - 7);
-              if (reportDate >= weekAgo) {
-                patterns[key].recentCases++;
-              }
-            }
-          });
-        });
-
-        // Create outbreak records for patterns with 3+ cases
-        const potentialOutbreaks = Object.values(patterns).filter((p: any) => p.cases >= 3);
-        for (const outbreak of potentialOutbreaks) {
-          await addDoc(outbreaksRef, {
-            disease: outbreak.symptom,
-            location: outbreak.location,
-            severity: outbreak.cases >= 10 ? 'high' : outbreak.cases >= 5 ? 'medium' : 'low',
-            cases: outbreak.cases,
-            residents: outbreak.residents,
-            trend: outbreak.recentCases > outbreak.cases / 2 ? 'increasing' : 'stable',
-            detectedAt: serverTimestamp(),
-            status: 'pending'
-          });
-        }
-      }
-
-      // Fetch all outbreaks
-      const finalSnapshot = await getDocs(outbreaksRef);
-      const data = finalSnapshot.docs.map(doc => ({
+      const savedAlerts = alertsSnapshot.docs.map(doc => ({
         id: doc.id,
-        ...doc.data()
-      })) as OutbreakAlert[];
-      setAlerts(data);
+        disease: doc.data().topDiseases?.[0] || 'Unknown Disease',
+        location: 'Multiple Areas',
+        severity: doc.data().riskLevel?.toLowerCase() || 'medium',
+        cases: doc.data().totalReports || 0,
+        residents: doc.data().affectedResidents || 0,
+        trend: 'increasing',
+        detectedAt: doc.data().createdAt,
+        status: doc.data().status || 'pending',
+        title: doc.data().title,
+        riskScore: doc.data().riskScore,
+        clusters: doc.data().clusters,
+        recommendations: doc.data().recommendations || [],
+        analysisData: doc.data().analysisData
+      }));
+
+      setAlerts(savedAlerts as OutbreakAlert[]);
     } catch (error) {
       console.error('Error fetching outbreak alerts:', error);
     } finally {
@@ -111,25 +101,100 @@ export default function OutbreakResponse() {
     setConfirmDialog({ show: true, alertId, action: 'resolve' });
   };
 
+  const handleDelete = async (alertId: string) => {
+    setConfirmDialog({ show: true, alertId, action: 'delete' });
+  };
+
   const confirmAction = async () => {
     try {
-      const alertRef = doc(db, 'outbreaks', confirmDialog.alertId);
+      const alertRef = doc(db, 'outbreakAlerts', confirmDialog.alertId);
       if (confirmDialog.action === 'respond') {
         await updateDoc(alertRef, {
           status: 'ongoing',
           respondedAt: serverTimestamp(),
           respondedBy: user?.displayName || 'BHW'
         });
-      } else {
+      } else if (confirmDialog.action === 'resolve') {
         await updateDoc(alertRef, {
           status: 'resolved',
           resolvedAt: serverTimestamp()
         });
+      } else if (confirmDialog.action === 'delete') {
+        await deleteDoc(alertRef);
       }
       setConfirmDialog({ show: false, alertId: '', action: 'respond' });
       fetchOutbreakAlerts();
     } catch (error) {
       console.error('Error updating outbreak:', error);
+    }
+  };
+
+  const handleCreateAnnouncement = (alert: OutbreakAlert) => {
+    if (alert.analysisData) {
+      const announcementData = generateOutbreakAnnouncement(alert.analysisData);
+      setFormData({
+        title: announcementData.title,
+        message: announcementData.message,
+        type: announcementData.type,
+        customType: '',
+        priority: announcementData.priority,
+        imageUrl: ''
+      });
+      setAnnouncementDialog({ show: true, data: announcementData, analysisData: alert.analysisData });
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setFormData({ ...formData, imageUrl: '' });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      let imageUrl = formData.imageUrl;
+      
+      // Upload image if selected
+      if (imageFile) {
+        setUploadingImage(true);
+        imageUrl = await uploadImage(imageFile);
+      }
+      
+      const finalType = formData.type === 'other' ? formData.customType : formData.type;
+      
+      await addDoc(collection(db, 'announcements'), {
+        title: formData.title,
+        message: formData.message,
+        type: finalType,
+        priority: formData.priority,
+        imageUrl,
+        createdAt: serverTimestamp(),
+        createdBy: user?.displayName || 'BHW',
+        sourceType: 'outbreak_response',
+        analysisData: announcementDialog.analysisData
+      });
+      
+      setAnnouncementDialog({ show: false, data: null, analysisData: null });
+      setFormData({ title: '', message: '', type: 'outbreak_alert', customType: '', priority: 'high', imageUrl: '' });
+      setImageFile(null);
+      setImagePreview('');
+      showAnnouncementCreatedToast(formData.title);
+      navigate('/bhw/announcements');
+    } catch (error) {
+      console.error('Error creating announcement:', error);
+    } finally {
+      setSubmitting(false);
+      setUploadingImage(false);
     }
   };
 
@@ -168,6 +233,194 @@ export default function OutbreakResponse() {
         </div>
       </motion.div>
 
+      {/* Announcement Creation Dialog */}
+      <AnimatePresence>
+        {announcementDialog.show && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setAnnouncementDialog({ show: false, data: null, analysisData: null })}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-sm shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Create Outbreak Announcement</h3>
+                <button
+                  onClick={() => setAnnouncementDialog({ show: false, data: null, analysisData: null })}
+                  className="p-2 hover:bg-gray-100 rounded-sm transition-colors"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter announcement title"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                  <textarea
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={8}
+                    placeholder="Enter announcement message"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Announcement Type</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {ANNOUNCEMENT_TYPES.map(type => {
+                      const Icon = type.icon;
+                      return (
+                        <button
+                          key={type.value}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, type: type.value })}
+                          className={`flex items-center gap-3 p-3 border rounded-sm transition-all ${
+                            formData.type === type.value
+                              ? 'border-[#1B365D] bg-blue-50 text-[#1B365D]'
+                              : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <Icon className="h-5 w-5" />
+                          <span className="text-sm font-medium">{type.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {formData.type === 'other' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Specify Type</label>
+                    <input
+                      type="text"
+                      value={formData.customType}
+                      onChange={(e) => setFormData({ ...formData, customType: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter custom announcement type"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+                  <div className="flex gap-3">
+                    {[
+                      { value: 'low', label: 'Low', color: 'bg-yellow-500' },
+                      { value: 'medium', label: 'Medium', color: 'bg-orange-500' },
+                      { value: 'high', label: 'High', color: 'bg-red-500' }
+                    ].map(priority => (
+                      <button
+                        key={priority.value}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, priority: priority.value as any })}
+                        className={`flex-1 flex items-center justify-center gap-2 p-3 border rounded-sm transition-all ${
+                          formData.priority === priority.value
+                            ? 'border-[#1B365D] bg-blue-50'
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        <div className={`w-3 h-3 rounded-full ${priority.color}`}></div>
+                        <span className="text-sm font-medium">{priority.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Profile Image (Optional)</label>
+                  <div className="space-y-3">
+                    {imagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded-sm border border-gray-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-gray-300 rounded-sm p-6 text-center hover:border-gray-400 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          id="outbreak-image-upload"
+                        />
+                        <label
+                          htmlFor="outbreak-image-upload"
+                          className="cursor-pointer flex flex-col items-center gap-2"
+                        >
+                          <Upload className="h-8 w-8 text-gray-400" />
+                          <span className="text-sm text-gray-600">Click to upload image</span>
+                          <span className="text-xs text-gray-500">PNG, JPG up to 10MB</span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="submit"
+                    disabled={submitting || uploadingImage}
+                    className="flex-1 flex items-center justify-center gap-2 bg-[#1B365D] text-white px-6 py-3 rounded-sm hover:bg-[#152a4a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submitting || uploadingImage ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>{uploadingImage ? 'Uploading Image...' : 'Publishing...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        <span>Publish Announcement</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAnnouncementDialog({ show: false, data: null, analysisData: null })}
+                    disabled={submitting}
+                    className="px-6 py-3 border border-gray-300 rounded-sm hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Confirmation Dialog */}
       <AnimatePresence>
         {confirmDialog.show && (
@@ -189,7 +442,9 @@ export default function OutbreakResponse() {
               <p className="text-gray-600 mb-6">
                 {confirmDialog.action === 'respond'
                   ? 'Are you sure you want to respond to this outbreak? This will mark it as ongoing.'
-                  : 'Are you sure you want to mark this outbreak as resolved?'}
+                  : confirmDialog.action === 'resolve'
+                  ? 'Are you sure you want to mark this outbreak as resolved?'
+                  : 'Are you sure you want to delete this outbreak alert? This action cannot be undone.'}
               </p>
               <div className="flex gap-3 justify-end">
                 <button
@@ -201,7 +456,9 @@ export default function OutbreakResponse() {
                 <button
                   onClick={confirmAction}
                   className={`px-4 py-2 text-white rounded-sm transition-colors ${
-                    confirmDialog.action === 'respond' ? 'bg-[#1B365D] hover:bg-[#152a4a]' : 'bg-green-600 hover:bg-green-700'
+                    confirmDialog.action === 'respond' ? 'bg-[#1B365D] hover:bg-[#152a4a]' : 
+                    confirmDialog.action === 'resolve' ? 'bg-green-600 hover:bg-green-700' :
+                    'bg-red-600 hover:bg-red-700'
                   }`}
                 >
                   Confirm
@@ -396,7 +653,7 @@ export default function OutbreakResponse() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Users className="h-4 w-4" />
-                          <span>{alert.cases} cases</span>
+                          <span>{typeof alert.residents === 'number' ? `${alert.residents} residents` : `${alert.cases} cases`}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
@@ -404,67 +661,118 @@ export default function OutbreakResponse() {
                         </div>
                       </div>
                       
-                      {/* Residents List */}
-                      <div className="bg-blue-50 p-4 rounded-sm mb-3">
-                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Affected Residents ({alert.residents?.length || 0}):</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {alert.residents?.slice(0, 10).map((resident, idx) => (
-                            <span key={idx} className="px-3 py-1 bg-white text-gray-700 text-xs rounded-sm border border-gray-200">
-                              {resident}
-                            </span>
-                          ))}
-                          {alert.residents?.length > 10 && (
-                            <span className="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded-sm font-medium">
-                              +{alert.residents.length - 10} more
-                            </span>
+                      {/* Enhanced Alert Info */}
+                      {alert.title && (
+                        <div className="bg-blue-50 p-4 rounded-sm mb-3">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-2">{alert.title}</h4>
+                          {alert.riskScore && (
+                            <p className="text-xs text-gray-600">Risk Score: {alert.riskScore.toFixed(1)}/10</p>
+                          )}
+                          {alert.clusters && (
+                            <p className="text-xs text-gray-600">Clusters Detected: {alert.clusters}</p>
                           )}
                         </div>
-                      </div>
+                      )}
+                      
+                      {/* Residents List */}
+                      {Array.isArray(alert.residents) && alert.residents.length > 0 && (
+                        <div className="bg-blue-50 p-4 rounded-sm mb-3">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-2">Affected Residents ({alert.residents.length}):</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {alert.residents.slice(0, 10).map((resident, idx) => (
+                              <span key={idx} className="px-3 py-1 bg-white text-gray-700 text-xs rounded-sm border border-gray-200">
+                                {resident}
+                              </span>
+                            ))}
+                            {alert.residents.length > 10 && (
+                              <span className="px-3 py-1 bg-gray-200 text-gray-600 text-xs rounded-sm font-medium">
+                                +{alert.residents.length - 10} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Action Buttons */}
-                    <div className="ml-4">
+                    <div className="ml-4 flex flex-col gap-2">
                       {alert.status === 'pending' && (
-                        <button
-                          onClick={() => handleRespond(alert.id)}
-                          className="flex items-center gap-2 bg-[#1B365D] text-white px-4 py-2 rounded-sm hover:bg-[#152a4a] transition-colors"
-                        >
-                          <Send className="h-4 w-4" />
-                          <span>Respond</span>
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleRespond(alert.id)}
+                            className="flex items-center gap-2 bg-[#1B365D] text-white px-4 py-2 rounded-sm hover:bg-[#152a4a] transition-colors"
+                          >
+                            <Send className="h-4 w-4" />
+                            <span>Respond</span>
+                          </button>
+                          <button
+                            onClick={() => handleCreateAnnouncement(alert)}
+                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700 transition-colors"
+                          >
+                            <Megaphone className="h-4 w-4" />
+                            <span>Announce</span>
+                          </button>
+                        </>
                       )}
                       {alert.status === 'ongoing' && (
-                        <button
-                          onClick={() => handleResolve(alert.id)}
-                          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-sm hover:bg-green-700 transition-colors"
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                          <span>Mark Resolved</span>
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleResolve(alert.id)}
+                            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-sm hover:bg-green-700 transition-colors"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            <span>Mark Resolved</span>
+                          </button>
+                          <button
+                            onClick={() => handleCreateAnnouncement(alert)}
+                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700 transition-colors"
+                          >
+                            <Megaphone className="h-4 w-4" />
+                            <span>Update Alert</span>
+                          </button>
+                        </>
                       )}
+                      <button
+                        onClick={() => handleDelete(alert.id)}
+                        className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-sm hover:bg-red-700 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>Delete</span>
+                      </button>
                     </div>
                   </div>
 
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h4 className="text-sm font-semibold text-gray-700 mb-2">Recommended Actions:</h4>
-                    <ul className="space-y-2">
-                      <li className="flex items-start gap-2 text-sm text-gray-600">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span>Alert local health authorities immediately</span>
-                      </li>
-                      <li className="flex items-start gap-2 text-sm text-gray-600">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span>Conduct contact tracing in affected area</span>
-                      </li>
-                      <li className="flex items-start gap-2 text-sm text-gray-600">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span>Issue health advisory to residents</span>
-                      </li>
-                      <li className="flex items-start gap-2 text-sm text-gray-600">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span>Monitor for additional cases</span>
-                      </li>
-                    </ul>
+                    {alert.recommendations && alert.recommendations.length > 0 ? (
+                      <ul className="space-y-2">
+                        {alert.recommendations.slice(0, 4).map((recommendation, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <span>{recommendation}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-2 text-sm text-gray-600">
+                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>Alert local health authorities immediately</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-gray-600">
+                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>Conduct contact tracing in affected area</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-gray-600">
+                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>Issue health advisory to residents</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-gray-600">
+                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>Monitor for additional cases</span>
+                        </li>
+                      </ul>
+                    )}
                   </div>
                 </motion.div>
               ))
