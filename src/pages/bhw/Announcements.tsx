@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Megaphone, Plus, Send, AlertCircle, Info, CheckCircle, X, ChevronLeft, ChevronRight, Calendar, Package, Siren, Droplet, Edit2, Trash2, Activity } from 'lucide-react';
+import { Megaphone, Plus, Send, AlertCircle, Info, CheckCircle, X, ChevronLeft, ChevronRight, Calendar, Package, Siren, Droplet, Edit2, Trash2, Activity, Upload, Image } from 'lucide-react';
 import { collection, getDocs, addDoc, serverTimestamp, orderBy, query, Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { uploadImage } from '@/services/cloudinaryService';
 
 interface Announcement {
   id: string;
@@ -14,6 +15,7 @@ interface Announcement {
   priority: 'low' | 'medium' | 'high';
   createdAt: any;
   createdBy: string;
+  imageUrl?: string;
 }
 
 const ANNOUNCEMENT_TYPES = [
@@ -43,8 +45,12 @@ export default function Announcements() {
     message: '',
     type: 'health_advisory',
     customType: '',
-    priority: 'medium' as 'low' | 'medium' | 'high'
+    priority: 'medium' as 'low' | 'medium' | 'high',
+    imageUrl: ''
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     fetchAnnouncements();
@@ -99,10 +105,32 @@ export default function Announcements() {
     setCurrentPage(1);
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setFormData({ ...formData, imageUrl: '' });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      let imageUrl = formData.imageUrl;
+      
+      // Upload image if selected
+      if (imageFile) {
+        setUploadingImage(true);
+        imageUrl = await uploadImage(imageFile);
+      }
+      
       const finalType = formData.type === 'other' ? formData.customType : formData.type;
       
       if (editingId) {
@@ -111,6 +139,7 @@ export default function Announcements() {
           message: formData.message,
           type: finalType,
           priority: formData.priority,
+          imageUrl,
           updatedAt: serverTimestamp()
         });
       } else {
@@ -119,12 +148,15 @@ export default function Announcements() {
           message: formData.message,
           type: finalType,
           priority: formData.priority,
+          imageUrl,
           createdAt: serverTimestamp(),
           createdBy: user?.displayName || 'BHW'
         });
       }
       
-      setFormData({ title: '', message: '', type: 'health_advisory', customType: '', priority: 'medium' });
+      setFormData({ title: '', message: '', type: 'health_advisory', customType: '', priority: 'medium', imageUrl: '' });
+      setImageFile(null);
+      setImagePreview('');
       setEditingId(null);
       setShowModal(false);
       fetchAnnouncements();
@@ -132,6 +164,7 @@ export default function Announcements() {
       console.error('Error saving announcement:', error);
     } finally {
       setSubmitting(false);
+      setUploadingImage(false);
     }
   };
 
@@ -141,8 +174,12 @@ export default function Announcements() {
       message: announcement.message,
       type: announcement.customType ? 'other' : announcement.type,
       customType: announcement.customType || '',
-      priority: announcement.priority
+      priority: announcement.priority,
+      imageUrl: announcement.imageUrl || ''
     });
+    if (announcement.imageUrl) {
+      setImagePreview(announcement.imageUrl);
+    }
     setEditingId(announcement.id);
     setShowModal(true);
   };
@@ -160,7 +197,9 @@ export default function Announcements() {
   const closeModal = () => {
     setShowModal(false);
     setEditingId(null);
-    setFormData({ title: '', message: '', type: 'health_advisory', customType: '', priority: 'medium' });
+    setFormData({ title: '', message: '', type: 'health_advisory', customType: '', priority: 'medium', imageUrl: '' });
+    setImageFile(null);
+    setImagePreview('');
   };
 
   const getTypeDisplay = (type: string) => {
@@ -365,16 +404,56 @@ export default function Announcements() {
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Profile Image (Optional)</label>
+                  <div className="space-y-3">
+                    {imagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded-sm border border-gray-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={removeImage}
+                          className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-gray-300 rounded-sm p-6 text-center hover:border-gray-400 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="cursor-pointer flex flex-col items-center gap-2"
+                        >
+                          <Upload className="h-8 w-8 text-gray-400" />
+                          <span className="text-sm text-gray-600">Click to upload image</span>
+                          <span className="text-xs text-gray-500">PNG, JPG up to 10MB</span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex gap-3 pt-4">
                   <button
                     type="submit"
-                    disabled={submitting}
+                    disabled={submitting || uploadingImage}
                     className="flex-1 flex items-center justify-center gap-2 bg-[#1B365D] text-white px-6 py-3 rounded-sm hover:bg-[#152a4a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    {submitting ? (
+                    {submitting || uploadingImage ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>{editingId ? 'Updating...' : 'Publishing...'}</span>
+                        <span>{uploadingImage ? 'Uploading Image...' : editingId ? 'Updating...' : 'Publishing...'}</span>
                       </>
                     ) : (
                       <>
@@ -546,9 +625,18 @@ export default function Announcements() {
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <div>
-                        <div className="font-semibold text-gray-900">{announcement.title}</div>
-                        <div className="text-sm text-gray-600 mt-1 line-clamp-2">{announcement.message}</div>
+                      <div className="flex items-start gap-3">
+                        {announcement.imageUrl && (
+                          <img
+                            src={announcement.imageUrl}
+                            alt="Announcement"
+                            className="w-12 h-12 object-cover rounded-sm border border-gray-200 flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">{announcement.title}</div>
+                          <div className="text-sm text-gray-600 mt-1 line-clamp-2">{announcement.message}</div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
