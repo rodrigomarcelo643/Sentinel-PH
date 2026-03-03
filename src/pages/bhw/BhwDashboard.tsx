@@ -7,11 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { collection, getDocs, query, where, orderBy, limit, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { PatternAnalysisModal } from '@/components/ui/PatternAnalysisModal';
-import { analyzeHealthPatterns, type PatternAnalysisResult } from '@/services/patternAnalysisService';
+import { type PatternAnalysisResult } from '@/services/patternAnalysisService';
 import { type OutbreakAnnouncementData } from '@/services/outbreakAnnouncementService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { showAnnouncementCreatedToast, showPatternAnalysisToast } from '@/services/toastService';
+import { showAnnouncementCreatedToast } from '@/services/toastService';
 
 const observationData = [
   { day: 'Mon', observations: 12, verified: 10 },
@@ -45,8 +45,8 @@ export default function BhwDashboard() {
   const [recentReports, setRecentReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showPatternAnalysis, setShowPatternAnalysis] = useState(false);
-  const [patternAnalysis, setPatternAnalysis] = useState<PatternAnalysisResult | null>(null);
-  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [patternAnalysis] = useState<PatternAnalysisResult | null>(null);
+  const [analysisLoading] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
