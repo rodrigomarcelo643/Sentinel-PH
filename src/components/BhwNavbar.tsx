@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -15,12 +16,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Menu, User, LogOut, Settings } from "lucide-react";
+import { Menu, User, LogOut, Settings, ChevronDown } from "lucide-react";
 
 export default function BhwNavbar() {
   const [open, setOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
+
+  const getInitials = (name?: string | null, email?: string | null) => {
+    if (name) {
+      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    if (email) {
+      return email.slice(0, 2).toUpperCase();
+    }
+    return 'U';
+  };
+
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'User';
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
@@ -36,17 +57,17 @@ export default function BhwNavbar() {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <Link to="/bhw/residents">
+                  <Link to="/bhw/dashboard">
                     <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      Residents
+                      Dashboard
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <Link to="/bhw/dashboard">
+                  <Link to="/bhw/sentinels">
                     <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      Dashboard
+                      Sentinels
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -74,25 +95,33 @@ export default function BhwNavbar() {
           <div className="hidden lg:flex items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <User className="h-5 w-5" />
-                </Button>
+                <button className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded-lg transition-colors outline-none">
+                  <Avatar size="default">
+                    <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt={displayName} />
+                    <AvatarFallback>{getInitials(user?.displayName, user?.email)}</AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:flex flex-col items-start">
+                    <span className="text-sm font-medium text-gray-900">{displayName}</span>
+                    <span className="text-xs text-gray-500">Barangay Health Worker</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-gray-600 hidden md:block" />
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium">{displayName}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/bhw/settings')}>
                   <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
+                  Settings
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
+                  Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -114,18 +143,18 @@ export default function BhwNavbar() {
               
               <nav className="flex flex-col gap-1">
                 <Link
-                  to="/bhw/residents"
-                  onClick={() => setOpen(false)}
-                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
-                >
-                  Residents
-                </Link>
-                <Link
                   to="/bhw/dashboard"
                   onClick={() => setOpen(false)}
                   className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
                 >
                   Dashboard
+                </Link>
+                <Link
+                  to="/bhw/sentinels"
+                  onClick={() => setOpen(false)}
+                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
+                >
+                  Sentinels
                 </Link>
                 <Link
                   to="/bhw/reports"
@@ -145,14 +174,6 @@ export default function BhwNavbar() {
                 {/* Mobile Profile Section */}
                 <div className="mt-6 pt-6 border-t space-y-2">
                   <Link
-                    to="/bhw/profile"
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-2 px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <User className="h-4 w-4" />
-                    Profile
-                  </Link>
-                  <Link
                     to="/bhw/settings"
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-2 px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
@@ -161,7 +182,10 @@ export default function BhwNavbar() {
                     Settings
                   </Link>
                   <button
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpen(false);
+                      handleLogout();
+                    }}
                     className="flex items-center gap-2 w-full px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors text-red-600"
                   >
                     <LogOut className="h-4 w-4" />
