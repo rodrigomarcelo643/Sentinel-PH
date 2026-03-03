@@ -1,11 +1,17 @@
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts';
-import { Activity, Users, Bell, CheckCircle, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Activity, Users, Bell, CheckCircle, AlertTriangle, TrendingUp, Brain, Megaphone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { PatternAnalysisModal } from '@/components/ui/PatternAnalysisModal';
+import { analyzeHealthPatterns, type PatternAnalysisResult } from '@/services/patternAnalysisService';
+import { generateOutbreakAnnouncement, type OutbreakAnnouncementData } from '@/services/outbreakAnnouncementService';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { showAnnouncementCreatedToast, showPatternAnalysisToast } from '@/services/toastService';
 
 const observationData = [
   { day: 'Mon', observations: 12, verified: 10 },
@@ -28,6 +34,8 @@ const symptomData = [
 const COLORS = ['#1B365D', '#CE1126', '#10b981', '#f59e0b', '#8b5cf6'];
 
 export default function BhwDashboard() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState('week');
   const [totalSentinels, setTotalSentinels] = useState(0);
   const [activeSentinels, setActiveSentinels] = useState(0);
@@ -36,6 +44,9 @@ export default function BhwDashboard() {
   const [verifiedToday, setVerifiedToday] = useState(0);
   const [recentReports, setRecentReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPatternAnalysis, setShowPatternAnalysis] = useState(false);
+  const [patternAnalysis, setPatternAnalysis] = useState<PatternAnalysisResult | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -117,6 +128,42 @@ export default function BhwDashboard() {
     }
   };
 
+  const handlePatternAnalysis = async () => {
+    setAnalysisLoading(true);
+    setShowPatternAnalysis(true);
+    
+    try {
+      const analysis = await analyzeHealthPatterns();
+      setPatternAnalysis(analysis);
+      showPatternAnalysisToast(analysis.totalReports, analysis.outbreakRisk);
+    } catch (error) {
+      console.error('Error analyzing patterns:', error);
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
+  const handleCreateAnnouncement = async (announcementData: OutbreakAnnouncementData, analysisData: PatternAnalysisResult) => {
+    try {
+      await addDoc(collection(db, 'announcements'), {
+        title: announcementData.title,
+        message: announcementData.message,
+        type: announcementData.type,
+        priority: announcementData.priority,
+        createdAt: serverTimestamp(),
+        createdBy: user?.displayName || 'BHW',
+        sourceType: 'pattern_analysis',
+        analysisData: analysisData
+      });
+      
+      setShowPatternAnalysis(false);
+      showAnnouncementCreatedToast(announcementData.title);
+      navigate('/bhw/announcements');
+    } catch (error) {
+      console.error('Error creating announcement:', error);
+    }
+  };
+
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -138,7 +185,7 @@ export default function BhwDashboard() {
   };
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-2 bg-gray-50 min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -150,6 +197,13 @@ export default function BhwDashboard() {
             <p className="text-gray-600">Monitor community health observations in your barangay</p>
           </div>
           <div className="flex gap-3">
+            <button
+              onClick={handlePatternAnalysis}
+              className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <Brain className="h-4 w-4" />
+              <span>Analyze Patterns</span>
+            </button>
             <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select Period" />
@@ -333,6 +387,15 @@ export default function BhwDashboard() {
           </div>
         )}
       </motion.div>
+
+      {/* Pattern Analysis Modal */}
+      <PatternAnalysisModal
+        isOpen={showPatternAnalysis}
+        onClose={() => setShowPatternAnalysis(false)}
+        analysis={patternAnalysis}
+        isLoading={analysisLoading}
+        onCreateAnnouncement={handleCreateAnnouncement}
+      />
     </div>
   );
 }
