@@ -13,11 +13,15 @@ import {
   Activity,
   Target,
   Shield,
-  Zap
+  Zap,
+  Save
 } from 'lucide-react';
 import { aiAnalysisService } from '@/services/aiAnalysisService';
 import type { AIAnalysisResult, SymptomReport } from '@/services/aiAnalysisService';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface AIAnalysisModalProps {
   open: boolean;
@@ -26,6 +30,7 @@ interface AIAnalysisModalProps {
   observedReports: SymptomReport[];
   patientInfo: {
     name: string;
+    uid: string;
     age?: number;
     gender?: string;
     location?: string;
@@ -42,8 +47,57 @@ export default function AIAnalysisModal({
   const [analysis, setAnalysis] = useState<AIAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
+  const saveAnalysis = async () => {
+    if (!analysis || !user) return;
+    
+    setSaving(true);
+    try {
+      await addDoc(collection(db, 'aiAnalysisReports'), {
+        patientUid: patientInfo.uid,
+        patientName: patientInfo.name,
+        patientLocation: patientInfo.location,
+        analysisResult: analysis,
+        selfReportsCount: selfReports.length,
+        observedReportsCount: observedReports.length,
+        totalReports: selfReports.length + observedReports.length,
+        analyzedBy: user.displayName || 'BHW',
+        analyzedByUid: user.uid,
+        createdAt: serverTimestamp(),
+        reportDate: new Date().toISOString().split('T')[0]
+      });
+      
+      toast({
+        title: 'Analysis Saved',
+        description: 'AI analysis report has been saved successfully.',
+      });
+      
+      // Close the modal after saving
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error saving analysis:', error);
+      toast({
+        title: 'Save Failed',
+        description: 'Failed to save analysis report.',
+        variant: 'destructive'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+  const handleModalClose = (open: boolean) => {
+    if (!open) {
+      // Reset states when modal closes
+      setAnalysis(null);
+      setLoading(false);
+      setProgress(0);
+      setSaving(false);
+    }
+    onOpenChange(open);
+  };
   useEffect(() => {
     if (open && (selfReports.length > 0 || observedReports.length > 0)) {
       performAnalysis();
@@ -118,7 +172,7 @@ export default function AIAnalysisModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleModalClose}>
       <DialogContent className="!max-w-[95vw] !w-[95vw] max-h-[90vh] overflow-y-auto p-0">
         <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
@@ -130,7 +184,7 @@ export default function AIAnalysisModal({
               <p className="text-sm text-gray-600">Patient: {patientInfo.name}</p>
             </div>
           </div>
-          <Button onClick={() => onOpenChange(false)} variant="ghost" size="icon">
+          <Button onClick={() => handleModalClose(false)} variant="ghost" size="icon">
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -498,7 +552,15 @@ export default function AIAnalysisModal({
                   <Brain className="mr-2 h-4 w-4" />
                   Re-analyze
                 </Button>
-                <Button variant="outline" onClick={() => onOpenChange(false)}>
+                <Button 
+                  onClick={saveAnalysis}
+                  disabled={saving}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {saving ? 'Saving...' : 'Save Report'}
+                </Button>
+                <Button variant="outline" onClick={() => handleModalClose(false)}>
                   Close Analysis
                 </Button>
               </div>
