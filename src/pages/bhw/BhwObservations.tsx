@@ -383,15 +383,15 @@ export default function BhwObservations() {
           </motion.div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
             {/* Symptom Radar Chart */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white p-6 rounded-xl shadow-md border border-gray-100"
+              className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-800">Symptom Distribution</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Symptom Distribution</h3>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -400,25 +400,27 @@ export default function BhwObservations() {
                   <span>Live</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={stats.symptomRadar}>
-                  <PolarGrid stroke="#e5e7eb" />
-                  <PolarAngleAxis dataKey="symptom" tick={{ fill: '#6b7280', fontSize: 12 }} />
-                  <PolarRadiusAxis angle={90} domain={[0, 'dataMax']} />
-                  <Radar name="Cases" dataKey="count" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
-                  <Tooltip />
-                </RadarChart>
-              </ResponsiveContainer>
+              <div className="h-[250px] sm:h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart data={stats.symptomRadar}>
+                    <PolarGrid stroke="#e5e7eb" />
+                    <PolarAngleAxis dataKey="symptom" tick={{ fill: '#6b7280', fontSize: window.innerWidth < 640 ? 10 : 12 }} />
+                    <PolarRadiusAxis angle={90} domain={[0, 'dataMax']} tick={{ fontSize: 10 }} />
+                    <Radar name="Cases" dataKey="count" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
+                    <Tooltip wrapperStyle={{ fontSize: '12px' }} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
             </motion.div>
 
             {/* Severity Radial Chart */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white p-6 rounded-xl shadow-md border border-gray-100"
+              className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-800">Severity Breakdown</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Severity Breakdown</h3>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -427,33 +429,35 @@ export default function BhwObservations() {
                   <span>Live</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadialBarChart 
-                  innerRadius="10%" 
-                  outerRadius="90%" 
-                  data={stats.severityData} 
-                  startAngle={180} 
-                  endAngle={0}
-                >
-                  <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                  <RadialBar background dataKey="value" cornerRadius={10} />
-                  <Legend iconSize={10} layout="vertical" verticalAlign="middle" align="right" />
-                  <Tooltip />
-                </RadialBarChart>
-              </ResponsiveContainer>
+              <div className="h-[250px] sm:h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadialBarChart 
+                    innerRadius="10%" 
+                    outerRadius="90%" 
+                    data={stats.severityData} 
+                    startAngle={180} 
+                    endAngle={0}
+                  >
+                    <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                    <RadialBar background dataKey="value" cornerRadius={10} />
+                    <Legend iconSize={8} layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '12px' }} />
+                    <Tooltip wrapperStyle={{ fontSize: '12px' }} />
+                  </RadialBarChart>
+                </ResponsiveContainer>
+              </div>
             </motion.div>
           </div>
 
           {/* New Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             {/* Self-Reported vs Observed */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white p-6 rounded-xl shadow-md border border-gray-100"
+              className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-800">Self-Reported vs Observed</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Self-Reported vs Observed</h3>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -462,27 +466,29 @@ export default function BhwObservations() {
                   <span>Live</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={stats.reportTypeData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="day" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="selfReported" stroke="#3B82F6" strokeWidth={3} dot={{ r: 4 }} name="Self-Reported" />
-                  <Line type="monotone" dataKey="observed" stroke="#10B981" strokeWidth={3} dot={{ r: 4 }} name="Observed" />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="h-[250px] sm:h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={stats.reportTypeData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="day" stroke="#9ca3af" fontSize={12} />
+                    <YAxis stroke="#9ca3af" fontSize={12} />
+                    <Tooltip wrapperStyle={{ fontSize: '12px' }} />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Line type="monotone" dataKey="selfReported" stroke="#3B82F6" strokeWidth={2} dot={{ r: 3 }} name="Self-Reported" />
+                    <Line type="monotone" dataKey="observed" stroke="#10B981" strokeWidth={2} dot={{ r: 3 }} name="Observed" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </motion.div>
 
             {/* Most Active Reporters */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white p-6 rounded-xl shadow-md border border-gray-100"
+              className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-800">Most Active Reporters</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-800">Most Active Reporters</h3>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -491,15 +497,17 @@ export default function BhwObservations() {
                   <span>Live</span>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.topReporters}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
-                  <Tooltip />
-                  <Bar dataKey="reports" fill="#10B981" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="h-[250px] sm:h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stats.topReporters}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
+                    <YAxis stroke="#9ca3af" fontSize={12} />
+                    <Tooltip wrapperStyle={{ fontSize: '12px' }} />
+                    <Bar dataKey="reports" fill="#10B981" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </motion.div>
           </div>
         </>

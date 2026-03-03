@@ -236,22 +236,22 @@ export default function Announcements() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-sm p-6 shadow-sm border border-blue-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-sm shadow-sm">
-                <Megaphone className="h-8 w-8 text-white" />
+        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-sm p-4 sm:p-6 shadow-sm border border-blue-100">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 sm:p-3 rounded-sm shadow-sm">
+                <Megaphone className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-[#1B365D] mb-1">Announcements</h1>
-                <p className="text-gray-600 text-sm">Health advisories and important updates for residents</p>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1B365D] mb-1">Announcements</h1>
+                <p className="text-gray-600 text-xs sm:text-sm">Health advisories and important updates for residents</p>
               </div>
             </div>
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 bg-[#1B365D] text-white px-4 py-2 rounded-sm hover:bg-[#152a4a] transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-2 bg-[#1B365D] text-white px-3 sm:px-4 py-2 rounded-sm hover:bg-[#152a4a] transition-colors cursor-pointer text-sm sm:text-base w-full sm:w-auto"
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>New Announcement</span>
             </button>
           </div>
@@ -260,10 +260,12 @@ export default function Announcements() {
 
       {/* Date Filter */}
       <div className="bg-white p-4 rounded-sm shadow-sm border border-gray-100 mb-6">
-        <div className="flex items-center gap-4">
-          <Calendar className="h-5 w-5 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Filter by Date:</span>
-          <div className="flex gap-2">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="flex items-center gap-2 lg:gap-4">
+            <Calendar className="h-5 w-5 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Filter by Date:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
             {[
               { value: 'all', label: 'All Time' },
               { value: 'today', label: 'Today' },
@@ -273,7 +275,7 @@ export default function Announcements() {
               <button
                 key={filter.value}
                 onClick={() => setDateFilter(filter.value as any)}
-                className={`px-4 py-2 rounded-sm text-sm font-medium transition-colors cursor-pointer ${
+                className={`px-3 sm:px-4 py-2 rounded-sm text-sm font-medium transition-colors cursor-pointer ${
                   dateFilter === filter.value
                     ? 'bg-[#1B365D] text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -283,7 +285,7 @@ export default function Announcements() {
               </button>
             ))}
           </div>
-          <span className="ml-auto text-sm text-gray-500">
+          <span className="text-sm text-gray-500 lg:ml-auto">
             {filteredAnnouncements.length} announcement{filteredAnnouncements.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -592,101 +594,108 @@ export default function Announcements() {
       ) : (
         <>
           <div className="bg-white rounded-sm shadow-sm border border-gray-100 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Title
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Priority
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Created By
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {currentAnnouncements.map((announcement, index) => (
-                  <motion.tr
-                    key={announcement.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-start gap-3">
-                        {announcement.imageUrl && (
-                          <img
-                            src={announcement.imageUrl}
-                            alt="Announcement"
-                            className="w-12 h-12 object-cover rounded-sm border border-gray-200 flex-shrink-0"
-                          />
-                        )}
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-900">{announcement.title}</div>
-                          <div className="text-sm text-gray-600 mt-1 line-clamp-2">{announcement.message}</div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px]">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider hidden sm:table-cell">
+                      Type
+                    </th>
+                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Priority
+                    </th>
+                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider hidden md:table-cell">
+                      Date
+                    </th>
+                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider hidden lg:table-cell">
+                      Created By
+                    </th>
+                    <th className="px-3 lg:px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {currentAnnouncements.map((announcement, index) => (
+                    <motion.tr
+                      key={announcement.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-3 lg:px-6 py-4">
+                        <div className="flex items-start gap-2 lg:gap-3">
+                          {announcement.imageUrl && (
+                            <img
+                              src={announcement.imageUrl}
+                              alt="Announcement"
+                              className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-sm border border-gray-200 flex-shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-gray-900 text-sm lg:text-base truncate">{announcement.title}</div>
+                            <div className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{announcement.message}</div>
+                            <div className="sm:hidden mt-2">
+                              <span className={`inline-flex px-2 py-1 rounded-sm text-xs font-semibold border ${getTypeColor(announcement.type)}`}>
+                                {getTypeDisplay(announcement.type)}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-3 py-1 rounded-sm text-xs font-semibold border ${getTypeColor(announcement.type)}`}>
-                        {getTypeDisplay(announcement.type)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${getPriorityColor(announcement.priority)}`}></div>
-                        <span className="text-sm text-gray-700 capitalize">{announcement.priority}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {announcement.createdAt?.toDate?.()?.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {announcement.createdBy}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleEdit(announcement)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-sm transition-colors cursor-pointer"
-                          title="Edit"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirm({ show: true, id: announcement.id, title: announcement.title })}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-sm transition-colors cursor-pointer"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td className="px-3 lg:px-6 py-4 hidden sm:table-cell">
+                        <span className={`inline-flex px-3 py-1 rounded-sm text-xs font-semibold border ${getTypeColor(announcement.type)}`}>
+                          {getTypeDisplay(announcement.type)}
+                        </span>
+                      </td>
+                      <td className="px-3 lg:px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${getPriorityColor(announcement.priority)}`}></div>
+                          <span className="text-sm text-gray-700 capitalize">{announcement.priority}</span>
+                        </div>
+                      </td>
+                      <td className="px-3 lg:px-6 py-4 text-sm text-gray-700 hidden md:table-cell">
+                        {announcement.createdAt?.toDate?.()?.toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </td>
+                      <td className="px-3 lg:px-6 py-4 text-sm text-gray-700 hidden lg:table-cell">
+                        {announcement.createdBy}
+                      </td>
+                      <td className="px-3 lg:px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1 lg:gap-2">
+                          <button
+                            onClick={() => handleEdit(announcement)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-sm transition-colors cursor-pointer"
+                            title="Edit"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm({ show: true, id: announcement.id, title: announcement.title })}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-sm transition-colors cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="bg-white rounded-sm shadow-sm border border-gray-100 mt-4 px-6 py-4 flex items-center justify-between">
+            <div className="bg-white rounded-sm shadow-sm border border-gray-100 mt-4 px-4 lg:px-6 py-4 flex flex-col gap-4 items-center justify-between lg:flex-row">
               <div className="text-sm text-gray-700">
                 Showing {startIndex + 1} to {Math.min(endIndex, filteredAnnouncements.length)} of {filteredAnnouncements.length} announcements
               </div>
@@ -699,19 +708,24 @@ export default function Announcements() {
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 <div className="flex gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-4 py-2 rounded-sm text-sm font-medium transition-colors cursor-pointer ${
-                        currentPage === page
-                          ? 'bg-[#1B365D] text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    const pageNum = currentPage <= 3 ? i + 1 : 
+                                  currentPage >= totalPages - 2 ? totalPages - 4 + i :
+                                  currentPage - 2 + i;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-3 sm:px-4 py-2 rounded-sm text-sm font-medium transition-colors cursor-pointer ${
+                          currentPage === pageNum
+                            ? 'bg-[#1B365D] text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
                 </div>
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}

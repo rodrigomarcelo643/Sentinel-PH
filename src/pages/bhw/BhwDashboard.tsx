@@ -259,58 +259,62 @@ export default function BhwDashboard() {
 
       {/* Charts */}
       <motion.div 
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+        className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <motion.div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100" whileHover={{ scale: 1.02 }}>
-          <h3 className="text-lg font-bold text-[#1B365D] mb-4">Weekly Observation Trends</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={observationData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="day" stroke="#666" />
-              <YAxis stroke="#666" />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }} />
-              <Legend />
-              <Line type="monotone" dataKey="observations" stroke="#1B365D" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} name="Total Observations" />
-              <Line type="monotone" dataKey="verified" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} name="Verified" />
-            </LineChart>
-          </ResponsiveContainer>
+        <motion.div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100" whileHover={{ scale: 1.02 }}>
+          <h3 className="text-base sm:text-lg font-bold text-[#1B365D] mb-4">Weekly Observation Trends</h3>
+          <div className="h-[250px] sm:h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={observationData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="day" stroke="#666" fontSize={12} />
+                <YAxis stroke="#666" fontSize={12} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <Line type="monotone" dataKey="observations" stroke="#1B365D" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Total Observations" />
+                <Line type="monotone" dataKey="verified" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} name="Verified" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </motion.div>
 
-        <motion.div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100" whileHover={{ scale: 1.02 }}>
-          <h3 className="text-lg font-bold text-[#1B365D] mb-4">Common Symptoms Reported</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={symptomData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {symptomData.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+        <motion.div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100" whileHover={{ scale: 1.02 }}>
+          <h3 className="text-base sm:text-lg font-bold text-[#1B365D] mb-4">Common Symptoms Reported</h3>
+          <div className="h-[250px] sm:h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={symptomData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`}
+                  outerRadius={window.innerWidth < 640 ? 70 : 100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {symptomData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip wrapperStyle={{ fontSize: '12px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </motion.div>
       </motion.div>
 
       {/* Recent Activity */}
       <motion.div 
-        className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+        className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.6 }}
       >
-        <h3 className="text-lg font-bold text-[#1B365D] mb-4">Recent Reports</h3>
+        <h3 className="text-base sm:text-lg font-bold text-[#1B365D] mb-4">Recent Reports</h3>
         {loading ? (
           <div className="space-y-2">
             {[...Array(4)].map((_, i) => (
@@ -319,32 +323,35 @@ export default function BhwDashboard() {
           </div>
         ) : recentReports.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[600px]">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Reporter</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Reporter</th>
+                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Description</th>
+                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {recentReports.map((report, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-3 py-2">
+                    <td className="px-2 sm:px-3 py-2">
                       <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
+                        <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
                           <AvatarImage src={report.userSelfieUrl} alt={report.userName} />
                           <AvatarFallback className="text-xs">{report.userName?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <span className="text-sm font-medium text-gray-900">{report.userName}</span>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-xs sm:text-sm font-medium text-gray-900 truncate block">{report.userName}</span>
+                          <span className="text-xs text-gray-600 truncate block sm:hidden">{report.description || 'No description'}</span>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-3 py-2 text-sm text-gray-600 truncate max-w-xs">{report.description || 'No description'}</td>
-                    <td className="px-3 py-2 text-sm text-gray-500 whitespace-nowrap">
+                    <td className="px-2 sm:px-3 py-2 text-sm text-gray-600 truncate max-w-xs hidden sm:table-cell">{report.description || 'No description'}</td>
+                    <td className="px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-500 whitespace-nowrap">
                       {formatDate(report.createdAt)}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-2 sm:px-3 py-2">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         report.status === 'verified' 
                           ? 'bg-green-100 text-green-700' 
@@ -362,7 +369,7 @@ export default function BhwDashboard() {
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
-            <p>No recent reports</p>
+            <p className="text-sm sm:text-base">No recent reports</p>
           </div>
         )}
       </motion.div>

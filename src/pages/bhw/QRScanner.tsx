@@ -386,7 +386,7 @@ export default function QRScanner() {
   return (
     <div className="h-full flex flex-col">
       {!scanning && (
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <QRScannerHeader onStartScanning={() => setScanning(true)} />
           <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
           <StatsCards activeTab={activeTab} visits={visits} savedAnalyses={savedAnalyses} />

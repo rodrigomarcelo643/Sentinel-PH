@@ -287,7 +287,7 @@ export default function BhwSentinels() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="bg-white rounded-xl shadow-sm border border-gray-100"
       >
-        <div className="p-4 border-b flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="p-4 border-b flex flex-col gap-4 items-start justify-between lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">
             <div className="bg-blue-50 p-2 rounded-lg">
               <Shield className="h-6 w-6 text-[#1B365D]" />
@@ -297,9 +297,9 @@ export default function BhwSentinels() {
               <p className="text-sm text-gray-500">{filteredSentinels.length} sentinels found</p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="flex flex-col gap-3 w-full lg:flex-row lg:w-auto">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-45">
+              <SelectTrigger className="w-full lg:w-45">
                 <SelectValue placeholder="Filter by Status" />
               </SelectTrigger>
               <SelectContent>
@@ -309,7 +309,7 @@ export default function BhwSentinels() {
                 <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
-            <div className="relative flex-1 sm:w-80">
+            <div className="relative flex-1 lg:w-80">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search sentinels..."
@@ -325,11 +325,11 @@ export default function BhwSentinels() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[800px]">
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('fullName')}
                 >
                   <div className="flex items-center gap-1">
@@ -338,7 +338,7 @@ export default function BhwSentinels() {
                   </div>
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden sm:table-cell"
                   onClick={() => handleSort('communityRole')}
                 >
                   <div className="flex items-center gap-1">
@@ -346,10 +346,10 @@ export default function BhwSentinels() {
                     <SortIcon field="communityRole" />
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Address</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Contact</th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('status')}
                 >
                   <div className="flex items-center gap-1">
@@ -357,7 +357,7 @@ export default function BhwSentinels() {
                     <SortIcon field="status" />
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -369,29 +369,32 @@ export default function BhwSentinels() {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
+                  <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2 lg:gap-3">
                       <Avatar size="default">
                         <AvatarImage src={sentinel.documents?.selfieUrl} alt={sentinel.fullName} />
-                        <AvatarFallback>{sentinel.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}</AvatarFallback>
+                        <AvatarFallback className="text-xs">{sentinel.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium text-gray-900">{sentinel.fullName}</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-sm font-medium text-gray-900 block truncate">{sentinel.fullName}</span>
+                        <span className="text-xs text-gray-600 block truncate sm:hidden">{sentinel.communityRole}</span>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 lg:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                     <span className="text-sm text-gray-600">{sentinel.communityRole}</span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 lg:px-6 py-4 hidden md:table-cell">
                     <div className="flex flex-col gap-1">
                       <span className="text-sm text-gray-900">{sentinel.address.municipality}</span>
                       <span className="text-xs text-gray-500">{sentinel.address.barangay}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 lg:px-6 py-4 hidden lg:table-cell">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2 text-xs text-gray-600">
                         <Mail className="h-3 w-3 text-gray-400" />
-                        <span>{sentinel.email}</span>
+                        <span className="truncate max-w-[150px]">{sentinel.email}</span>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-gray-600">
                         <Phone className="h-3 w-3 text-gray-400" />
@@ -399,11 +402,11 @@ export default function BhwSentinels() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(sentinel.status)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
+                  <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-1 lg:gap-2">
                       <Button
                         size="sm"
                         variant="outline"
@@ -411,7 +414,7 @@ export default function BhwSentinels() {
                           setSelectedSentinel(sentinel);
                           setIsViewDialogOpen(true);
                         }}
-                        className="border-[#1B365D] text-[#1B365D] hover:bg-blue-50"
+                        className="border-[#1B365D] text-[#1B365D] hover:bg-blue-50 text-xs px-2 py-1"
                       >
                         View
                       </Button>
@@ -422,7 +425,7 @@ export default function BhwSentinels() {
                             setSelectedSentinel(sentinel);
                             setIsApproveDialogOpen(true);
                           }}
-                          className="bg-green-600 hover:bg-green-700 text-white"
+                          className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1"
                         >
                           Approve
                         </Button>
@@ -435,7 +438,7 @@ export default function BhwSentinels() {
                             setSelectedSentinel(sentinel);
                             setIsCancelDialogOpen(true);
                           }}
-                          className="border-gray-600 text-gray-600 hover:bg-gray-50"
+                          className="border-gray-600 text-gray-600 hover:bg-gray-50 text-xs px-2 py-1"
                         >
                           Cancel
                         </Button>
@@ -448,7 +451,7 @@ export default function BhwSentinels() {
           </table>
         </div>
 
-        <div className="px-6 py-4 border-t flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="px-4 lg:px-6 py-4 border-t flex flex-col gap-4 items-center justify-between lg:flex-row">
           <div className="text-sm text-gray-600">
             Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredSentinels.length)} of {filteredSentinels.length} sentinels
           </div>
@@ -458,28 +461,37 @@ export default function BhwSentinels() {
               size="sm"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
+              className="text-xs px-2 py-1"
             >
               <ChevronLeft className="h-4 w-4" />
-              Prev
+              <span className="hidden sm:inline">Prev</span>
             </Button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
-              <Button
-                key={number}
-                variant={currentPage === number ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentPage(number)}
-                className={currentPage === number ? "bg-[#1B365D] hover:bg-[#1B365D]/90" : ""}
-              >
-                {number}
-              </Button>
-            ))}
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                const pageNum = currentPage <= 3 ? i + 1 : 
+                              currentPage >= totalPages - 2 ? totalPages - 4 + i :
+                              currentPage - 2 + i;
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`text-xs px-2 py-1 ${currentPage === pageNum ? "bg-[#1B365D] hover:bg-[#1B365D]/90" : ""}`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
+              className="text-xs px-2 py-1"
             >
-              Next
+              <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

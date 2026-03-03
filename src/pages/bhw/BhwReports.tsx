@@ -398,7 +398,7 @@ export default function BhwReports() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="bg-white rounded-xl shadow-sm border border-gray-100"
       >
-        <div className="p-4 border-b flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="p-4 border-b flex flex-col gap-4 items-start justify-between lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">
             <div className="bg-blue-50 p-2 rounded-lg">
               <FileText className="h-6 w-6 text-[#1B365D]" />
@@ -408,11 +408,11 @@ export default function BhwReports() {
               <p className="text-sm text-gray-500">{filteredReports.length} reports found</p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="flex flex-col gap-3 w-full lg:flex-row lg:w-auto">
             <Button
               onClick={handlePatternAnalysis}
               disabled={isAnalyzing || reports.filter(r => r.status === 'verified').length === 0}
-              className="bg-purple-600 hover:bg-purple-700 text-white order-first sm:order-none"
+              className="bg-purple-600 hover:bg-purple-700 text-white order-first lg:order-none"
             >
               {isAnalyzing ? (
                 <>
@@ -427,7 +427,7 @@ export default function BhwReports() {
               )}
             </Button>
             <Select value={reportTypeFilter} onValueChange={setReportTypeFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectTrigger className="w-full lg:w-[150px]">
                 <SelectValue placeholder="Report Type" />
               </SelectTrigger>
               <SelectContent>
@@ -437,7 +437,7 @@ export default function BhwReports() {
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectTrigger className="w-full lg:w-[150px]">
                 <SelectValue placeholder="Filter by Status" />
               </SelectTrigger>
               <SelectContent>
@@ -447,7 +447,7 @@ export default function BhwReports() {
                 <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
-            <div className="relative flex-1 sm:w-80">
+            <div className="relative flex-1 lg:w-80">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search reports..."
@@ -463,11 +463,11 @@ export default function BhwReports() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[800px]">
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('userName')}
                 >
                   <div className="flex items-center gap-1">
@@ -475,11 +475,11 @@ export default function BhwReports() {
                     <SortIcon field="userName" />
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symptoms</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Type</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symptoms</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Location</th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('createdAt')}
                 >
                   <div className="flex items-center gap-1">
@@ -488,7 +488,7 @@ export default function BhwReports() {
                   </div>
                 </th>
                 <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('status')}
                 >
                   <div className="flex items-center gap-1">
@@ -496,7 +496,7 @@ export default function BhwReports() {
                     <SortIcon field="status" />
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -508,48 +508,51 @@ export default function BhwReports() {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
+                  <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2 lg:gap-3">
                       <Avatar size="default">
                         <AvatarImage src={report.userSelfieUrl} alt={report.userName} />
-                        <AvatarFallback>{report.userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}</AvatarFallback>
+                        <AvatarFallback className="text-xs">{report.userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}</AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium text-gray-900">{report.userName}</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-sm font-medium text-gray-900 block truncate">{report.userName}</span>
+                        <span className="text-xs text-gray-600 block truncate sm:hidden">{getReportTypeBadge(report.reportType)}</span>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 lg:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                     {getReportTypeBadge(report.reportType)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-nowrap gap-1">
-                      {report.symptoms.slice(0, 2).map((symptom, idx) => (
+                      {report.symptoms.slice(0, window.innerWidth < 640 ? 1 : 2).map((symptom, idx) => (
                         <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
                           {symptom}
                         </span>
                       ))}
-                      {report.symptoms.length > 2 && (
+                      {report.symptoms.length > (window.innerWidth < 640 ? 1 : 2) && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                          +{report.symptoms.length - 2}
+                          +{report.symptoms.length - (window.innerWidth < 640 ? 1 : 2)}
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 lg:px-6 py-4 hidden md:table-cell">
                     <div className="flex items-center gap-1 text-sm text-gray-600">
                       <MapPin className="h-3 w-3 text-gray-400" />
-                      <span className="truncate max-w-[200px]">{report.barangay || report.location}</span>
+                      <span className="truncate max-w-[150px]">{report.barangay || report.location}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <Calendar className="h-3 w-3 text-gray-400" />
-                      <span>{formatDate(report.createdAt)}</span>
+                      <Calendar className="h-3 w-3 text-gray-400 hidden sm:inline" />
+                      <span className="text-xs sm:text-sm">{formatDate(report.createdAt)}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(report.status)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -611,7 +614,7 @@ export default function BhwReports() {
           </table>
         </div>
 
-        <div className="px-6 py-4 border-t flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="px-4 lg:px-6 py-4 border-t flex flex-col gap-4 items-center justify-between lg:flex-row">
           <div className="text-sm text-gray-600">
             Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredReports.length)} of {filteredReports.length} reports
           </div>
@@ -621,28 +624,37 @@ export default function BhwReports() {
               size="sm"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
+              className="text-xs px-2 py-1"
             >
               <ChevronLeft className="h-4 w-4" />
-              Prev
+              <span className="hidden sm:inline">Prev</span>
             </Button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
-              <Button
-                key={number}
-                variant={currentPage === number ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentPage(number)}
-                className={currentPage === number ? "bg-[#1B365D] hover:bg-[#1B365D]/90" : ""}
-              >
-                {number}
-              </Button>
-            ))}
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                const pageNum = currentPage <= 3 ? i + 1 : 
+                              currentPage >= totalPages - 2 ? totalPages - 4 + i :
+                              currentPage - 2 + i;
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`text-xs px-2 py-1 ${currentPage === pageNum ? "bg-[#1B365D] hover:bg-[#1B365D]/90" : ""}`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
+              className="text-xs px-2 py-1"
             >
-              Next
+              <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

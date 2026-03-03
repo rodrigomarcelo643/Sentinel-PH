@@ -559,16 +559,16 @@ export default function OutbreakResponse() {
 
           {/* Tabs */}
           <div className="bg-white rounded-sm shadow-sm border border-gray-100 mb-6">
-            <div className="flex">
+            <div className="flex overflow-x-auto">
               <button
                 onClick={() => setActiveTab('pending')}
-                className={`flex-1 px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`flex-1 min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-all relative ${
                   activeTab === 'pending'
                     ? 'text-yellow-600'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                Pending ({alerts.filter(a => a.status === 'pending').length})
+                <span className="truncate">Pending ({alerts.filter(a => a.status === 'pending').length})</span>
                 {activeTab === 'pending' && (
                   <motion.div
                     layoutId="activeTab"
@@ -579,13 +579,13 @@ export default function OutbreakResponse() {
               </button>
               <button
                 onClick={() => setActiveTab('ongoing')}
-                className={`flex-1 px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`flex-1 min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-all relative ${
                   activeTab === 'ongoing'
                     ? 'text-orange-600'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                Ongoing ({alerts.filter(a => a.status === 'ongoing').length})
+                <span className="truncate">Ongoing ({alerts.filter(a => a.status === 'ongoing').length})</span>
                 {activeTab === 'ongoing' && (
                   <motion.div
                     layoutId="activeTab"
@@ -596,13 +596,13 @@ export default function OutbreakResponse() {
               </button>
               <button
                 onClick={() => setActiveTab('resolved')}
-                className={`flex-1 px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`flex-1 min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-all relative ${
                   activeTab === 'resolved'
                     ? 'text-green-600'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                Resolved ({alerts.filter(a => a.status === 'resolved').length})
+                <span className="truncate">Resolved ({alerts.filter(a => a.status === 'resolved').length})</span>
                 {activeTab === 'resolved' && (
                   <motion.div
                     layoutId="activeTab"
@@ -629,24 +629,26 @@ export default function OutbreakResponse() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white p-6 rounded-sm shadow-sm border-l-4 ${
+                  className="bg-white p-4 sm:p-6 rounded-sm shadow-sm border-l-4 ${
                     alert.severity === 'high' ? 'border-l-red-500' :
                     alert.severity === 'medium' ? 'border-l-orange-500' : 'border-l-yellow-500'
                   }"
                 >
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-gray-900">{alert.disease}</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(alert.severity)}`}>
-                          {alert.severity.toUpperCase()}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          {getTrendIcon(alert.trend)}
-                          <span className="text-xs text-gray-600">{alert.trend}</span>
+                      <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-center sm:gap-3">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900">{alert.disease}</h3>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getSeverityColor(alert.severity)}`}>
+                            {alert.severity.toUpperCase()}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {getTrendIcon(alert.trend)}
+                            <span className="text-xs text-gray-600">{alert.trend}</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                      <div className="flex flex-col gap-2 text-sm text-gray-600 mb-3 sm:flex-row sm:items-center sm:gap-4">
                         <div className="flex items-center gap-1">
                           <MapPin className="h-4 w-4" />
                           <span>{alert.location}</span>
@@ -663,20 +665,22 @@ export default function OutbreakResponse() {
                       
                       {/* Enhanced Alert Info */}
                       {alert.title && (
-                        <div className="bg-blue-50 p-4 rounded-sm mb-3">
+                        <div className="bg-blue-50 p-3 sm:p-4 rounded-sm mb-3">
                           <h4 className="text-sm font-semibold text-gray-700 mb-2">{alert.title}</h4>
-                          {alert.riskScore && (
-                            <p className="text-xs text-gray-600">Risk Score: {alert.riskScore.toFixed(1)}/10</p>
-                          )}
-                          {alert.clusters && (
-                            <p className="text-xs text-gray-600">Clusters Detected: {alert.clusters}</p>
-                          )}
+                          <div className="flex flex-col gap-1 sm:flex-row sm:gap-4">
+                            {alert.riskScore && (
+                              <p className="text-xs text-gray-600">Risk Score: {alert.riskScore.toFixed(1)}/10</p>
+                            )}
+                            {alert.clusters && (
+                              <p className="text-xs text-gray-600">Clusters Detected: {alert.clusters}</p>
+                            )}
+                          </div>
                         </div>
                       )}
                       
                       {/* Residents List */}
                       {Array.isArray(alert.residents) && alert.residents.length > 0 && (
-                        <div className="bg-blue-50 p-4 rounded-sm mb-3">
+                        <div className="bg-blue-50 p-3 sm:p-4 rounded-sm mb-3">
                           <h4 className="text-sm font-semibold text-gray-700 mb-2">Affected Residents ({alert.residents.length}):</h4>
                           <div className="flex flex-wrap gap-2">
                             {alert.residents.slice(0, 10).map((resident, idx) => (
@@ -695,22 +699,22 @@ export default function OutbreakResponse() {
                     </div>
                     
                     {/* Action Buttons */}
-                    <div className="ml-4 flex flex-col gap-2">
+                    <div className="flex flex-row gap-2 lg:flex-col lg:ml-4">
                       {alert.status === 'pending' && (
                         <>
                           <button
                             onClick={() => handleRespond(alert.id)}
-                            className="flex items-center gap-2 bg-[#1B365D] text-white px-4 py-2 rounded-sm hover:bg-[#152a4a] transition-colors"
+                            className="flex items-center justify-center gap-2 bg-[#1B365D] text-white px-3 sm:px-4 py-2 rounded-sm hover:bg-[#152a4a] transition-colors text-sm"
                           >
                             <Send className="h-4 w-4" />
-                            <span>Respond</span>
+                            <span className="hidden sm:inline">Respond</span>
                           </button>
                           <button
                             onClick={() => handleCreateAnnouncement(alert)}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700 transition-colors"
+                            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-sm hover:bg-blue-700 transition-colors text-sm"
                           >
                             <Megaphone className="h-4 w-4" />
-                            <span>Announce</span>
+                            <span className="hidden sm:inline">Announce</span>
                           </button>
                         </>
                       )}
@@ -718,31 +722,31 @@ export default function OutbreakResponse() {
                         <>
                           <button
                             onClick={() => handleResolve(alert.id)}
-                            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-sm hover:bg-green-700 transition-colors"
+                            className="flex items-center justify-center gap-2 bg-green-600 text-white px-3 sm:px-4 py-2 rounded-sm hover:bg-green-700 transition-colors text-sm"
                           >
                             <CheckCircle className="h-4 w-4" />
-                            <span>Mark Resolved</span>
+                            <span className="hidden sm:inline">Mark Resolved</span>
                           </button>
                           <button
                             onClick={() => handleCreateAnnouncement(alert)}
-                            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700 transition-colors"
+                            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-sm hover:bg-blue-700 transition-colors text-sm"
                           >
                             <Megaphone className="h-4 w-4" />
-                            <span>Update Alert</span>
+                            <span className="hidden sm:inline">Update Alert</span>
                           </button>
                         </>
                       )}
                       <button
                         onClick={() => handleDelete(alert.id)}
-                        className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-sm hover:bg-red-700 transition-colors"
+                        className="flex items-center justify-center gap-2 bg-red-600 text-white px-3 sm:px-4 py-2 rounded-sm hover:bg-red-700 transition-colors text-sm"
                       >
                         <Trash2 className="h-4 w-4" />
-                        <span>Delete</span>
+                        <span className="hidden sm:inline">Delete</span>
                       </button>
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg mt-4">
                     <h4 className="text-sm font-semibold text-gray-700 mb-2">Recommended Actions:</h4>
                     {alert.recommendations && alert.recommendations.length > 0 ? (
                       <ul className="space-y-2">
