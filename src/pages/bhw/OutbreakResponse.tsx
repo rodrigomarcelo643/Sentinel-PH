@@ -227,7 +227,6 @@ export default function OutbreakResponse() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-[#1B365D] mb-1">Outbreak Response</h1>
-              <p className="text-gray-600 text-sm">Pattern analysis and outbreak detection system</p>
             </div>
           </div>
         </div>
