@@ -50,9 +50,9 @@ export default function BhwLayout() {
     return 'BH';
   };
 
-  const displayName = user?.displayName || 'BHW User';
+  const displayName = user?.displayName || user?.fullName || 'BHW User';
   const userRole = user?.role === 'bhw' ? 'Barangay Health Worker' : user?.role || 'User';
-  const userAvatar = user?.documents?.selfieUrl;
+  const userAvatar = user?.profilePicture;
 
   const NavLink = ({ to, icon: Icon, label, onClick, isDesktop = false }: { to: string; icon: any; label: string; onClick?: () => void; isDesktop?: boolean }) => {
     const active = isActive(to);
@@ -114,7 +114,7 @@ export default function BhwLayout() {
               >
                 <Avatar size="sm">
                   <AvatarImage src={userAvatar} alt={displayName} />
-                  <AvatarFallback className="text-xs">{getInitials(user?.displayName)}</AvatarFallback>
+                  <AvatarFallback className="text-xs">{getInitials(displayName)}</AvatarFallback>
                 </Avatar>
               </button>
             </TooltipTrigger>
@@ -152,7 +152,7 @@ export default function BhwLayout() {
             >
               <Avatar size="sm">
                 <AvatarImage src={userAvatar} alt={displayName} />
-                <AvatarFallback className="text-xs">{getInitials(user?.displayName)}</AvatarFallback>
+                <AvatarFallback className="text-xs">{getInitials(displayName)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 text-left">
                 <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
@@ -211,7 +211,7 @@ export default function BhwLayout() {
               <DropdownMenuTrigger className="flex items-center gap-3 cursor-pointer p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors outline-none">
                 <Avatar size="default">
                   <AvatarImage src={userAvatar} alt={displayName} />
-                  <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+                  <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
                 </Avatar>
                 <div className="hidden md:flex flex-col items-start">
                   <span className="text-sm font-medium text-gray-900">{displayName}</span>
