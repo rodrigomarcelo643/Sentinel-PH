@@ -16,19 +16,20 @@ interface User {
   uid: string;
   displayName?: string | null;
   role?: string;
-  firstName?: string;
-  lastName?: string;
-  middleInitial?: string;
-  documents?: {
-    selfieUrl?: string;
-    validIdUrl?: string;
-    idType?: string;
-  };
-  address?: {
-    barangay?: string;
-    municipality?: string;
-    region?: string;
-  };
+  fullName?: string;
+  phone?: string;
+  officeName?: string;
+  headOfficer?: string;
+  officialEmail?: string;
+  address?: string;
+  municipality?: string;
+  region?: string;
+  accountType?: string;
+  status?: string;
+  subscription?: string;
+  subscriptionStatus?: string;
+  documentUrls?: string[];
+  profilePicture?: string;
 }
 
 interface AuthContextType {
@@ -37,6 +38,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUserProfile: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,10 +59,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserData = async (firebaseUser: FirebaseUser): Promise<any> => {
     try {
+      // Check registrations collection first (where BHW data is stored)
+      const registrationsRef = collection(db, "registrations");
+      const regQuery = query(registrationsRef, where("uid", "==", firebaseUser.uid));
+      const regSnapshot = await getDocs(regQuery);
+      
+      if (!regSnapshot.empty) {
+        return regSnapshot.docs[0].data();
+      }
+
+      // Fallback to other collections
       const collections = [
         { ref: collection(db, "users"), priority: 1 },
-        { ref: collection(db, "registrations"), priority: 2 },
-        { ref: collection(db, "admins"), priority: 3 }
+        { ref: collection(db, "admins"), priority: 2 }
       ];
 
       for (const { ref } of collections) {
@@ -82,15 +93,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const newUser: User = {
         email: firebaseUser.email,
         uid: firebaseUser.uid,
-        displayName: userData?.firstName && userData?.lastName 
-          ? `${userData.firstName} ${userData.lastName}` 
-          : firebaseUser.displayName,
-        role: userData?.role,
-        firstName: userData?.firstName,
-        lastName: userData?.lastName,
-        middleInitial: userData?.middleInitial,
-        documents: userData?.documents,
+        displayName: userData?.fullName || firebaseUser.displayName,
+        role: userData?.role || userData?.accountType,
+        fullName: userData?.fullName,
+        phone: userData?.phone,
+        officeName: userData?.officeName,
+        headOfficer: userData?.headOfficer,
+        officialEmail: userData?.officialEmail,
         address: userData?.address,
+        municipality: userData?.municipality,
+        region: userData?.region,
+        accountType: userData?.accountType,
+        status: userData?.status,
+        subscription: userData?.subscription,
+        subscriptionStatus: userData?.subscriptionStatus,
+        documentUrls: userData?.documentUrls,
+        profilePicture: userData?.profilePicture || userData?.documentUrls?.[0]
       };
       setUser(newUser);
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
@@ -138,13 +156,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const updateUserProfile = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+    }
+  };
+
   const logout = async () => {
     await signOut(auth);
     updateUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateUserProfile }}>
       {children}
     </AuthContext.Provider>
   );
