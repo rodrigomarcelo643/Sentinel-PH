@@ -4,7 +4,7 @@ import { doc, updateDoc, getDoc, collection, query, where, getDocs } from "fireb
 import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Edit, Save, X, User, Mail, Phone, MapPin, Calendar, Shield, Building } from "lucide-react";
+import { Camera, Edit, Save, X, User, Mail, Phone, MapPin, Calendar, Building } from "lucide-react";
 import { uploadImage } from "@/services/cloudinaryService";
 
 // Skeleton Loader Component
