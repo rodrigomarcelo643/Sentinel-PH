@@ -10,6 +10,8 @@ import AdminLayout from "@/layouts/admin/AdminLayout";
 import BhwLayout from "@/layouts/bhw/BhwLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import BhwDashboard from "@/pages/bhw/BhwDashboard";
+import BhwProfile from "@/pages/bhw/BhwProfile";
+import BhwSettings from "@/pages/bhw/BhwSettings";
 import BhwSentinels from "@/pages/bhw/BhwSentinels";
 import BhwReports from "@/pages/bhw/BhwReports";
 import BhwMap from "@/pages/bhw/BhwMap";
@@ -46,6 +48,7 @@ export default function AppRoutes() {
       }>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<BhwDashboard />} />
+        <Route path="profile" element={<BhwProfile />} />
         <Route path="sentinels" element={<BhwSentinels />} />
         <Route path="qr-scanner" element={<QRScanner />} />
         <Route path="observations" element={<BhwObservations />} />
@@ -53,7 +56,7 @@ export default function AppRoutes() {
         <Route path="map" element={<BhwMap />} />
         <Route path="outbreak-response" element={<OutbreakResponse />} />
         <Route path="announcements" element={<Announcements />} />
-        <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>} />
+        <Route path="settings" element={<BhwSettings />} />
       </Route>
       
       {/* Admin Routes */}
