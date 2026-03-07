@@ -98,19 +98,17 @@ export default function QRScanner() {
     fetchSavedAnalyses();
   }, []);
 
-  useEffect(() => {
-    if (scanning && !scannerRef.current) {
-      scannerRef.current = new Html5QrcodeScanner(
-        "qr-reader",
-        { 
-          fps: 10,
-          aspectRatio: 1.777778,
-          disableFlip: false
-        },
-        false
-      );
+  const [selectedCameraId, setSelectedCameraId] = useState<string>("");
+  const [cameraPermissionGranted, setCameraPermissionGranted] = useState<boolean>(false);
 
-      scannerRef.current.render(onScanSuccess, onScanError);
+  useEffect(() => {
+    // Check if camera permission was previously granted
+    checkCameraPermission();
+  }, []);
+
+  useEffect(() => {
+    if (scanning && !scannerRef.current && cameraPermissionGranted) {
+      initializeScanner();
     }
 
     return () => {
@@ -119,7 +117,93 @@ export default function QRScanner() {
         scannerRef.current = null;
       }
     };
-  }, [scanning]);
+  }, [scanning, cameraPermissionGranted]);
+
+  const checkCameraPermission = async () => {
+    try {
+      // Check localStorage first
+      const storedPermission = localStorage.getItem('cameraPermissionGranted');
+      if (storedPermission === 'true') {
+        setCameraPermissionGranted(true);
+        return;
+      }
+
+      // Try to access camera directly
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (stream) {
+        setCameraPermissionGranted(true);
+        localStorage.setItem('cameraPermissionGranted', 'true');
+        stream.getTracks().forEach(track => track.stop());
+      }
+    } catch (error) {
+      console.log('Camera permission denied or unavailable:', error);
+      setCameraPermissionGranted(false);
+      localStorage.setItem('cameraPermissionGranted', 'false');
+    }
+  };
+
+  const initializeScanner = async () => {
+    try {
+      // Always check permission before initializing
+      if (!cameraPermissionGranted) {
+        await checkCameraPermission();
+        if (!cameraPermissionGranted) {
+          setError('Camera permission required to scan QR codes');
+          return;
+        }
+      }
+      
+      const config = { 
+        fps: 10,
+        qrbox: function(viewfinderWidth: number, viewfinderHeight: number) {
+          return Math.min(viewfinderWidth, viewfinderHeight) * 0.8;
+        },
+        aspectRatio: 1.0,
+        disableFlip: false
+      };
+
+      scannerRef.current = new Html5QrcodeScanner(
+        "qr-reader",
+        config,
+        false
+      );
+
+      scannerRef.current.render(onScanSuccess, onScanError);
+    } catch (error) {
+      console.error('Failed to initialize scanner:', error);
+      setError('Failed to start camera. Please check permissions.');
+    }
+  };
+
+  const handleCameraChange = (deviceId: string) => {
+    setSelectedCameraId(deviceId);
+    
+    // Restart scanner with new camera
+    if (scannerRef.current && scanning) {
+      scannerRef.current.clear().then(() => {
+        scannerRef.current = null;
+        
+        setTimeout(() => {
+          const config = { 
+            fps: 10,
+            aspectRatio: 1.0,
+            disableFlip: false,
+            videoConstraints: {
+              deviceId: { exact: deviceId }
+            }
+          };
+
+          scannerRef.current = new Html5QrcodeScanner(
+            "qr-reader",
+            config,
+            false
+          );
+
+          scannerRef.current.render(onScanSuccess, onScanError);
+        }, 500);
+      }).catch(console.error);
+    }
+  };
 
   const fetchVisits = async () => {
     try {
@@ -421,7 +505,11 @@ export default function QRScanner() {
       )}
 
       {scanning && (
-        <ScannerInterface error={error} onStopScanning={handleStopScanning} />
+        <ScannerInterface 
+          error={error} 
+          onStopScanning={handleStopScanning}
+          onCameraChange={handleCameraChange}
+        />
       )}
 
       <ResidentModal 
