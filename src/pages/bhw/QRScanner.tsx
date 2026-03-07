@@ -98,7 +98,6 @@ export default function QRScanner() {
     fetchSavedAnalyses();
   }, []);
 
-  const [selectedCameraId, setSelectedCameraId] = useState<string>("");
   const [cameraPermissionGranted, setCameraPermissionGranted] = useState<boolean>(false);
 
   useEffect(() => {
@@ -156,7 +155,8 @@ export default function QRScanner() {
       const config = { 
         fps: 10,
         qrbox: function(viewfinderWidth: number, viewfinderHeight: number) {
-          return Math.min(viewfinderWidth, viewfinderHeight) * 0.8;
+          const size = Math.min(viewfinderWidth, viewfinderHeight) * 0.8;
+          return { width: size, height: size };
         },
         aspectRatio: 1.0,
         disableFlip: false
@@ -176,8 +176,6 @@ export default function QRScanner() {
   };
 
   const handleCameraChange = (deviceId: string) => {
-    setSelectedCameraId(deviceId);
-    
     // Restart scanner with new camera
     if (scannerRef.current && scanning) {
       scannerRef.current.clear().then(() => {
@@ -523,7 +521,7 @@ export default function QRScanner() {
 
       {/* Confirmation Dialog */}
       <Dialog open={confirmDialog.show} onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, show: open })}>
-        <DialogContent className="!max-w-md p-0">
+        <DialogContent className="max-w-md! p-0">
           <div className="p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Action</h3>
             <p className="text-gray-600 mb-6">
@@ -572,10 +570,10 @@ export default function QRScanner() {
       {/* Saved Analysis View Modal */}
       {selectedAnalysis && (
         <Dialog open={analysisViewOpen} onOpenChange={setAnalysisViewOpen}>
-          <DialogContent className="!max-w-[95vw] !w-[95vw] max-h-[90vh] overflow-y-auto p-0">
+          <DialogContent className="max-w-[95vw!] w-[95vw]! max-h-[90vh] overflow-y-auto p-0">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
+                <div className="p-2 bg-linear-to-r from-purple-500 to-blue-500 rounded-lg">
                   <History className="h-5 w-5 text-white" />
                 </div>
                 <div>
@@ -595,7 +593,7 @@ export default function QRScanner() {
               {/* Display saved analysis results */}
               <div className="space-y-6">
                 {/* Risk Assessment Header */}
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-100">
+                <div className="bg-linear-to-r from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-100">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-gray-900">Risk Assessment</h3>
                     <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
@@ -661,7 +659,7 @@ export default function QRScanner() {
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div 
-                                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all"
+                                  className="bg-linear-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all"
                                   style={{ width: `${condition.probability}%` }}
                                 ></div>
                               </div>
@@ -778,7 +776,7 @@ export default function QRScanner() {
                 </div>
                 
                 {/* AI Summary */}
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100 p-4">
+                <div className="bg-linear-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100 p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <Brain className="h-5 w-5 text-blue-600" />
                     <h4 className="font-semibold text-gray-900">AI Summary</h4>
@@ -793,7 +791,7 @@ export default function QRScanner() {
 
       {/* Image Modal */}
       <Dialog open={imageModal.open} onOpenChange={(open) => setImageModal({ ...imageModal, open })}>
-        <DialogContent className="!max-w-[90vw] !w-auto max-h-[90vh] p-0">
+        <DialogContent className="max-w-[90vw]! w-auto! max-h-[90vh] p-0">
           <div className="sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-10">
             <DialogTitle className="text-lg">{imageModal.title}</DialogTitle>
             <Button onClick={() => setImageModal({ open: false, url: '', title: '' })} variant="ghost" size="icon" className="cursor-pointer">
