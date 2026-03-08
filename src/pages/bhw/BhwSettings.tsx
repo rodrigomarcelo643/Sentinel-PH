@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Settings, Bell, Shield, Palette, Save, Monitor, Moon, Sun } from "lucide-react";
 
 // Skeleton Loader Component
@@ -37,6 +38,7 @@ const SettingsSkeleton = () => (
 
 export default function BhwSettings() {
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState({
     notifications: {
@@ -47,10 +49,6 @@ export default function BhwSettings() {
     privacy: {
       profileVisibility: "public",
       dataSharing: true,
-    },
-    appearance: {
-      theme: "light",
-      language: "en",
     },
   });
 
@@ -73,21 +71,21 @@ export default function BhwSettings() {
   return (
     <div className="max-w-10xl mx-auto p-2">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-          <div className="p-2 bg-gray-100 rounded-lg">
-            <Settings className="h-6 w-6 text-gray-700" />
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+          <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <Settings className="h-6 w-6 text-gray-700 dark:text-gray-300" />
           </div>
           Settings
         </h1>
-        <p className="text-gray-600 mt-2">Manage your account preferences and settings</p>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">Manage your account preferences and settings</p>
       </div>
 
       <div className="space-y-6">
         {/* Notifications */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-3">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <Bell className="h-5 w-5 text-gray-700" />
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
+            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </div>
             Notifications
           </h2>
@@ -150,10 +148,10 @@ export default function BhwSettings() {
         </div>
 
         {/* Privacy */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-3">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <Shield className="h-5 w-5 text-gray-700" />
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
+            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <Shield className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </div>
             Privacy & Security
           </h2>
@@ -195,56 +193,40 @@ export default function BhwSettings() {
         </div>
 
         {/* Appearance */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-3">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <Palette className="h-5 w-5 text-gray-700" />
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
+            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <Palette className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </div>
             Appearance
           </h2>
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Theme</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Theme</label>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { value: 'light', label: 'Light', icon: Sun },
-                  { value: 'dark', label: 'Dark', icon: Moon },
-                  { value: 'system', label: 'System', icon: Monitor }
-                ].map(({ value, label, icon: Icon }) => (
-                  <label key={value} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      name="theme"
-                      value={value}
-                      checked={settings.appearance.theme === value}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        appearance: { ...settings.appearance, theme: e.target.value }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg peer-checked:border-gray-600 peer-checked:bg-gray-50 hover:border-gray-300 transition-all">
-                      <Icon className="h-6 w-6 text-gray-600 mb-2" />
-                      <span className="text-sm font-medium text-gray-700">{label}</span>
-                    </div>
-                  </label>
+                  { value: 'light', icon: Sun, label: 'Light' },
+                  { value: 'dark', icon: Moon, label: 'Dark' },
+                  { value: 'system', icon: Monitor, label: 'System' }
+                ].map(({ value, icon: Icon, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setTheme(value as any)}
+                    className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                      theme === value
+                        ? 'border-gray-600 bg-gray-50 dark:bg-gray-700 dark:border-gray-400'
+                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                    }`}
+                  >
+                    <Icon className={`h-5 w-5 ${
+                      theme === value ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'
+                    }`} />
+                    <span className={`text-sm font-medium ${
+                      theme === value ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'
+                    }`}>{label}</span>
+                  </button>
                 ))}
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Language</label>
-              <select
-                value={settings.appearance.language}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  appearance: { ...settings.appearance, language: e.target.value }
-                })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
-              >
-                <option value="en">English</option>
-                <option value="fil">Filipino</option>
-                <option value="ceb">Cebuano</option>
-              </select>
             </div>
           </div>
         </div>
