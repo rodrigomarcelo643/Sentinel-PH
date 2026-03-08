@@ -172,7 +172,7 @@ export default function BhwObservations() {
   };
 
   return (
-    <div className="p-2 bg-gray-50 min-h-screen">
+    <div className="p-2 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* New Case Alert */}
       <AnimatePresence>
         {showNewCaseAlert && (
@@ -207,15 +207,15 @@ export default function BhwObservations() {
       >
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-[#1B365D] mb-2">Real-Time Statistics</h1>
-            <p className="text-gray-600">Live monitoring of community health observations</p>
+            <h1 className="text-3xl font-bold text-[#1B365D] dark:text-white mb-2">Real-Time Statistics</h1>
+            <p className="text-gray-600 dark:text-gray-400">Live monitoring of community health observations</p>
           </div>
-          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
             </div>
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           </div>
@@ -271,16 +271,16 @@ export default function BhwObservations() {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Reports</p>
-                  <h3 className="text-3xl font-bold text-[#1B365D]">{stats.totalReports}</h3>
-                  <p className="text-xs text-gray-500 mt-1">All submissions</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Reports</p>
+                  <h3 className="text-3xl font-bold text-[#1B365D] dark:text-white">{stats.totalReports}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">All submissions</p>
                 </div>
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <TrendingUp className="h-8 w-8 text-[#1B365D]" />
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                  <TrendingUp className="h-8 w-8 text-[#1B365D] dark:text-blue-400" />
                 </div>
               </div>
             </motion.div>
@@ -341,21 +341,21 @@ export default function BhwObservations() {
           </motion.div>
 
           {/* Trend Area Chart - First */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-8"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-800">7-Day Trend Analysis</h3>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <div className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-100 dark:border-gray-700"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white">7-Day Trend Analysis</h3>
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </div>
+                  <span>Live</span>
                 </div>
-                <span>Live</span>
               </div>
-            </div>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={stats.trendData}>
                 <defs>
