@@ -243,11 +243,11 @@ export default function BhwProfile() {
   return (
     <div className="max-w-10xl mx-auto p-2">
       {/* Header */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-gray-200">
+              <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-gray-200 dark:border-gray-600">
                 {profile.profilePicture ? (
                   <img 
                     src={profile.profilePicture} 
@@ -255,10 +255,10 @@ export default function BhwProfile() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User className="h-12 w-12 text-gray-400" />
+                  <User className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 )}
               </div>
-              <label className="absolute -bottom-1 -right-1 bg-gray-800 rounded-full p-2 cursor-pointer hover:bg-gray-700 transition-colors shadow-lg">
+              <label className="absolute -bottom-1 -right-1 bg-gray-800 dark:bg-gray-600 rounded-full p-2 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-500 transition-colors shadow-lg">
                 <Camera className="h-4 w-4 text-white" />
                 <input
                   type="file"
@@ -275,11 +275,11 @@ export default function BhwProfile() {
               )}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {profile.fullName}
               </h1>
-              <p className="text-gray-600 font-medium">{profile.accountType?.toUpperCase()}</p>
-              <p className="text-gray-500 text-sm flex items-center gap-1 mt-1">
+              <p className="text-gray-600 dark:text-gray-400 font-medium">{profile.accountType?.toUpperCase()}</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1 mt-1">
                 <MapPin className="h-4 w-4" />
                 {profile.address}
               </p>
@@ -321,27 +321,25 @@ export default function BhwProfile() {
       {/* Profile Information */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Personal Information */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-3">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <User className="h-5 w-5 text-gray-700" />
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
+            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <User className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </div>
             Personal Information
           </h2>
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
               {isEditing ? (
                 <input
                   type="text"
                   value={profile.fullName}
                   onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               ) : (
-                <p className="text-gray-900 py-3 px-4 bg-gray-50 rounded-lg">{profile.fullName}</p>
+                <p className="text-gray-900 dark:text-white py-3 px-4 bg-gray-50 dark:bg-gray-700 rounded-lg">{profile.fullName}</p>
               )}
-            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Office Name</label>
               {isEditing ? (

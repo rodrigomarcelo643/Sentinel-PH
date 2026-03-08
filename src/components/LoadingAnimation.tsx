@@ -6,7 +6,7 @@ export default function LoadingAnimation() {
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-white overflow-hidden"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-white  dark:bg-gray-800 overflow-hidden"
     >
       <div className="relative flex flex-col items-center justify-center w-full h-full">
         {/* BIGGER RADAR / SCANNING RINGS */}
@@ -81,7 +81,7 @@ export default function LoadingAnimation() {
             <motion.p
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="text-sm uppercase tracking-[0.4em] font-black text-[#1B365D] ml-[0.8em]"
+              className="text-sm uppercase tracking-[0.4em] font-black dark:text-white text-[#1B365D] ml-[0.8em]"
             >
               Establishing Connection
             </motion.p>

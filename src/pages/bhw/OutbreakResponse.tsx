@@ -214,19 +214,19 @@ export default function OutbreakResponse() {
   };
 
   return (
-    <div className="p-2 bg-gray-50 min-h-screen">
+    <div className="p-2 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <div className="bg-gradient-to-r from-red-50 via-orange-50 to-yellow-50 rounded-sm p-6 shadow-sm border border-red-100">
+        <div className="bg-gradient-to-r from-red-50 via-orange-50 to-yellow-50 dark:from-red-900/20 dark:via-orange-900/20 dark:to-yellow-900/20 rounded-sm p-6 shadow-sm border border-red-100 dark:border-red-800">
           <div className="flex items-center gap-4">
             <div className="bg-gradient-to-br from-red-500 to-orange-600 p-3 rounded-sm shadow-sm">
               <AlertTriangle className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-[#1B365D] mb-1">Outbreak Response</h1>
+              <h1 className="text-3xl font-bold text-[#1B365D] dark:text-white mb-1">Outbreak Response</h1>
             </div>
           </div>
         </div>
@@ -514,14 +514,14 @@ export default function OutbreakResponse() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white p-6 rounded-sm shadow-sm border border-gray-100"
+              className="bg-white dark:bg-gray-800 p-6 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Pending</p>
-                  <h3 className="text-3xl font-bold text-yellow-600">{alerts.filter(a => a.status === 'pending').length}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Pending</p>
+                  <h3 className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{alerts.filter(a => a.status === 'pending').length}</h3>
                 </div>
-                <Clock className="h-12 w-12 text-yellow-200" />
+                <Clock className="h-12 w-12 text-yellow-200 dark:text-yellow-600" />
               </div>
             </motion.div>
 
@@ -557,14 +557,14 @@ export default function OutbreakResponse() {
           </div>
 
           {/* Tabs */}
-          <div className="bg-white rounded-sm shadow-sm border border-gray-100 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700 mb-6">
             <div className="flex overflow-x-auto">
               <button
                 onClick={() => setActiveTab('pending')}
                 className={`flex-1 min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-all relative ${
                   activeTab === 'pending'
-                    ? 'text-yellow-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'text-yellow-600 dark:text-yellow-400'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <span className="truncate">Pending ({alerts.filter(a => a.status === 'pending').length})</span>

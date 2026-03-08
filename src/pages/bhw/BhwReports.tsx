@@ -381,22 +381,22 @@ export default function BhwReports() {
   };
 
   return (
-    <div className="p-2 bg-gray-50 min-h-screen">
+    <div className="p-2 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="mb-6"
       >
-        <h1 className="text-3xl font-bold text-[#1B365D] mb-2">Symptom Reports</h1>
-        <p className="text-gray-600">Review and manage community health reports</p>
+        <h1 className="text-3xl font-bold text-[#1B365D] dark:text-white mb-2">Symptom Reports</h1>
+        <p className="text-gray-600 dark:text-gray-400">Review and manage community health reports</p>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-100"
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
       >
         <div className="p-4 border-b flex flex-col gap-4 items-start justify-between lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">

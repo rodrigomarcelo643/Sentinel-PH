@@ -9,8 +9,8 @@ export default function QRScannerHeader({ onStartScanning }: QRScannerHeaderProp
   return (
     <div className="mb-6 flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">QR Code Scanner</h1>
-        <p className="text-gray-600 mt-2">Scan resident QR codes and track visits</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">QR Code Scanner</h1>
+        <p className="text-gray-600 dark:text-white mt-2">Scan resident QR codes and track visits</p>
       </div>
       <div className="relative group">
         <div className="absolute -inset-1 bg-linear-to-r from-[#1B365D] to-[#2d4a7c] rounded-[2px] blur opacity-25 group-hover:opacity-75 transition duration-200"></div>

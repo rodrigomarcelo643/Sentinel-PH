@@ -230,21 +230,21 @@ export default function Announcements() {
   const currentAnnouncements = filteredAnnouncements.slice(startIndex, endIndex);
 
   return (
-    <div className="p-2 bg-gray-50 min-h-screen">
+    <div className="p-2 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-sm p-4 sm:p-6 shadow-sm border border-blue-100">
+        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-sm p-4 sm:p-6 shadow-sm border border-blue-100 dark:border-blue-800">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 sm:p-3 rounded-sm shadow-sm">
                 <Megaphone className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1B365D] mb-1">Announcements</h1>
-                <p className="text-gray-600 text-xs sm:text-sm">Health advisories and important updates for residents</p>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1B365D] dark:text-white mb-1">Announcements</h1>
+                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">Health advisories and important updates for residents</p>
               </div>
             </div>
             <button
@@ -259,11 +259,11 @@ export default function Announcements() {
       </motion.div>
 
       {/* Date Filter */}
-      <div className="bg-white p-4 rounded-sm shadow-sm border border-gray-100 mb-6">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700 mb-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
           <div className="flex items-center gap-2 lg:gap-4">
-            <Calendar className="h-5 w-5 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Filter by Date:</span>
+            <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by Date:</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {[
@@ -278,14 +278,14 @@ export default function Announcements() {
                 className={`px-3 sm:px-4 py-2 rounded-sm text-sm font-medium transition-colors cursor-pointer ${
                   dateFilter === filter.value
                     ? 'bg-[#1B365D] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 {filter.label}
               </button>
             ))}
           </div>
-          <span className="text-sm text-gray-500 lg:ml-auto">
+          <span className="text-sm text-gray-500 dark:text-gray-400 lg:ml-auto">
             {filteredAnnouncements.length} announcement{filteredAnnouncements.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -593,39 +593,39 @@ export default function Announcements() {
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-sm shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px]">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                   <tr>
-                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Title
                     </th>
-                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider hidden sm:table-cell">
+                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">
                       Type
                     </th>
-                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Priority
                     </th>
-                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider hidden md:table-cell">
+                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">
                       Date
                     </th>
-                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider hidden lg:table-cell">
+                    <th className="px-3 lg:px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">
                       Created By
                     </th>
-                    <th className="px-3 lg:px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <th className="px-3 lg:px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {currentAnnouncements.map((announcement, index) => (
                     <motion.tr
                       key={announcement.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: index * 0.05 }}
-                      className="hover:bg-gray-50 transition-colors"
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
                       <td className="px-3 lg:px-6 py-4">
                         <div className="flex items-start gap-2 lg:gap-3">
