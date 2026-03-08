@@ -128,28 +128,28 @@ export default function BhwDashboard() {
   };
 
 
-
-  const handleCreateAnnouncement = async (announcementData: OutbreakAnnouncementData, analysisData: PatternAnalysisResult) => {
-    try {
-      await addDoc(collection(db, 'announcements'), {
-        title: announcementData.title,
-        message: announcementData.message,
-        type: announcementData.type,
-        priority: announcementData.priority,
-        createdAt: serverTimestamp(),
-        createdBy: user?.displayName || 'BHW',
-        sourceType: 'pattern_analysis',
-        analysisData: analysisData
-      });
-      
-      setShowPatternAnalysis(false);
-      showAnnouncementCreatedToast(announcementData.title);
-      navigate('/bhw/announcements');
-    } catch (error) {
-      console.error('Error creating announcement:', error);
-    }
-  };
-
+  {/* 
+    const handleCreateAnnouncement = async (announcementData: OutbreakAnnouncementData, analysisData: PatternAnalysisResult) => {
+      try {
+        await addDoc(collection(db, 'announcements'), {
+          title: announcementData.title,
+          message: announcementData.message,
+          type: announcementData.type,
+          priority: announcementData.priority,
+          createdAt: serverTimestamp(),
+          createdBy: user?.displayName || 'BHW',
+          sourceType: 'pattern_analysis',
+          analysisData: analysisData
+        });
+        
+        setShowPatternAnalysis(false);
+        showAnnouncementCreatedToast(announcementData.title);
+        navigate('/bhw/announcements');
+      } catch (error) {
+        console.error('Error creating announcement:', error);
+      }
+    };
+  */}
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -171,7 +171,7 @@ export default function BhwDashboard() {
   };
 
   return (
-    <div className="p-2 bg-gray-50 min-h-screen">
+    <div className="p-2 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -179,12 +179,12 @@ export default function BhwDashboard() {
       >
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-[#1B365D] mb-2">BHW Dashboard</h1>
-            <p className="text-gray-600">Monitor community health observations in your barangay</p>
+            <h1 className="text-3xl font-bold text-[#1B365D] dark:text-white mb-2">BHW Dashboard</h1>
+            <p className="text-gray-600 dark:text-gray-400">Monitor community health observations in your barangay</p>
           </div>
           <div className="flex gap-3">
             <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-45">
                 <SelectValue placeholder="Select Period" />
               </SelectTrigger>
               <SelectContent>
@@ -204,54 +204,54 @@ export default function BhwDashboard() {
         initial="hidden"
         animate="visible"
       >
-        <motion.div variants={itemVariants} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+        <motion.div variants={itemVariants} className="bg-white dark:bg-gray-800 p-6 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Sentinels</p>
-              <h3 className="text-3xl font-bold text-[#1B365D]">{loading ? '...' : totalSentinels}</h3>
-              <p className="text-xs text-gray-500 mt-1">Registered</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Sentinels</p>
+              <h3 className="text-3xl font-bold text-[#1B365D] dark:text-white">{loading ? '...' : totalSentinels}</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Registered</p>
             </div>
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <Users className="h-8 w-8 text-[#1B365D]" />
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+              <Users className="h-8 w-8 text-[#1B365D] dark:text-blue-400" />
             </div>
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+        <motion.div variants={itemVariants} className="bg-white dark:bg-gray-800 p-6 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Active Sentinels</p>
-              <h3 className="text-3xl font-bold text-[#1B365D]">{loading ? '...' : activeSentinels}</h3>
-              <p className="text-xs text-green-600 mt-1">Approved</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Sentinels</p>
+              <h3 className="text-3xl font-bold text-[#1B365D] dark:text-white">{loading ? '...' : activeSentinels}</h3>
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1">Approved</p>
             </div>
-            <div className="bg-green-50 p-3 rounded-lg">
-              <Activity className="h-8 w-8 text-green-600" />
+            <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+              <Activity className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+        <motion.div variants={itemVariants} className="bg-white dark:bg-gray-800 p-6 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">New Reports</p>
-              <h3 className="text-3xl font-bold text-[#CE1126]">{loading ? '...' : pendingReports}</h3>
-              <p className="text-xs text-red-600 mt-1">Pending review</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">New Reports</p>
+              <h3 className="text-3xl font-bold text-[#CE1126] dark:text-red-400">{loading ? '...' : pendingReports}</h3>
+              <p className="text-xs text-red-600 dark:text-red-400 mt-1">Pending review</p>
             </div>
-            <div className="bg-red-50 p-3 rounded-lg">
-              <Bell className="h-8 w-8 text-[#CE1126]" />
+            <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+              <Bell className="h-8 w-8 text-[#CE1126] dark:text-red-400" />
             </div>
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+        <motion.div variants={itemVariants} className="bg-white dark:bg-gray-800 p-6 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Verified Today</p>
-              <h3 className="text-3xl font-bold text-[#1B365D]">{loading ? '...' : verifiedToday}</h3>
-              <p className="text-xs text-green-600 mt-1">Reports verified</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Verified Today</p>
+              <h3 className="text-3xl font-bold text-[#1B365D] dark:text-white">{loading ? '...' : verifiedToday}</h3>
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1">Reports verified</p>
             </div>
-            <div className="bg-purple-50 p-3 rounded-lg">
-              <CheckCircle className="h-8 w-8 text-purple-600" />
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+              <CheckCircle className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </motion.div>
@@ -264,9 +264,9 @@ export default function BhwDashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <motion.div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100" whileHover={{ scale: 1.02 }}>
-          <h3 className="text-base sm:text-lg font-bold text-[#1B365D] mb-4">Weekly Observation Trends</h3>
-          <div className="h-[250px] sm:h-[300px]">
+        <motion.div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700" whileHover={{ scale: 1.02 }}>
+          <h3 className="text-base sm:text-lg font-bold text-[#1B365D] dark:text-white mb-4">Weekly Observation Trends</h3>
+          <div className="h-62.5 sm:h-75">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={observationData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -281,9 +281,9 @@ export default function BhwDashboard() {
           </div>
         </motion.div>
 
-        <motion.div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100" whileHover={{ scale: 1.02 }}>
-          <h3 className="text-base sm:text-lg font-bold text-[#1B365D] mb-4">Common Symptoms Reported</h3>
-          <div className="h-[250px] sm:h-[300px]">
+        <motion.div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700" whileHover={{ scale: 1.02 }}>
+          <h3 className="text-base sm:text-lg font-bold text-[#1B365D] dark:text-white mb-4">Common Symptoms Reported</h3>
+          <div className="h-62.5 sm:h-75">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -309,32 +309,32 @@ export default function BhwDashboard() {
 
       {/* Recent Activity */}
       <motion.div 
-        className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100"
+        className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.6 }}
       >
-        <h3 className="text-base sm:text-lg font-bold text-[#1B365D] mb-4">Recent Reports</h3>
+        <h3 className="text-base sm:text-lg font-bold text-[#1B365D] dark:text-white mb-4">Recent Reports</h3>
         {loading ? (
           <div className="space-y-2">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-100 rounded animate-pulse"></div>
+              <div key={i} className="h-12 bg-gray-100  dark:bg-gray-600 rounded-[3px] animate-pulse"></div>
             ))}
           </div>
         ) : recentReports.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px]">
-              <thead className="bg-gray-50">
+            <table className="w-full min-w-150">
+              <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
-                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Reporter</th>
-                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Description</th>
-                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reporter</th>
+                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase hidden sm:table-cell">Description</th>
+                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Date</th>
+                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {recentReports.map((report, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-2 sm:px-3 py-2">
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
@@ -342,13 +342,13 @@ export default function BhwDashboard() {
                           <AvatarFallback className="text-xs">{report.userName?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}</AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                          <span className="text-xs sm:text-sm font-medium text-gray-900 truncate block">{report.userName}</span>
-                          <span className="text-xs text-gray-600 truncate block sm:hidden">{report.description || 'No description'}</span>
+                          <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white truncate block">{report.userName}</span>
+                          <span className="text-xs text-gray-600 dark:text-white truncate block sm:hidden">{report.description || 'No description'}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-2 sm:px-3 py-2 text-sm text-gray-600 truncate max-w-xs hidden sm:table-cell">{report.description || 'No description'}</td>
-                    <td className="px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-500 whitespace-nowrap">
+                    <td className="px-2 sm:px-3 py-2 text-sm text-gray-600 dark:text-white truncate max-w-xs hidden sm:table-cell">{report.description || 'No description'}</td>
+                    <td className="px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-500 dark:text-white whitespace-nowrap">
                       {formatDate(report.createdAt)}
                     </td>
                     <td className="px-2 sm:px-3 py-2">
@@ -368,13 +368,13 @@ export default function BhwDashboard() {
             </table>
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-white">
             <p className="text-sm sm:text-base">No recent reports</p>
           </div>
         )}
       </motion.div>
 
-      {/* Pattern Analysis Modal */}
+      {/* Pattern Analysis Modal 
       <PatternAnalysisModal
         isOpen={showPatternAnalysis}
         onClose={() => setShowPatternAnalysis(false)}
@@ -382,6 +382,7 @@ export default function BhwDashboard() {
         isLoading={analysisLoading}
         onCreateAnnouncement={handleCreateAnnouncement}
       />
+      */}
     </div>
   );
 }
