@@ -74,14 +74,14 @@ export default function AdminLayout() {
 
   const SidebarContent = ({ isDesktop = false }: { isDesktop?: boolean }) => (
     <>
-      <div className="border-b bg-white p-2 flex items-center justify-center">
+      <div className="border-b bg-white dark:bg-gray-800 p-2 flex items-center justify-center">
         <img 
           src="/sentinel_ph_logo.png" 
           alt="SentinelPH" 
           className={`transition-all duration-300 ${isDesktop && sidebarCollapsed ? 'h-10 w--auto object-contain' : 'h-30 w-auto'}`} 
         />
       </div>
-      <div className="bg-white px-3 py-4 flex-1 overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 px-3 py-4 flex-1 overflow-y-auto">
         <nav className="space-y-1">
           <NavLink to="/admin/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
 
@@ -150,7 +150,7 @@ export default function AdminLayout() {
           <NavLink to="/admin/settings" icon={Settings} label="Settings" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
         </nav>
       </div>
-      <div className="border-t p-4 bg-white">
+      <div className="border-t p-4 bg-white dark:bg-gray-800">
         {isDesktop && sidebarCollapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -180,7 +180,7 @@ export default function AdminLayout() {
     <TooltipProvider>
       <div className="flex h-screen">
         {/* Desktop Sidebar */}
-        <aside className={`hidden lg:flex flex-col bg-white border-r transition-all duration-300 ${sidebarCollapsed ? "w-16" : "w-64"}`}>
+        <aside className={`hidden lg:flex flex-col bg-white dark:bg-gray-800 border-r dark:border-gray-700 transition-all duration-300 ${sidebarCollapsed ? "w-16" : "w-64"}`}>
           <SidebarContent isDesktop={true} />
         </aside>
 
@@ -193,7 +193,7 @@ export default function AdminLayout() {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <header className="flex h-16 items-center justify-between border-b px-4 bg-white">
+          <header className="flex h-16 items-center justify-between border-b dark:border-gray-700 px-4 bg-white dark:bg-gray-800">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setMobileOpen(true)}
@@ -250,7 +250,7 @@ export default function AdminLayout() {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
             <Outlet />
           </main>
         </div>
