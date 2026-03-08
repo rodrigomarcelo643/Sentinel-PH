@@ -159,21 +159,21 @@ export default function BhwMap() {
   );
 
   return (
-    <div className="p-2 bg-gray-50 min-h-screen">
+    <div className="p-2 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="mb-4 sm:mb-6"
       >
-        <div className="bg-linear-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-sm p-4 sm:p-6 shadow-md border border-blue-100">
+        <div className="bg-linear-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-sm p-4 sm:p-6 shadow-md border border-blue-100 dark:border-blue-800">
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="bg-linear-to-br from-blue-500 to-indigo-600 p-2 sm:p-3 rounded-lg shadow-sm">
               <MapPin className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-linear-to-r from-[#1B365D] to-indigo-600 bg-clip-text text-transparent mb-1">Symptom Reports Map</h1>
-              <p className="text-gray-600 text-xs sm:text-sm">Real-time visualization of community health observations</p>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-linear-to-r from-[#1B365D] to-indigo-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-1">Symptom Reports Map</h1>
+              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">Real-time visualization of community health observations</p>
             </div>
           </div>
         </div>
