@@ -46,7 +46,6 @@ export default function AIAnalysisModal({
 }: AIAnalysisModalProps) {
   const [analysis, setAnalysis] = useState<AIAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -93,7 +92,6 @@ export default function AIAnalysisModal({
       // Reset states when modal closes
       setAnalysis(null);
       setLoading(false);
-      setProgress(0);
       setSaving(false);
     }
     onOpenChange(open);
@@ -106,34 +104,17 @@ export default function AIAnalysisModal({
 
   const performAnalysis = async () => {
     setLoading(true);
-    setProgress(0);
     setAnalysis(null);
 
     try {
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + Math.random() * 15;
-        });
-      }, 200);
-
       const result = await aiAnalysisService.analyzeSymptomReports(
         selfReports,
         observedReports,
         patientInfo
       );
 
-      clearInterval(progressInterval);
-      setProgress(100);
-      
-      setTimeout(() => {
-        setAnalysis(result);
-        setLoading(false);
-      }, 500);
+      setAnalysis(result);
+      setLoading(false);
 
     } catch (error) {
       console.error('Analysis failed:', error);
