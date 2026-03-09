@@ -46,7 +46,6 @@ export default function AIAnalysisModal({
 }: AIAnalysisModalProps) {
   const [analysis, setAnalysis] = useState<AIAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -93,7 +92,6 @@ export default function AIAnalysisModal({
       // Reset states when modal closes
       setAnalysis(null);
       setLoading(false);
-      setProgress(0);
       setSaving(false);
     }
     onOpenChange(open);
@@ -106,34 +104,17 @@ export default function AIAnalysisModal({
 
   const performAnalysis = async () => {
     setLoading(true);
-    setProgress(0);
     setAnalysis(null);
 
     try {
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + Math.random() * 15;
-        });
-      }, 200);
-
       const result = await aiAnalysisService.analyzeSymptomReports(
         selfReports,
         observedReports,
         patientInfo
       );
 
-      clearInterval(progressInterval);
-      setProgress(100);
-      
-      setTimeout(() => {
-        setAnalysis(result);
-        setLoading(false);
-      }, 500);
+      setAnalysis(result);
+      setLoading(false);
 
     } catch (error) {
       console.error('Analysis failed:', error);
@@ -173,75 +154,57 @@ export default function AIAnalysisModal({
 
   return (
     <Dialog open={open} onOpenChange={handleModalClose}>
-      <DialogContent className="!max-w-[95vw] !w-[95vw] max-h-[90vh] overflow-y-auto p-0">
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-10">
+      <DialogContent className="!max-w-[95vw] !w-[95vw] max-h-[90vh] overflow-y-auto p-0 dark:bg-gray-800">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
               <Brain className="h-5 w-5 text-white" />
             </div>
             <div>
-              <DialogTitle className="text-xl font-bold">AI Health Analysis</DialogTitle>
-              <p className="text-sm text-gray-600">Patient: {patientInfo.name}</p>
+              <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">AI Health Analysis</DialogTitle>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Patient: {patientInfo.name}</p>
             </div>
           </div>
-          <Button onClick={() => handleModalClose(false)} variant="ghost" size="icon">
+          <Button onClick={() => handleModalClose(false)} variant="ghost" size="icon" className="dark:text-gray-400 dark:hover:text-gray-200">
             <X className="h-4 w-4" />
           </Button>
         </div>
 
         <div className="p-6">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="relative w-32 h-32 mb-6">
-                <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="#e5e7eb"
-                    strokeWidth="8"
-                    fill="none"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="url(#gradient)"
-                    strokeWidth="8"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray={`${2 * Math.PI * 40}`}
-                    strokeDashoffset={`${2 * Math.PI * 40 * (1 - progress / 100)}`}
-                    className="transition-all duration-300"
-                  />
-                  <defs>
-                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#8b5cf6" />
-                      <stop offset="100%" stopColor="#3b82f6" />
-                    </linearGradient>
-                  </defs>
-                </svg>
+            <div className="flex flex-col items-center justify-center py-12 space-y-6">
+              <div className="relative">
+                <div className="animate-spin rounded-full h-20 w-20 border-4 border-blue-200 dark:border-blue-800"></div>
+                <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-blue-600 absolute top-0 left-0"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-gray-700">{Math.round(progress)}%</span>
+                  <Brain className="w-8 h-8 text-blue-600 animate-pulse" />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Analyzing Health Data</h3>
-              <p className="text-gray-600 text-center max-w-md">
-                AI is processing symptom patterns, medical history, and risk factors to provide comprehensive health insights...
-              </p>
-              <div className="flex items-center gap-2 mt-4 text-sm text-gray-500">
-                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                <span>Processing {selfReports.length + observedReports.length} symptom reports</span>
+              <div className="text-center space-y-3">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">AI Health Analysis in Progress</h3>
+                <p className="text-gray-600 dark:text-gray-300 max-w-md text-center">
+                  Advanced AI algorithms are analyzing symptom patterns, medical correlations, and generating personalized health insights...
+                </p>
+                <div className="flex items-center justify-center space-x-2 mt-6">
+                  <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce"></div>
+                  <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                </div>
+                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 space-y-1">
+                  <p>🧠 Processing {selfReports.length + observedReports.length} symptom reports</p>
+                  <p>🎯 Identifying potential conditions</p>
+                  <p>💡 Generating recommendations</p>
+                </div>
               </div>
             </div>
           ) : analysis ? (
             <div className="space-y-6">
               {/* Risk Assessment Header */}
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border border-purple-100">
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/30 dark:to-blue-900/30 rounded-lg p-6 border border-purple-100 dark:border-purple-700">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <Shield className="h-6 w-6 text-purple-600" />
-                    <h3 className="text-xl font-bold text-gray-900">Risk Assessment</h3>
+                    <Shield className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Risk Assessment</h3>
                   </div>
                   <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getRiskColor(analysis.riskLevel)}`}>
                     {analysis.riskLevel.toUpperCase()} RISK
@@ -268,25 +231,25 @@ export default function AIAnalysisModal({
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold">{analysis.riskPercentage}%</span>
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">{analysis.riskPercentage}%</span>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600">Overall Risk</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Overall Risk</p>
                   </div>
                   
                   <div className="text-center">
                     <div className="flex items-center justify-center mb-2">
                       {getTrendIcon(analysis.trends)}
                     </div>
-                    <p className="text-sm font-medium text-gray-900">{analysis.trends.pattern}</p>
-                    <p className="text-xs text-gray-600">Health Trend</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{analysis.trends.pattern}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">Health Trend</p>
                   </div>
                   
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900 mb-1">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                       {selfReports.length + observedReports.length}
                     </div>
-                    <p className="text-sm text-gray-600">Total Reports</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Total Reports</p>
                   </div>
                 </div>
               </div>
@@ -296,16 +259,16 @@ export default function AIAnalysisModal({
                 {/* Left Column */}
                 <div className="space-y-6">
                   {/* Potential Conditions */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <Target className="h-5 w-5 text-red-500" />
-                      <h4 className="font-semibold text-gray-900">Potential Conditions</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Potential Conditions</h4>
                     </div>
                     <div className="space-y-3">
                       {analysis.potentialConditions.map((condition, index) => (
-                        <div key={index} className="border rounded-lg p-3">
+                        <div key={index} className="border dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-700">
                           <div className="flex justify-between items-start mb-2">
-                            <h5 className="font-medium text-gray-900">{condition.condition}</h5>
+                            <h5 className="font-medium text-gray-900 dark:text-white">{condition.condition}</h5>
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               condition.severity === 'severe' ? 'bg-red-100 text-red-800' :
                               condition.severity === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
@@ -314,32 +277,32 @@ export default function AIAnalysisModal({
                               {condition.severity}
                             </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                             <div 
                               className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all"
                               style={{ width: `${condition.probability}%` }}
                             ></div>
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">{condition.probability}% probability</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{condition.probability}% probability</p>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Recommendations */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <Zap className="h-5 w-5 text-blue-500" />
-                      <h4 className="font-semibold text-gray-900">Recommendations</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Recommendations</h4>
                     </div>
                     <div className="space-y-3">
                       {analysis.recommendations
                         .sort((a, b) => a.priority - b.priority)
                         .map((rec, index) => (
-                        <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
+                        <div key={index} className="flex items-start gap-3 p-3 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
                           <div className={`p-1 rounded-full ${
-                            rec.type === 'immediate' ? 'bg-red-100' :
-                            rec.type === 'followup' ? 'bg-yellow-100' : 'bg-blue-100'
+                            rec.type === 'immediate' ? 'bg-red-100 dark:bg-red-900/30' :
+                            rec.type === 'followup' ? 'bg-yellow-100 dark:bg-yellow-900/30' : 'bg-blue-100 dark:bg-blue-900/30'
                           }`}>
                             {rec.type === 'immediate' ? <AlertTriangle className="h-4 w-4 text-red-600" /> :
                              rec.type === 'followup' ? <Clock className="h-4 w-4 text-yellow-600" /> :
@@ -356,7 +319,7 @@ export default function AIAnalysisModal({
                               </span>
                               <span className="text-xs text-gray-500">Priority {rec.priority}</span>
                             </div>
-                            <p className="text-sm text-gray-700">{rec.action}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300">{rec.action}</p>
                           </div>
                         </div>
                       ))}
@@ -566,9 +529,9 @@ export default function AIAnalysisModal({
             </div>
           ) : (
             <div className="text-center py-12">
-              <Brain className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No Analysis Available</h3>
-              <p className="text-gray-600">No symptom reports found to analyze.</p>
+              <Brain className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Analysis Available</h3>
+              <p className="text-gray-600 dark:text-gray-300">No symptom reports found to analyze.</p>
             </div>
           )}
         </div>

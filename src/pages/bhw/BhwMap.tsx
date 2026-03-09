@@ -166,7 +166,7 @@ export default function BhwMap() {
         transition={{ duration: 0.5 }}
         className="mb-4 sm:mb-6"
       >
-        <div className="bg-linear-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-sm p-4 sm:p-6 shadow-md border border-blue-100 dark:border-blue-800">
+        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-sm p-4 sm:p-6 shadow-md border border-blue-100 dark:border-blue-800">
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="bg-linear-to-br from-blue-500 to-indigo-600 p-2 sm:p-3 rounded-lg shadow-sm">
               <MapPin className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
@@ -179,7 +179,7 @@ export default function BhwMap() {
         </div>
       </motion.div>
 
-      <div className="bg-white shadow-sm border border-gray-100 overflow-hidden relative">
+      <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden relative">
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           center={userLocation || center}
@@ -349,35 +349,35 @@ export default function BhwMap() {
           </AnimatePresence>
           
           {/* Barangay Name - Top Left */}
-          <div className="absolute top-4 sm:top-15 left-2 bg-white/95 backdrop-blur-sm px-3 sm:px-4 py-2 shadow-lg border border-gray-200 border-l-4 border-l-[#1B365D] max-w-[200px] sm:max-w-none">
-              <h3 className="font-bold text-xs sm:text-sm text-[#1B365D] truncate">Barangay Sambag I</h3>
-              <p className="text-xs text-gray-600 truncate">Urgello Street, Cebu City</p>
+          <div className="absolute top-4 sm:top-15 left-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm px-3 sm:px-4 py-2 shadow-lg border border-gray-200 dark:border-gray-600 border-l-4 border-l-[#1B365D] max-w-[200px] sm:max-w-none">
+              <h3 className="font-bold text-xs sm:text-sm text-[#1B365D] dark:text-blue-400 truncate">Barangay Sambag I</h3>
+              <p className="text-xs text-gray-600 dark:text-gray-300 truncate">Urgello Street, Cebu City</p>
             </div>
 
             {/* Legend - Inside Map on Bottom Left Side */}
-            <div className="absolute bottom-4 left-2 sm:left-4 bg-white/95 backdrop-blur-sm p-3 sm:p-4 shadow-lg border border-gray-200 border-l-4 border-l-[#CE1126] max-w-[180px] sm:max-w-none">
-              <h3 className="font-semibold text-xs sm:text-sm text-gray-700 mb-2 sm:mb-3">Symptom Severity</h3>
+            <div className="absolute bottom-4 left-2 sm:left-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-3 sm:p-4 shadow-lg border border-gray-200 dark:border-gray-600 border-l-4 border-l-[#CE1126] max-w-[180px] sm:max-w-none">
+              <h3 className="font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-200 mb-2 sm:mb-3">Symptom Severity</h3>
               <div className="space-y-1 sm:space-y-2">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="w-4 h-5 sm:w-5 sm:h-6" style={{ 
                     background: '#10B981',
                     clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)'
                   }}></div>
-                  <span className="text-xs text-gray-700">Low (1)</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-200">Low (1)</span>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="w-4 h-5 sm:w-5 sm:h-6" style={{ 
                     background: '#F59E0B',
                     clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)'
                   }}></div>
-                  <span className="text-xs text-gray-700">Medium (2-3)</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-200">Medium (2-3)</span>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="w-4 h-5 sm:w-5 sm:h-6" style={{ 
                     background: '#DC2626',
                     clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)'
                   }}></div>
-                  <span className="text-xs text-gray-700">High (4+)</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-200">High (4+)</span>
                 </div>
               </div>
             </div>
@@ -387,7 +387,7 @@ export default function BhwMap() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-4 sm:bottom-8 right-2 sm:right-8 bg-white p-4 sm:p-6 shadow-2xl border border-gray-200 border-l-4 border-l-blue-400 max-w-[calc(100vw-16px)] sm:max-w-md z-50"
+          className="fixed bottom-4 sm:bottom-8 right-2 sm:right-8 bg-white dark:bg-gray-800 p-4 sm:p-6 shadow-2xl border border-gray-200 dark:border-gray-600 border-l-4 border-l-blue-400 max-w-[calc(100vw-16px)] sm:max-w-md z-50"
         >
           <button
             onClick={() => {
@@ -402,8 +402,8 @@ export default function BhwMap() {
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-gray-100">
             <img src="/sentinel_ph_logo.png" alt="SentinelPH" className="h-8 sm:h-10" />
             <div>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Symptom Report</h4>
-              <p className="text-xs text-gray-400">ID: {selectedReport.id.slice(0, 8)}</p>
+              <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Symptom Report</h4>
+              <p className="text-xs text-gray-400 dark:text-gray-500">ID: {selectedReport.id.slice(0, 8)}</p>
             </div>
           </div>
 
@@ -421,16 +421,16 @@ export default function BhwMap() {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-lg sm:text-xl text-[#1B365D] mb-1 truncate">{selectedReport.userName}</h3>
-                <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 truncate">
+                <h3 className="font-bold text-lg sm:text-xl text-[#1B365D] dark:text-blue-400 mb-1 truncate">{selectedReport.userName}</h3>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 truncate">
                   <MapPin className="h-3 w-3 flex-shrink-0" />
                   {selectedReport.location}
                 </p>
               </div>
             </div>
 
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Symptoms Reported</span>
+            <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Symptoms Reported</span>
               <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
                 {selectedReport.symptoms?.map((symptom, idx) => (
                   <span key={idx} className="px-2 sm:px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
@@ -442,20 +442,20 @@ export default function BhwMap() {
 
             <div className="flex gap-2 sm:gap-3">
               <div className="flex-1">
-                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Description</span>
-                <p className="text-xs sm:text-sm text-gray-700 mt-1 leading-relaxed">{selectedReport.description}</p>
+                <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Description</span>
+                <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 mt-1 leading-relaxed">{selectedReport.description}</p>
               </div>
               {selectedReport.proofImageUrl && (
                 <img 
                   src={selectedReport.proofImageUrl} 
                   alt="Proof" 
-                  className="w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+                  className="w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-600 flex-shrink-0"
                 />
               )}
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Report Type:</span>
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Report Type:</span>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 selectedReport.reportType === 'observed' 
                   ? 'bg-blue-100 text-blue-700' 
@@ -465,7 +465,7 @@ export default function BhwMap() {
               </span>
             </div>
 
-            <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-gray-100">
+            <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-gray-100 dark:border-gray-600">
               <div className="flex items-center gap-2">
                 <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
                   selectedReport.status === 'verified' 
@@ -486,7 +486,7 @@ export default function BhwMap() {
                   {getSeverity(selectedReport.symptoms?.length || 0).toUpperCase()}
                 </span>
               </div>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {selectedReport.createdAt?.toDate?.()?.toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',

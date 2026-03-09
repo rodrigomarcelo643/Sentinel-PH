@@ -77,7 +77,7 @@ export default function Navbar() {
   const userRole = getRoleLabel();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <motion.div
@@ -86,7 +86,7 @@ export default function Navbar() {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <Link to="/" className="flex items-center gap-3 z-10">
-              <img src="/sentinel_ph_logo.png" alt="SentinelPH" className="h-15 w-30" />
+              <img src="/transparent_sentinel_ph_logo.png" alt="SentinelPH" className="h-15 w-30" />
             </Link>
           </motion.div>
 
@@ -134,7 +134,7 @@ export default function Navbar() {
                 <NavigationMenuItem>
                   <NavigationMenuTrigger>Regions</NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="grid grid-cols-4 gap-2 p-4 w-[600px]">
+                    <div className="grid grid-cols-4 gap-2 p-4 w-150">
                       {regions.map((region) => (
                         <NavigationMenuLink key={region} asChild>
                           <Link
@@ -162,16 +162,16 @@ export default function Navbar() {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded-lg transition-colors outline-none">
+                  <button className="flex items-center gap-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors outline-none">
                     <Avatar size="default">
                       <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt={displayName} />
                       <AvatarFallback>{getInitials(user?.displayName, user?.email)}</AvatarFallback>
                     </Avatar>
                     <div className="hidden md:flex flex-col items-start">
-                      <span className="text-sm font-medium text-gray-900">{displayName}</span>
-                      <span className="text-xs text-gray-500">{userRole}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{displayName}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{userRole}</span>
                     </div>
-                    <ChevronDown className="h-4 w-4 text-gray-600 hidden md:block" />
+                    <ChevronDown className="h-4 w-4 text-gray-600 dark:text-gray-400 hidden md:block" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -197,11 +197,11 @@ export default function Navbar() {
                 <Button 
                   variant="ghost" 
                   onClick={() => setLoginOpen(true)}
-                  className="border border-[#1B365D]/20 shadow-sm shadow-[#1B365D]/10"
+                  className="border border-[#1B365D]/20 dark:border-blue-400/20 shadow-sm shadow-[#1B365D]/10 dark:shadow-blue-400/10"
                 >
                   Sign In
                 </Button>
-                <Button asChild className="shadow-lg shadow-[#1B365D]/30">
+                <Button asChild className="shadow-lg shadow-[#1B365D]/30 dark:shadow-blue-400/30">
                   <Link to="/register">Register</Link>
                 </Button>
               </>
@@ -215,10 +215,10 @@ export default function Navbar() {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[320px] sm:w-[380px] overflow-y-auto">
+            <SheetContent side="right" className="w-[320px] sm:w-95 overflow-y-auto dark:bg-gray-900">
               <SheetHeader className="text-left mb-6">
                 <SheetTitle className="flex items-center gap-2">
-                  <img src="/sentinel_ph_logo.png" alt="SentinelPH" className="h-15 w-30" />
+                  <img src="/transparent_sentinel_ph_logo.png" alt="SentinelPH" className="h-15 w-30" />
            </SheetTitle>
               </SheetHeader>
               
@@ -226,35 +226,35 @@ export default function Navbar() {
                 <Link
                   to="/"
                   onClick={() => setOpen(false)}
-                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
+                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent dark:hover:bg-gray-800 transition-colors"
                 >
                   Home
                 </Link>
                 <Link
                   to="/about"
                   onClick={() => setOpen(false)}
-                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
+                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent dark:hover:bg-gray-800 transition-colors"
                 >
                   About Us 
                 </Link>
                 <Link
                   to="/pricing"
                   onClick={() => setOpen(false)}
-                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
+                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent dark:hover:bg-gray-800 transition-colors"
                 >
                   Pricing
                 </Link>
                 <Link
                   to="/map"
                   onClick={() => setOpen(false)}
-                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors"
+                  className="px-4 py-3 text-base font-medium rounded-lg hover:bg-accent dark:hover:bg-gray-800 transition-colors"
                 >
                   Map
                 </Link>
                 
                 {/* Mobile Regions Collapsible */}
                 <Collapsible open={regionsOpen} onOpenChange={setRegionsOpen} className="mt-2">
-                  <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 text-base font-medium rounded-lg hover:bg-accent transition-colors">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 text-base font-medium rounded-lg hover:bg-accent dark:hover:bg-gray-800 transition-colors">
                     <span className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
                       Regions
@@ -262,7 +262,7 @@ export default function Navbar() {
                     <ChevronDown className={`h-4 w-4 transition-transform ${regionsOpen ? 'rotate-180' : ''}`} />
                   </CollapsibleTrigger>
                   <CollapsibleContent className="mt-2">
-                    <div className="bg-muted/50 rounded-lg p-3 space-y-1 max-h-[300px] overflow-y-auto">
+                    <div className="bg-muted/50 dark:bg-gray-800/50 rounded-lg p-3 space-y-1 max-h-75 overflow-y-auto">
                       {regions.map((region) => (
                         <Link
                           key={region}
@@ -278,7 +278,7 @@ export default function Navbar() {
                 </Collapsible>
 
                 {/* Mobile Auth Buttons */}
-                <div className="mt-6 pt-6 px-2 border-t space-y-3">
+                <div className="mt-6 pt-6 px-2 border-t dark:border-gray-700 space-y-3">
                   {user ? (
                     <>
                       <Button

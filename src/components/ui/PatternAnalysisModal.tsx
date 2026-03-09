@@ -68,10 +68,10 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-1 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-900">Pattern Analysis Report</h2>
+    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-6 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Pattern Analysis Report</h2>
           <div className="flex items-center gap-3">
             {analysis && onCreateAnnouncement && (
               <button
@@ -82,7 +82,7 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
                 <span>Create Announcement</span>
               </button>
             )}
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -92,16 +92,24 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-6">
               <div className="relative">
-                <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200"></div>
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 absolute top-0 left-0"></div>
+                <div className="animate-spin rounded-full h-20 w-20 border-4 border-blue-200 dark:border-blue-800"></div>
+                <div className="animate-spin rounded-full h-20 w-20 border-t-4 border-blue-600 absolute top-0 left-0"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Brain className="w-8 h-8 text-blue-600 animate-pulse" />
+                </div>
               </div>
-              <div className="text-center space-y-2">
-                <h3 className="text-lg font-semibold text-gray-900">Analyzing Health Patterns</h3>
-                <p className="text-gray-600">Processing reports and detecting potential outbreaks...</p>
-                <div className="flex items-center justify-center space-x-2 mt-4">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              <div className="text-center space-y-3">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">AI Pattern Analysis in Progress</h3>
+                <p className="text-gray-600 dark:text-gray-300 max-w-md">Our advanced algorithms are processing health reports, detecting spatial clusters, and identifying potential outbreak patterns...</p>
+                <div className="flex items-center justify-center space-x-2 mt-6">
+                  <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce"></div>
+                  <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                </div>
+                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                  <p>🔍 Analyzing symptom patterns</p>
+                  <p>📍 Detecting geographic clusters</p>
+                  <p>🤖 Generating AI recommendations</p>
                 </div>
               </div>
             </div>
@@ -132,49 +140,49 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Total Reports</p>
-                      <p className="text-2xl font-bold text-blue-600">{analysis.totalReports}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Total Reports</p>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{analysis.totalReports}</p>
                     </div>
-                    <Activity className="w-8 h-8 text-blue-600" />
+                    <Activity className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg bg-purple-50 border border-purple-200">
+                <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Affected Residents</p>
-                      <p className="text-2xl font-bold text-purple-600">{analysis.affectedResidents}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Affected Residents</p>
+                      <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{analysis.affectedResidents}</p>
                     </div>
-                    <Users className="w-8 h-8 text-purple-600" />
+                    <Users className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+                <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">Clusters Found</p>
-                      <p className="text-2xl font-bold text-green-600">{analysis.clusters.length}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Clusters Found</p>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">{analysis.clusters.length}</p>
                     </div>
-                    <MapPin className="w-8 h-8 text-green-600" />
+                    <MapPin className="w-8 h-8 text-green-600 dark:text-green-400" />
                   </div>
                 </div>
               </div>
 
               {/* Disease Patterns */}
               {analysis.diseases.length > 0 && (
-                <div className="bg-white border rounded-lg p-6">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center">
+                <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
                     <TrendingUp className="w-5 h-5 mr-2 text-red-600" />
                     Potential Disease Patterns
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {analysis.diseases.slice(0, 6).map((disease, index) => (
-                      <div key={index} className="p-4 border rounded-lg">
+                      <div key={index} className="p-4 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-gray-900">{disease.disease}</h4>
+                          <h4 className="font-semibold text-gray-900 dark:text-white">{disease.disease}</h4>
                           <span className={`px-2 py-1 rounded text-xs font-medium ${
                             disease.probability > 0.7 ? 'bg-red-100 text-red-800' :
                             disease.probability > 0.5 ? 'bg-orange-100 text-orange-800' :
@@ -183,12 +191,12 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
                             {(disease.probability * 100).toFixed(1)}%
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                           Affected: {disease.affectedCount} residents
                         </p>
                         <div className="flex flex-wrap gap-1">
                           {(disease.symptoms || []).slice(0, 3).map((symptom, i) => (
-                            <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                            <span key={i} className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs rounded">
                               {symptom}
                             </span>
                           ))}
@@ -201,30 +209,30 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
 
               {/* Spatial Clusters */}
               {analysis.clusters.length > 0 && (
-                <div className="bg-white border rounded-lg p-6">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center">
+                <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
                     <MapPin className="w-5 h-5 mr-2 text-blue-600" />
                     Spatial Clusters (DBSCAN Analysis)
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {analysis.clusters.map((cluster, index) => (
-                      <div key={cluster.id} className={`p-4 border-2 rounded-lg ${getRiskBorderColor(cluster.riskLevel)}`}>
+                      <div key={cluster.id} className={`p-4 border-2 rounded-lg bg-white dark:bg-gray-700 ${getRiskBorderColor(cluster.riskLevel)}`}>
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold">Cluster {index + 1}</h4>
+                          <h4 className="font-semibold text-gray-900 dark:text-white">Cluster {index + 1}</h4>
                           <span className={`px-2 py-1 rounded text-xs font-medium ${getRiskColor(cluster.riskLevel)}`}>
                             {cluster.riskLevel}
                           </span>
                         </div>
-                        <div className="space-y-1 text-sm text-gray-600">
+                        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
                           <p>Reports: {cluster.reportCount}</p>
                           <p>Residents: {cluster.residents}</p>
                           <p>Radius: {cluster.radius.toFixed(2)} km</p>
                         </div>
                         <div className="mt-2">
-                          <p className="text-xs text-gray-500 mb-1">Dominant Symptoms:</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Dominant Symptoms:</p>
                           <div className="flex flex-wrap gap-1">
                             {cluster.dominantSymptoms.slice(0, 3).map((symptom, i) => (
-                              <span key={i} className="px-1 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                              <span key={i} className="px-1 py-0.5 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs rounded">
                                 {symptom}
                               </span>
                             ))}
@@ -238,30 +246,30 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
 
               {/* Anomalies */}
               {analysis.anomalies.length > 0 && (
-                <div className="bg-white border rounded-lg p-6">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center">
+                <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
                     <AlertTriangle className="w-5 h-5 mr-2 text-orange-600" />
                     Detected Anomalies
                   </h3>
                   <div className="space-y-3">
                     {analysis.anomalies.slice(0, 5).map((anomaly, index) => (
-                      <div key={index} className="p-3 border-l-4 border-orange-400 bg-orange-50">
+                      <div key={index} className="p-3 border-l-4 border-orange-400 bg-orange-50 dark:bg-orange-900/20">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium text-gray-900">{anomaly.type} Anomaly</p>
-                            <p className="text-sm text-gray-700">{anomaly.description}</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{anomaly.type} Anomaly</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300">{anomaly.description}</p>
                             {anomaly.location && (
-                              <p className="text-xs text-gray-500 mt-1">Location: {anomaly.location}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Location: {anomaly.location}</p>
                             )}
                           </div>
                           <div className="text-right">
-                            <div className="w-16 bg-gray-200 rounded-full h-2">
+                            <div className="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                               <div 
                                 className="h-2 rounded-full bg-orange-500"
                                 style={{ width: `${Math.min(anomaly.severity * 20, 100)}%` }}
                               ></div>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               Severity: {anomaly.severity.toFixed(1)}
                             </p>
                           </div>
@@ -274,26 +282,26 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
 
               {/* Predictions */}
               {analysis.predictions.length > 0 && (
-                <div className="bg-white border rounded-lg p-6">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center">
+                <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
                     <Calendar className="w-5 h-5 mr-2 text-purple-600" />
                     Predictive Analysis
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {analysis.predictions.slice(0, 4).map((prediction, index) => (
-                      <div key={index} className="p-4 border rounded-lg">
+                      <div key={index} className="p-4 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-gray-900">{prediction.disease}</h4>
-                          <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded font-medium">
+                          <h4 className="font-semibold text-gray-900 dark:text-white">{prediction.disease}</h4>
+                          <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs rounded font-medium">
                             {(prediction.confidence * 100).toFixed(1)}% confidence
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                           Predicted cases: <span className="font-semibold">{prediction.predictedCases}</span> in {prediction.timeframe}
                         </p>
                         <div className="mt-2">
-                          <p className="text-xs text-gray-500 mb-1">Prevention Measures:</p>
-                          <ul className="text-xs text-gray-700 space-y-1">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Prevention Measures:</p>
+                          <ul className="text-xs text-gray-700 dark:text-gray-300 space-y-1">
                             {prediction.preventionMeasures.slice(0, 3).map((measure, i) => (
                               <li key={i} className="flex items-center">
                                 <Shield className="w-3 h-3 mr-1 text-green-600" />
@@ -310,18 +318,18 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
 
               {/* AI Recommendations */}
               {analysis.aiRecommendations && analysis.aiRecommendations.length > 0 && (
-                <div className="bg-white border rounded-lg p-6">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center">
+                <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center text-gray-900 dark:text-white">
                     <Brain className="w-5 h-5 mr-2 text-purple-600" />
                     AI-Powered Recommendations
                   </h3>
                   <div className="space-y-3">
                     {analysis.aiRecommendations.map((recommendation, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                      <div key={index} className="flex items-start space-x-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
                         <div className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                           {index + 1}
                         </div>
-                        <p className="text-sm text-gray-800 leading-relaxed">{recommendation}</p>
+                        <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{recommendation}</p>
                       </div>
                     ))}
                   </div>
@@ -330,9 +338,9 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
 
               {/* Action Recommendations */}
               {analysis.outbreakRisk === 'LOW' ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-semibold text-blue-800 flex items-center">
+                    <h3 className="text-xl font-semibold text-blue-800 dark:text-blue-300 flex items-center">
                       <AlertTriangle className="w-5 h-5 mr-2" />
                       Monitoring Recommended
                     </h3>
@@ -346,8 +354,8 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h4 className="font-semibold text-blue-700 mb-2">Recommended Actions:</h4>
-                      <ul className="text-sm text-blue-700 space-y-1">
+                      <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">Recommended Actions:</h4>
+                      <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                         <li>• Continue routine surveillance</li>
                         <li>• Monitor for symptom pattern changes</li>
                         <li>• Maintain community health education</li>
@@ -355,8 +363,8 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-blue-700 mb-2">Contact Information:</h4>
-                      <div className="text-sm text-blue-700 space-y-1">
+                      <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">Contact Information:</h4>
+                      <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                         <p>Municipal Health Office: (02) 123-4567</p>
                         <p>DOH Hotline: 1555</p>
                         <p>Emergency Response: 911</p>
@@ -365,9 +373,9 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-6">
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-semibold text-red-800 flex items-center">
+                    <h3 className="text-xl font-semibold text-red-800 dark:text-red-300 flex items-center">
                       <AlertTriangle className="w-5 h-5 mr-2" />
                       Immediate Action Required
                     </h3>
@@ -381,8 +389,8 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <h4 className="font-semibold text-red-700 mb-2">Recommended Actions:</h4>
-                      <ul className="text-sm text-red-700 space-y-1">
+                      <h4 className="font-semibold text-red-700 dark:text-red-300 mb-2">Recommended Actions:</h4>
+                      <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
                         <li>• Alert municipal health officer immediately</li>
                         <li>• Increase surveillance in identified clusters</li>
                         <li>• Deploy rapid response teams</li>
@@ -391,8 +399,8 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-red-700 mb-2">Contact Information:</h4>
-                      <div className="text-sm text-red-700 space-y-1">
+                      <h4 className="font-semibold text-red-700 dark:text-red-300 mb-2">Contact Information:</h4>
+                      <div className="text-sm text-red-700 dark:text-red-300 space-y-1">
                         <p>Municipal Health Office: (02) 123-4567</p>
                         <p>DOH Hotline: 1555</p>
                         <p>Emergency Response: 911</p>
@@ -404,7 +412,7 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-500">No analysis data available</p>
+              <p className="text-gray-500 dark:text-gray-400">No analysis data available</p>
             </div>
           )}
         </div>
@@ -412,9 +420,9 @@ export const PatternAnalysisModal: React.FC<PatternAnalysisModalProps> = ({
         {/* Low Risk Confirmation Dialog */}
         {showLowRiskConfirm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Confirm Low Risk Alert</h3>
-              <p className="text-gray-600 mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Confirm Low Risk Alert</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 The analysis shows LOW outbreak risk. Are you sure you want to save this as a monitoring alert?
               </p>
               <div className="flex gap-3 justify-end">

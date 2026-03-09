@@ -4,14 +4,8 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { collection, getDocs, query, where, orderBy, limit, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { PatternAnalysisModal } from '@/components/ui/PatternAnalysisModal';
-import { type PatternAnalysisResult } from '@/services/patternAnalysisService';
-import { type OutbreakAnnouncementData } from '@/services/outbreakAnnouncementService';
-import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { showAnnouncementCreatedToast } from '@/services/toastService';
 
 const observationData = [
   { day: 'Mon', observations: 12, verified: 10 },
@@ -34,8 +28,6 @@ const symptomData = [
 const COLORS = ['#1B365D', '#CE1126', '#10b981', '#f59e0b', '#8b5cf6'];
 
 export default function BhwDashboard() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState('week');
   const [totalSentinels, setTotalSentinels] = useState(0);
   const [activeSentinels, setActiveSentinels] = useState(0);
@@ -44,9 +36,6 @@ export default function BhwDashboard() {
   const [verifiedToday, setVerifiedToday] = useState(0);
   const [recentReports, setRecentReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showPatternAnalysis, setShowPatternAnalysis] = useState(false);
-  const [patternAnalysis] = useState<PatternAnalysisResult | null>(null);
-  const [analysisLoading] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();

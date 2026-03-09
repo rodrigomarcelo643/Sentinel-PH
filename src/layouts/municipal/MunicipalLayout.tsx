@@ -203,7 +203,7 @@ export default function MunicipalLayout() {
                 Logout
               </AlertDialogAction>
             </AlertDialogFooter>
-          </AlertDialogFooter>
+          </AlertDialogContent>
         </AlertDialog>
       </div>
     </TooltipProvider>
