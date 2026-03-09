@@ -396,23 +396,23 @@ export default function BhwReports() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+        className="bg-white dark:bg-gray-800 rounded-sm shadow-sm border border-gray-100 dark:border-gray-700"
       >
-        <div className="p-4 border-b flex flex-col gap-4 items-start justify-between lg:flex-row lg:items-center">
+        <div className="p-4 border-b dark:border-gray-700 flex flex-col gap-4 items-start justify-between lg:flex-row lg:items-center">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-50 p-2 rounded-lg">
-              <FileText className="h-6 w-6 text-[#1B365D]" />
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg">
+              <FileText className="h-6 w-6 text-[#1B365D] dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">All Reports</h2>
-              <p className="text-sm text-gray-500">{filteredReports.length} reports found</p>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">All Reports</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{filteredReports.length} reports found</p>
             </div>
           </div>
           <div className="flex flex-col gap-3 w-full lg:flex-row lg:w-auto">
             <Button
               onClick={handlePatternAnalysis}
               disabled={isAnalyzing || reports.filter(r => r.status === 'verified').length === 0}
-              className="bg-purple-600 hover:bg-purple-700 text-white order-first lg:order-none"
+              className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white order-first lg:order-none"
             >
               {isAnalyzing ? (
                 <>
@@ -464,10 +464,10 @@ export default function BhwReports() {
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700">
               <tr>
                 <th 
-                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                   onClick={() => handleSort('userName')}
                 >
                   <div className="flex items-center gap-1">
@@ -475,11 +475,11 @@ export default function BhwReports() {
                     <SortIcon field="userName" />
                   </div>
                 </th>
-                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Type</th>
-                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symptoms</th>
-                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Location</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden sm:table-cell">Type</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Symptoms</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Location</th>
                 <th 
-                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                   onClick={() => handleSort('createdAt')}
                 >
                   <div className="flex items-center gap-1">
@@ -488,7 +488,7 @@ export default function BhwReports() {
                   </div>
                 </th>
                 <th 
-                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                   onClick={() => handleSort('status')}
                 >
                   <div className="flex items-center gap-1">
@@ -496,17 +496,17 @@ export default function BhwReports() {
                     <SortIcon field="status" />
                   </div>
                 </th>
-                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {paginatedReports.map((report, index) => (
                 <motion.tr
                   key={report.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="hover:bg-gray-50 transition-colors"
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2 lg:gap-3">
@@ -515,8 +515,8 @@ export default function BhwReports() {
                         <AvatarFallback className="text-xs">{report.userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}</AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <span className="text-sm font-medium text-gray-900 block truncate">{report.userName}</span>
-                        <span className="text-xs text-gray-600 block truncate sm:hidden">{getReportTypeBadge(report.reportType)}</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white block truncate">{report.userName}</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-400 block truncate sm:hidden">{getReportTypeBadge(report.reportType)}</span>
                       </div>
                     </div>
                   </td>
@@ -526,25 +526,25 @@ export default function BhwReports() {
                   <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-nowrap gap-1">
                       {report.symptoms.slice(0, window.innerWidth < 640 ? 1 : 2).map((symptom, idx) => (
-                        <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                        <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
                           {symptom}
                         </span>
                       ))}
                       {report.symptoms.length > (window.innerWidth < 640 ? 1 : 2) && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
                           +{report.symptoms.length - (window.innerWidth < 640 ? 1 : 2)}
                         </span>
                       )}
                     </div>
                   </td>
                   <td className="px-3 lg:px-6 py-4 hidden md:table-cell">
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
                       <MapPin className="h-3 w-3 text-gray-400" />
                       <span className="truncate max-w-[150px]">{report.barangay || report.location}</span>
                     </div>
                   </td>
                   <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
                       <Calendar className="h-3 w-3 text-gray-400 hidden sm:inline" />
                       <span className="text-xs sm:text-sm">{formatDate(report.createdAt)}</span>
                     </div>
@@ -614,8 +614,8 @@ export default function BhwReports() {
           </table>
         </div>
 
-        <div className="px-4 lg:px-6 py-4 border-t flex flex-col gap-4 items-center justify-between lg:flex-row">
-          <div className="text-sm text-gray-600">
+        <div className="px-4 lg:px-6 py-4 border-t dark:border-gray-700 flex flex-col gap-4 items-center justify-between lg:flex-row">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredReports.length)} of {filteredReports.length} reports
           </div>
           <div className="flex items-center gap-2">
@@ -662,7 +662,7 @@ export default function BhwReports() {
       </motion.div>
 
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto dark:bg-gray-800">
           <DialogHeader>
             <DialogTitle>Symptom Report Details</DialogTitle>
           </DialogHeader>
@@ -670,25 +670,25 @@ export default function BhwReports() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Reporter Name</p>
-                  <p className="text-sm text-gray-900">{selectedReport.userName}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Reporter Name</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{selectedReport.userName}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Report Type</p>
-                  <p className="text-sm text-gray-900">{getReportTypeBadge(selectedReport.reportType)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Report Type</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{getReportTypeBadge(selectedReport.reportType)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Date Reported</p>
-                  <p className="text-sm text-gray-900">{formatDate(selectedReport.createdAt)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Date Reported</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{formatDate(selectedReport.createdAt)}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Status</p>
-                  <p className="text-sm text-gray-900">{getStatusBadge(selectedReport.status)}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</p>
+                  <p className="text-sm text-gray-900 dark:text-white">{getStatusBadge(selectedReport.status)}</p>
                 </div>
               </div>
 
-              <div className="border-t pt-4">
-                <p className="text-sm font-medium text-gray-500 mb-2">Symptoms Reported</p>
+              <div className="border-t dark:border-gray-700 pt-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Symptoms Reported</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedReport.symptoms.map((symptom, idx) => (
                     <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
@@ -703,21 +703,21 @@ export default function BhwReports() {
                 </div>
               </div>
 
-              <div className="border-t pt-4">
-                <p className="text-sm font-medium text-gray-500 mb-2">Description</p>
-                <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">{selectedReport.description || 'No description provided'}</p>
+              <div className="border-t dark:border-gray-700 pt-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Description</p>
+                <p className="text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">{selectedReport.description || 'No description provided'}</p>
               </div>
 
-              <div className="border-t pt-4">
-                <p className="text-sm font-medium text-gray-500 mb-2">Location</p>
-                <div className="flex items-start gap-2 text-sm text-gray-900">
+              <div className="border-t dark:border-gray-700 pt-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Location</p>
+                <div className="flex items-start gap-2 text-sm text-gray-900 dark:text-white">
                   <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
                   <div>
                     <p>{selectedReport.location}</p>
                     {selectedReport.barangay && (
-                      <p className="text-xs text-gray-500 mt-1">Barangay: {selectedReport.barangay}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Barangay: {selectedReport.barangay}</p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Coordinates: {selectedReport.latitude.toFixed(6)}, {selectedReport.longitude.toFixed(6)}
                     </p>
                   </div>
@@ -725,17 +725,17 @@ export default function BhwReports() {
               </div>
 
               {selectedReport.proofImageUrl && (
-                <div className="border-t pt-4">
-                  <p className="text-sm font-medium text-gray-500 mb-2">Proof Image</p>
+                <div className="border-t dark:border-gray-700 pt-4">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Proof Image</p>
                   <img 
                     src={selectedReport.proofImageUrl} 
                     alt="Proof" 
-                    className="w-full h-64 object-contain rounded-lg border bg-gray-50"
+                    className="w-full h-64 object-contain rounded-lg border dark:border-gray-600 bg-gray-50 dark:bg-gray-700"
                   />
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex justify-end gap-2 pt-4 border-t dark:border-gray-700">
                 <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
                   Close
                 </Button>
@@ -774,7 +774,7 @@ export default function BhwReports() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
-            <label className="text-sm font-medium text-gray-700 mb-2 block">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
               Rejection Reason (Optional)
             </label>
             <Textarea
@@ -805,7 +805,7 @@ export default function BhwReports() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
-            <label className="text-sm font-medium text-gray-700 mb-2 block">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
               Outbreak Severity Level
             </label>
             <div className="space-y-2">
@@ -818,7 +818,7 @@ export default function BhwReports() {
                   onChange={(e) => setOutbreakSeverity(e.target.value as 'low' | 'medium' | 'high')}
                   className="text-green-600"
                 />
-                <span className="text-sm text-green-600 font-medium">LOW - Isolated case requiring monitoring</span>
+                <span className="text-sm text-green-600 dark:text-green-400 font-medium">LOW - Isolated case requiring monitoring</span>
               </label>
               <label className="flex items-center space-x-2">
                 <input
@@ -829,7 +829,7 @@ export default function BhwReports() {
                   onChange={(e) => setOutbreakSeverity(e.target.value as 'low' | 'medium' | 'high')}
                   className="text-yellow-600"
                 />
-                <span className="text-sm text-yellow-600 font-medium">MEDIUM - Potential outbreak requiring investigation</span>
+                <span className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">MEDIUM - Potential outbreak requiring investigation</span>
               </label>
               <label className="flex items-center space-x-2">
                 <input
@@ -840,7 +840,7 @@ export default function BhwReports() {
                   onChange={(e) => setOutbreakSeverity(e.target.value as 'low' | 'medium' | 'high')}
                   className="text-red-600"
                 />
-                <span className="text-sm text-red-600 font-medium">HIGH - Confirmed outbreak requiring immediate response</span>
+                <span className="text-sm text-red-600 dark:text-red-400 font-medium">HIGH - Confirmed outbreak requiring immediate response</span>
               </label>
             </div>
           </div>
