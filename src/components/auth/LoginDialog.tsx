@@ -144,11 +144,11 @@ export default function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       <DialogContent className="sm:max-w-125">
         <DialogHeader className="items-center">
           <img 
-            src="/sentinel_ph_logo.png" 
+            src="/transparent_sentinel_ph_logo.png" 
             alt="SentinelPH" 
             className="h-30 w-auto"
           />
-          <DialogTitle className="text-2xl font-bold text-[#1B365D]">
+          <DialogTitle className="text-2xl font-bold dark:text-white text-[#1B365D]">
             Welcome Back
           </DialogTitle>
         </DialogHeader>
@@ -172,7 +172,7 @@ export default function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             />
             <Label 
               htmlFor="username"
-              className="absolute left-10 top-1/2 -translate-y-1/2 bg-white px-1 text-gray-500 transition-all duration-200 peer-focus:top-0 peer-focus:text-xs peer-focus:text-[#1B365D] peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs"
+              className="absolute left-10 top-1/2 -translate-y-1/2 bg-white dark:bg-black dark:text-white px-1 text-gray-500 transition-all duration-200 peer-focus:top-0 peer-focus:text-xs peer-focus:text-[#1B365D] peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs"
             >
               Username
             </Label>
@@ -191,7 +191,7 @@ export default function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             />
             <Label 
               htmlFor="password"
-              className="absolute left-10 top-1/2 -translate-y-1/2 bg-white px-1 text-gray-500 transition-all duration-200 peer-focus:top-0 peer-focus:text-xs peer-focus:text-[#1B365D] peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs"
+              className="absolute left-10 top-1/2 dark:bg-black dark:text-white -translate-y-1/2 bg-white px-1 text-gray-500 transition-all duration-200 peer-focus:top-0 peer-focus:text-xs peer-focus:text-[#1B365D] peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs"
             >
               Password
             </Label>
