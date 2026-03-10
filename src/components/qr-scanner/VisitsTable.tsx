@@ -18,10 +18,10 @@ interface VisitsTableProps {
 export default function VisitsTable({ visits, loading, onDeleteVisit }: VisitsTableProps) {
   if (loading) {
     return (
-      <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-[2px] dark:border-gray-700 dark:bg-gray-800 shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex items-center gap-2">
           <Clock className="h-5 w-5 text-[#1B365D]" />
-          <h2 className="text-lg font-semibold text-gray-900">Recent Visits</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Visits</h2>
         </div>
         <div className="p-12 text-center">
           <div className="w-16 h-16 border-4 border-gray-200 border-t-[#1B365D] rounded-full animate-spin mx-auto"></div>
@@ -32,10 +32,10 @@ export default function VisitsTable({ visits, loading, onDeleteVisit }: VisitsTa
 
   if (visits.length === 0) {
     return (
-      <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-[2px] dark:bg-gray-800  shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex items-center gap-2">
           <Clock className="h-5 w-5 text-[#1B365D]" />
-          <h2 className="text-lg font-semibold text-gray-900">Recent Visits</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white ">Recent Visits</h2>
         </div>
         <div className="p-12 text-center">
           <Camera className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -47,35 +47,35 @@ export default function VisitsTable({ visits, loading, onDeleteVisit }: VisitsTa
   }
 
   return (
-    <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-4 border-b border-gray-200 flex items-center gap-2">
-        <Clock className="h-5 w-5 text-[#1B365D]" />
-        <h2 className="text-lg font-semibold text-gray-900">Recent Visits</h2>
+    <div className="bg-white rounded-[2px] dark:border-gray-700 dark:bg-gray-800 shadow-sm border border-gray-100 overflow-hidden">
+      <div className="p-4 border-b dark:border-gray-700 border-gray-200 flex items-center gap-2">
+        <Clock className="h-5 w-5 text-[#1B365D] dark:text-white" />
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Visits</h2>
       </div>
       
       <table className="w-full">
-        <thead className="bg-gray-50 border-b border-gray-200">
+        <thead className="bg-gray-50 dark:border-gray-700 dark:bg-gray-900 border-b border-gray-200">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-white uppercase tracking-wider">
               Resident Name
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-white uppercase tracking-wider">
               QR ID
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-white uppercase tracking-wider">
               Visit Date
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-white uppercase tracking-wider">
               Scanned By
             </th>
-            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 dark:text-white uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
           {visits.map((visit) => (
-            <tr key={visit.id} className="hover:bg-gray-50 transition-colors">
+            <tr key={visit.id} className="hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-900 transition-colors">
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
                   {visit.selfieUrl ? (
@@ -89,13 +89,13 @@ export default function VisitsTable({ visits, loading, onDeleteVisit }: VisitsTa
                       <User className="h-5 w-5 text-gray-500" />
                     </div>
                   )}
-                  <span className="text-sm font-medium text-gray-900">{visit.residentName}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{visit.residentName}</span>
                 </div>
               </td>
-              <td className="px-6 py-4 text-sm font-mono text-gray-700">
+              <td className="px-6 py-4 text-sm font-mono text-gray-700 dark:text-white">
                 {visit.qrId}
               </td>
-              <td className="px-6 py-4 text-sm text-gray-700">
+              <td className="px-6 py-4 text-sm text-gray-700 dark:text-white">
                 {visit.visitDate?.toDate?.()?.toLocaleString('en-US', {
                   month: 'short',
                   day: 'numeric',
@@ -104,7 +104,7 @@ export default function VisitsTable({ visits, loading, onDeleteVisit }: VisitsTa
                   minute: '2-digit'
                 }) || 'N/A'}
               </td>
-              <td className="px-6 py-4 text-sm text-gray-700">
+              <td className="px-6 py-4 text-sm text-gray-700 dark:text-white">
                 {visit.scannedBy}
               </td>
               <td className="px-6 py-4 text-right">
