@@ -289,15 +289,15 @@ export default function BhwObservations() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Active Sentinels</p>
-                  <h3 className="text-3xl font-bold text-[#1B365D]">{stats.activeSentinels}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Sentinels</p>
+                  <h3 className="text-3xl font-bold text-[#1B365D] dark:text-white">{stats.activeSentinels}</h3>
                   <p className="text-xs text-green-600 mt-1">Approved</p>
                 </div>
-                <div className="bg-green-50 p-3 rounded-lg">
+                <div className="bg-green-50 dark:bg-gray-700 p-3 rounded-lg">
                   <Users className="h-8 w-8 text-green-600" />
                 </div>
               </div>
@@ -307,15 +307,15 @@ export default function BhwObservations() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100  dark:border-gray-700 dark:bg-gray-800 hover:shadow-md transition-shadow"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Pending Cases</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Pending Cases</p>
                   <h3 className="text-3xl font-bold text-[#CE1126]">{stats.pendingCases}</h3>
                   <p className="text-xs text-red-600 mt-1">Awaiting review</p>
                 </div>
-                <div className="bg-red-50 p-3 rounded-lg">
+                <div className="bg-red-50 dark:bg-gray-700  p-3 rounded-lg">
                   <AlertTriangle className="h-8 w-8 text-[#CE1126]" />
                 </div>
               </div>
@@ -325,15 +325,15 @@ export default function BhwObservations() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+              className="bg-white p-6 rounded-xl shadow-sm border dark:border-gray-700 dark:bg-gray-800 border-gray-100 hover:shadow-md transition-shadow"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Verified Cases</p>
-                  <h3 className="text-3xl font-bold text-[#1B365D]">{stats.verifiedCases}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Verified Cases</p>
+                  <h3 className="text-3xl font-bold text-[#1B365D] dark:text-white">{stats.verifiedCases}</h3>
                   <p className="text-xs text-green-600 mt-1">Confirmed</p>
                 </div>
-                <div className="bg-purple-50 p-3 rounded-lg">
+                <div className="bg-purple-50 p-3 dark:bg-blue-900/20 rounded-lg">
                   <CheckCircle className="h-8 w-8 text-purple-600" />
                 </div>
               </div>
@@ -344,7 +344,7 @@ export default function BhwObservations() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-100 dark:border-gray-700"
+              className="bg-white dark:bg-gray-800 p-6  mb-5 rounded-xl shadow-md border border-gray-100 dark:border-gray-700"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-gray-800 dark:text-white">7-Day Trend Analysis</h3>
@@ -383,15 +383,15 @@ export default function BhwObservations() {
           </motion.div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1  xl:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
             {/* Symptom Radar Chart */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100"
+              className="bg-white dark:bg-gray-800  p-4 sm:p-6 rounded-xl shadow-md border border-gray-100 dark:border-gray-700"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base sm:text-lg font-bold text-gray-800">Symptom Distribution</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Symptom Distribution</h3>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -417,10 +417,10 @@ export default function BhwObservations() {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100"
+              className="bg-white p-4 sm:p-6 rounded-xl shadow-md border dark:border-gray-700 dark:bg-gray-800 border-gray-100"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base sm:text-lg font-bold text-gray-800">Severity Breakdown</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Severity Breakdown</h3>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -429,7 +429,7 @@ export default function BhwObservations() {
                   <span>Live</span>
                 </div>
               </div>
-              <div className="h-[250px] sm:h-[300px]">
+              <div className="h-62.5 sm:h-75">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadialBarChart 
                     innerRadius="10%" 
@@ -454,10 +454,10 @@ export default function BhwObservations() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100"
+              className="bg-white p-4 sm:p-6 dark:border-gray-700 dark:bg-gray-800 rounded-xl shadow-md border border-gray-100"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base sm:text-lg font-bold text-gray-800">Self-Reported vs Observed</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">Self-Reported vs Observed</h3>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -466,7 +466,7 @@ export default function BhwObservations() {
                   <span>Live</span>
                 </div>
               </div>
-              <div className="h-[250px] sm:h-[300px]">
+              <div className="h-62.5 sm:h-75">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={stats.reportTypeData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -485,10 +485,10 @@ export default function BhwObservations() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-100"
+              className="bg-white dark:border-gray-700 dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-md border border-gray-100"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base sm:text-lg font-bold text-gray-800">Most Active Reporters</h3>
+                <h3 className="text-base sm:text-lg font-bold text-gray-800 dark:text-white ">Most Active Reporters</h3>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <div className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -497,7 +497,7 @@ export default function BhwObservations() {
                   <span>Live</span>
                 </div>
               </div>
-              <div className="h-[250px] sm:h-[300px]">
+              <div className="h-62.5 sm:h-75">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stats.topReporters}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
