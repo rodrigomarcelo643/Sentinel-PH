@@ -412,7 +412,7 @@ export default function BhwReports() {
             <Button
               onClick={handlePatternAnalysis}
               disabled={isAnalyzing || reports.filter(r => r.status === 'verified').length === 0}
-              className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white order-first lg:order-none"
+              className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white order-first lg:order-0"
             >
               {isAnalyzing ? (
                 <>
@@ -427,7 +427,7 @@ export default function BhwReports() {
               )}
             </Button>
             <Select value={reportTypeFilter} onValueChange={setReportTypeFilter}>
-              <SelectTrigger className="w-full lg:w-[150px]">
+              <SelectTrigger className="w-full lg:w-37.5">
                 <SelectValue placeholder="Report Type" />
               </SelectTrigger>
               <SelectContent>
@@ -437,7 +437,7 @@ export default function BhwReports() {
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full lg:w-[150px]">
+              <SelectTrigger className="w-full lg:w-37.5">
                 <SelectValue placeholder="Filter by Status" />
               </SelectTrigger>
               <SelectContent>
@@ -463,7 +463,7 @@ export default function BhwReports() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[800px]">
+          <table className="w-full min-w-37.5">
             <thead className="bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700">
               <tr>
                 <th 
@@ -540,7 +540,7 @@ export default function BhwReports() {
                   <td className="px-3 lg:px-6 py-4 hidden md:table-cell">
                     <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
                       <MapPin className="h-3 w-3 text-gray-400" />
-                      <span className="truncate max-w-[150px]">{report.barangay || report.location}</span>
+                      <span className="truncate max-w-37.5">{report.barangay || report.location}</span>
                     </div>
                   </td>
                   <td className="px-3 lg:px-6 py-4 whitespace-nowrap">
@@ -662,7 +662,7 @@ export default function BhwReports() {
       </motion.div>
 
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto dark:bg-gray-800">
+        <DialogContent className="sm:max-w-37.5 max-h-[90vh] overflow-y-auto dark:bg-gray-800">
           <DialogHeader>
             <DialogTitle>Symptom Report Details</DialogTitle>
           </DialogHeader>
@@ -781,7 +781,7 @@ export default function BhwReports() {
               placeholder="Provide a reason for rejection..."
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              className="min-h-[100px]"
+              className="min-h-25"
             />
           </div>
           <AlertDialogFooter>
