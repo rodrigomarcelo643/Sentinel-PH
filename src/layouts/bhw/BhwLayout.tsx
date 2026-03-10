@@ -145,7 +145,7 @@ export default function BhwLayout() {
         <img
           src="/sentinel_ph_logo.png"
           alt="SentinelPH"
-          className={`transition-all duration-300 rounded-[20px] ${isDesktop && sidebarCollapsed ? "h-10 w-auto object-contain" : "h-30 w-auto"}`}
+          className={`transition-all duration-300 rounded-4xl ${isDesktop && sidebarCollapsed ? "h-10 w-auto object-contain" : "h-30 w-auto"}`}
         />
       </div>
       <div className="bg-white dark:bg-gray-800 px-3 py-4 flex-1 overflow-y-auto">

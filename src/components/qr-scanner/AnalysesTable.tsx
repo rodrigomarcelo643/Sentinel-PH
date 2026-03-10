@@ -46,7 +46,7 @@ export default function AnalysesTable({ savedAnalyses, loading, onViewAnalysis, 
 
   if (savedAnalyses.length === 0) {
     return (
-      <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 dark:border-gray-700 rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex items-center gap-2">
           <Brain className="h-5 w-5 text-[#1B365D]" />
           <h2 className="text-lg font-semibold text-gray-900">Saved AI Analyses</h2>
@@ -61,42 +61,42 @@ export default function AnalysesTable({ savedAnalyses, loading, onViewAnalysis, 
   }
 
   return (
-    <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-4 border-b border-gray-200 flex items-center gap-2">
-        <Brain className="h-5 w-5 text-[#1B365D]" />
-        <h2 className="text-lg font-semibold text-gray-900">Saved AI Analyses</h2>
+    <div className="bg-white rounded-[2px] dark:bg-gray-800 dark:border-gray-700  shadow-sm border border-gray-100 overflow-hidden">
+      <div className="p-4 border dark:border-gray-700 border-gray-200 flex items-center gap-2">
+        <Brain className="h-5 w-5 text-[#1B365D] dark:text-white" />
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Saved AI Analyses</h2>
       </div>
       
       <table className="w-full">
-        <thead className="bg-gray-50 border-b border-gray-200">
+        <thead className="bg-gray-50 border dark:bg-gray-900 dark:border-gray-700 border-gray-200">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700  dark:text-white uppercase tracking-wider">
               Patient Name
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-white uppercase tracking-wider">
               Risk Level
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-white uppercase tracking-wider">
               Reports
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-white uppercase tracking-wider">
               Analysis Date
             </th>
-            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 dark:text-white uppercase tracking-wider">
               Analyzed By
             </th>
-            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 dark:text-white uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
           {savedAnalyses.map((analysis) => (
-            <tr key={analysis.id} className="hover:bg-gray-50 transition-colors">
+            <tr key={analysis.id} className="hover:bg-gray-50  dark:hover:bg-gray-900 transition-colors">
               <td className="px-6 py-4">
                 <div>
-                  <span className="text-sm font-medium text-gray-900">{analysis.patientName}</span>
-                  <p className="text-xs text-gray-500">{analysis.patientLocation}</p>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white ">{analysis.patientName}</span>
+                  <p className="text-xs text-gray-500 dark:text-white">{analysis.patientLocation}</p>
                 </div>
               </td>
               <td className="px-6 py-4">
