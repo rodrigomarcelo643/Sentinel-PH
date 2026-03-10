@@ -209,7 +209,7 @@ export default function BhwSentinels() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100"
+          className="bg-white dark:bg-gray-800 rounded-sm shadow-sm border border-gray-100"
         >
           <div className="p-4 border-b">
             <div className="flex items-center gap-3">
