@@ -662,7 +662,7 @@ export default function BhwReports() {
       </motion.div>
 
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-37.5 max-h-[90vh] overflow-y-auto dark:bg-gray-800">
+        <DialogContent className=" w-[1500px]  max-h-[90vh] overflow-y-auto dark:bg-gray-800">
           <DialogHeader>
             <DialogTitle>Symptom Report Details</DialogTitle>
           </DialogHeader>
