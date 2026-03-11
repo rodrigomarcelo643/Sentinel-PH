@@ -50,7 +50,7 @@ export default function MunicipalLayout() {
         }`}
         onClick={onClick}
       >
-        <Icon className="h-4 w-4 flex-shrink-0" />
+        <Icon className="h-4 w-4 shrink-0" />
         {!(isDesktop && sidebarCollapsed) && <span className="text-sm">{label}</span>}
       </Link>
     );
