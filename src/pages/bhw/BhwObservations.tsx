@@ -180,7 +180,7 @@ export default function BhwObservations() {
             initial={{ opacity: 0, y: -100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -100 }}
-            className="fixed top-4 right-4 z-50 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 max-w-md"
+            className="fixed top-4 right-4 z-50 bg-linear-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 max-w-md"
           >
             <div className="relative flex h-10 w-10 items-center justify-center">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
@@ -227,33 +227,33 @@ export default function BhwObservations() {
           {/* Stats Cards Skeleton */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white p-6 rounded-xl shadow-lg animate-pulse">
+              <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 animate-pulse">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-24 mb-3"></div>
-                    <div className="h-10 bg-gray-300 rounded w-16"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-3"></div>
+                    <div className="h-10 bg-gray-300 dark:bg-gray-600 rounded w-16"></div>
                   </div>
-                  <Activity className="h-12 w-12 text-gray-200" />
+                  <Activity className="h-12 w-12 text-gray-200 dark:text-gray-600" />
                 </div>
               </div>
             ))}
           </div>
 
           {/* Trend Chart Skeleton */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-8 animate-pulse">
-            <div className="h-6 bg-gray-200 rounded w-40 mb-4"></div>
-            <div className="h-[300px] bg-gray-100 rounded flex items-center justify-center">
-              <Activity className="h-16 w-16 text-gray-300" />
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 mb-8 animate-pulse">
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-4"></div>
+            <div className="h-75 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
+              <Activity className="h-16 w-16 text-gray-300 dark:text-gray-600" />
             </div>
           </div>
 
           {/* Charts Skeleton */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {[...Array(2)].map((_, i) => (
-              <div key={i} className="bg-white p-6 rounded-xl shadow-md border border-gray-100 animate-pulse">
-                <div className="h-6 bg-gray-200 rounded w-40 mb-4"></div>
-                <div className="h-[300px] bg-gray-100 rounded flex items-center justify-center">
-                  <Activity className="h-16 w-16 text-gray-300" />
+              <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 animate-pulse">
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-4"></div>
+                <div className="h-75 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
+                  <Activity className="h-16 w-16 text-gray-300 dark:text-gray-600" />
                 </div>
               </div>
             ))}

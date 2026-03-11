@@ -220,9 +220,9 @@ export default function OutbreakResponse() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <div className="bg-gradient-to-r from-red-50 via-orange-50 to-yellow-50 dark:from-red-900/20 dark:via-orange-900/20 dark:to-yellow-900/20 rounded-sm p-6 shadow-sm border border-red-100 dark:border-red-800">
+        <div className="bg-linear-to-r from-red-50 via-orange-50 to-yellow-50 dark:from-red-900/20 dark:via-orange-900/20 dark:to-yellow-900/20 rounded-sm p-6 shadow-sm border border-red-100 dark:border-red-800">
           <div className="flex items-center gap-4">
-            <div className="bg-gradient-to-br from-red-500 to-orange-600 p-3 rounded-sm shadow-sm">
+            <div className="bg-linear-to-br from-red-500 to-orange-600 p-3 rounded-sm shadow-sm">
               <AlertTriangle className="h-8 w-8 text-white" />
             </div>
             <div>
@@ -561,7 +561,7 @@ export default function OutbreakResponse() {
             <div className="flex overflow-x-auto">
               <button
                 onClick={() => setActiveTab('pending')}
-                className={`flex-1 min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`flex-1 min-w-30 px-4 sm:px-6 py-4 text-sm font-medium transition-all relative ${
                   activeTab === 'pending'
                     ? 'text-yellow-600 dark:text-yellow-400'
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -578,7 +578,7 @@ export default function OutbreakResponse() {
               </button>
               <button
                 onClick={() => setActiveTab('ongoing')}
-                className={`flex-1 min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`flex-1 min-w-30 px-4 sm:px-6 py-4 text-sm font-medium transition-all relative ${
                   activeTab === 'ongoing'
                     ? 'text-orange-600'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -595,7 +595,7 @@ export default function OutbreakResponse() {
               </button>
               <button
                 onClick={() => setActiveTab('resolved')}
-                className={`flex-1 min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`flex-1 min-w-30 px-4 sm:px-6 py-4 text-sm font-medium transition-all relative ${
                   activeTab === 'resolved'
                     ? 'text-green-600'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -751,7 +751,7 @@ export default function OutbreakResponse() {
                       <ul className="space-y-2">
                         {alert.recommendations.slice(0, 4).map((recommendation, idx) => (
                           <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
-                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                             <span>{recommendation}</span>
                           </li>
                         ))}
@@ -759,19 +759,19 @@ export default function OutbreakResponse() {
                     ) : (
                       <ul className="space-y-2">
                         <li className="flex items-start gap-2 text-sm text-gray-600">
-                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                           <span>Alert local health authorities immediately</span>
                         </li>
                         <li className="flex items-start gap-2 text-sm text-gray-600">
-                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                           <span>Conduct contact tracing in affected area</span>
                         </li>
                         <li className="flex items-start gap-2 text-sm text-gray-600">
-                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                           <span>Issue health advisory to residents</span>
                         </li>
                         <li className="flex items-start gap-2 text-sm text-gray-600">
-                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                           <span>Monitor for additional cases</span>
                         </li>
                       </ul>
