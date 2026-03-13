@@ -17,7 +17,8 @@ import {
   Save
 } from 'lucide-react';
 import { aiAnalysisService } from '@/services/aiAnalysisService';
-import type { AIAnalysisResult, SymptomReport } from '@/services/aiAnalysisService';
+import type { AIAnalysisResult } from '@/@types/services/aiAnalysis';
+import type { SymptomReport } from '@/@types/core';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -265,7 +266,7 @@ export default function AIAnalysisModal({
                       <h4 className="font-semibold text-gray-900 dark:text-white">Potential Conditions</h4>
                     </div>
                     <div className="space-y-3">
-                      {analysis.potentialConditions.map((condition, index) => (
+                      {analysis.potentialConditions.map((condition: any, index: number) => (
                         <div key={index} className="border dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-700">
                           <div className="flex justify-between items-start mb-2">
                             <h5 className="font-medium text-gray-900 dark:text-white">{condition.condition}</h5>
@@ -297,8 +298,8 @@ export default function AIAnalysisModal({
                     </div>
                     <div className="space-y-3">
                       {analysis.recommendations
-                        .sort((a, b) => a.priority - b.priority)
-                        .map((rec, index) => (
+                        .sort((a: any, b: any) => a.priority - b.priority)
+                        .map((rec: any, index: number) => (
                         <div key={index} className="flex items-start gap-3 p-3 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
                           <div className={`p-1 rounded-full ${
                             rec.type === 'immediate' ? 'bg-red-100 dark:bg-red-900/30' :
@@ -336,7 +337,7 @@ export default function AIAnalysisModal({
                       <h4 className="font-semibold text-gray-900">Specialist Recommendations</h4>
                     </div>
                     <div className="space-y-3">
-                      {analysis.specialistRecommendations.map((spec, index) => (
+                      {analysis.specialistRecommendations.map((spec: any, index: number) => (
                         <div key={index} className="border rounded-lg p-4">
                           <div className="flex justify-between items-start mb-2">
                             <h5 className="font-medium text-gray-900">{spec.specialty}</h5>
