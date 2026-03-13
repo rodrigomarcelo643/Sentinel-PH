@@ -15,6 +15,7 @@ import { collection, addDoc, serverTimestamp, doc, setDoc } from "firebase/fires
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { uploadImage } from "@/services/cloudinaryService";
 import { syncUserQRCode } from "@/services/qrSyncService";
+import type { FormData, FormErrors } from '@/@types/pages/register';
 
 const steps = [
   { number: 1, title: "Account Type", description: "Select your organization", icon: Building2 },
@@ -25,31 +26,7 @@ const steps = [
 
 
 
-interface FormData {
-  accountType: string;
-  region: string;
-  municipality: string;
-  barangay: string;
-  officeName: string;
-  headOfficer: string;
-  address: string;
-  estimatedPopulation: string;
-  officialEmail: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  documents: File[];
-  subscription: string;
-  paymentMethod: string;
-  username: string;
-  password: string;
-  confirmPassword: string;
-  agreeToTerms: boolean;
-}
 
-interface FormErrors {
-  [key: string]: string;
-}
 
 export default function RegisterPage() {
   const navigate = useNavigate();
