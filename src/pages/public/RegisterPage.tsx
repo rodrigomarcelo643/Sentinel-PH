@@ -59,7 +59,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<{[key: string]: boolean}>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [isRegistering, setIsRegistering] = useState(false);
   
   // Location data states
