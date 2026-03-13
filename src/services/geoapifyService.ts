@@ -499,10 +499,6 @@ class GeoapifyService {
     return stateName;
   }
 
-  private getRegionCode(stateName: string): string {
-    return this.mapRegionName(stateName);
-  }
-
   private getRegionFromState(stateName: string): string {
     return this.mapRegionName(stateName);
   }
@@ -705,7 +701,7 @@ class GeoapifyService {
     return 'rural';
   }
 
-  private getFallbackDistricts(municipalityName: string, regionName: string): PhilippineDistrict[] {
+  private getFallbackDistricts(municipalityName: string, _regionName: string): PhilippineDistrict[] {
     const districtData: Record<string, PhilippineDistrict[]> = {
       'Cebu City': [
         { name: 'North District', municipality: 'Cebu City', region: 'Region VII', type: 'urban_district', lat: 10.3300, lon: 123.8900 },
@@ -725,7 +721,7 @@ class GeoapifyService {
     return districtData[municipalityName] || [];
   }
 
-  private getFallbackBarangays(municipalityName: string, regionName: string): PhilippineBarangay[] {
+  private getFallbackBarangays(municipalityName: string, _regionName: string): PhilippineBarangay[] {
     const barangayData: Record<string, PhilippineBarangay[]> = {
       // Cebu Province
       'Cebu City': [
