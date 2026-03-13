@@ -39,30 +39,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
-
-interface Sentinel {
-  id: string;
-  fullName: string;
-  firstName: string;
-  lastName: string;
-  middleInitial?: string;
-  communityRole: string;
-  address: {
-    barangay: string;
-    municipality: string;
-    region: string;
-  };
-  email: string;
-  contactNumber: string;
-  status: string;
-  documents: {
-    selfieUrl: string;
-    validIdUrl: string;
-    idType: string;
-  };
-  uid: string;
-  createdAt: any;
-}
+import { type Sentinel } from "@/@types";
 
 export default function BhwSentinels() {
   const { user } = useAuth();
