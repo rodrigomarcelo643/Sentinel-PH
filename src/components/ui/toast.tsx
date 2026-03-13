@@ -144,13 +144,9 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
-type ToastActionElement = React.ReactElement<typeof ToastAction>
 
 export {
-  type ToastProps,
-  type ToastActionElement,
   ToastProvider,
   ToastViewport,
   Toast,
@@ -159,3 +155,6 @@ export {
   ToastClose,
   ToastAction,
 }
+
+// Re-export types for backward compatibility
+export type { ToastProps, ToastActionElement } from '@/@types/components/toast';
