@@ -4,6 +4,7 @@ import { collection, getDocs, query, where, onSnapshot } from 'firebase/firestor
 import { db } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, X } from 'lucide-react';
+import type { MapSymptomReport, Severity, UserLocation } from '@/@types';
 
 const mapContainerStyle = {
   width: '100%',
@@ -15,29 +16,13 @@ const center = {
   lng: 123.8854,
 };
 
-interface SymptomReport {
-  id: string;
-  latitude: number;
-  longitude: number;
-  symptoms: string[];
-  description: string;
-  userName: string;
-  status: string;
-  createdAt: any; 
-  location: string;
-  userId?: string;
-  userSelfieUrl?: string;
-  proofImageUrl?: string;
-  reportType?: string;
-}
-
-const getSeverity = (symptomsCount: number): 'low' | 'medium' | 'high' => {
+const getSeverity = (symptomsCount: number): Severity => {
   if (symptomsCount >= 4) return 'high';
   if (symptomsCount >= 2) return 'medium';
   return 'low';
 };
 
-const getSeverityColor = (severity: 'low' | 'medium' | 'high') => {
+const getSeverityColor = (severity: Severity) => {
   switch (severity) {
     case 'high': return '#DC2626';
     case 'medium': return '#F59E0B';
@@ -50,10 +35,10 @@ export default function BhwMap() {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
   });
   
-  const [reports, setReports] = useState<SymptomReport[]>([]);
+  const [reports, setReports] = useState<MapSymptomReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedReport, setSelectedReport] = useState<SymptomReport | null>(null);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedReport, setSelectedReport] = useState<MapSymptomReport | null>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [showNewCaseAlert, setShowNewCaseAlert] = useState(false);
@@ -134,11 +119,11 @@ export default function BhwMap() {
             userSelfieUrl,
             latitude: reportData.latitude,
             longitude: reportData.longitude
-          } as SymptomReport;
+          } as MapSymptomReport;
         })
       );
       
-      const data = reportsData.filter((report): report is SymptomReport => 
+      const data = reportsData.filter((report): report is MapSymptomReport => 
         typeof report.latitude === 'number' && typeof report.longitude === 'number'
       );
       setReports(data);
@@ -417,7 +402,7 @@ export default function BhwMap() {
                 />
               ) : (
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold text-sm">
-                  {selectedReport.userName.charAt(0).toUpperCase()}
+                  {(selectedReport.userName || 'Unknown').charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="flex-1 min-w-0">
