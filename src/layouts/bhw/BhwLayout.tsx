@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import type { NavLinkProps, SidebarContentProps } from '@/@types/layouts/common';
 
 export default function BhwLayout() {
   const { logout, user } = useAuth();
@@ -103,13 +104,7 @@ export default function BhwLayout() {
     label,
     onClick,
     isDesktop = false,
-  }: {
-    to: string;
-    icon: any;
-    label: string;
-    onClick?: () => void;
-    isDesktop?: boolean;
-  }) => {
+  }: NavLinkProps) => {
     const active = isActive(to);
     const content = (
       <Link
@@ -139,7 +134,7 @@ export default function BhwLayout() {
     return content;
   };
 
-  const SidebarContent = ({ isDesktop = false }: { isDesktop?: boolean }) => (
+  const SidebarContent = ({ isDesktop = false }: SidebarContentProps) => (
     <>
       <div className="border-b bg-white dark:bg-gray-800 p-2 flex items-center justify-center">
         <img

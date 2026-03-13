@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import type { NavLinkProps, SidebarContentProps } from '@/@types/layouts/common';
 
 export default function MunicipalLayout() {
   const { logout, user } = useAuth();
@@ -38,7 +39,7 @@ export default function MunicipalLayout() {
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'Municipal User';
   const userRole = user?.role || 'Municipal Officer';
 
-  const NavLink = ({ to, icon: Icon, label, onClick, isDesktop = false }: { to: string; icon: any; label: string; onClick?: () => void; isDesktop?: boolean }) => {
+  const NavLink = ({ to, icon: Icon, label, onClick, isDesktop = false }: NavLinkProps) => {
     const active = isActive(to);
     const content = (
       <Link
@@ -66,7 +67,7 @@ export default function MunicipalLayout() {
     return content;
   };
 
-  const SidebarContent = ({ isDesktop = false }: { isDesktop?: boolean }) => (
+  const SidebarContent = ({ isDesktop = false }: SidebarContentProps) => (
     <>
       <div className="border-b bg-white dark:bg-gray-800 p-2 flex items-center justify-center">
         <img 

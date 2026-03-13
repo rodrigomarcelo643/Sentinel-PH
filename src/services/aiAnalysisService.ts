@@ -1,40 +1,6 @@
 import axios from 'axios';
-
-interface SymptomReport {
-  id: string;
-  symptoms: string[];
-  description: string;
-  reportType: 'self' | 'observed';
-  status: string;
-  createdAt: any;
-}
-
-interface AIAnalysisResult {
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  riskPercentage: number;
-  potentialConditions: Array<{
-    condition: string;
-    probability: number;
-    severity: 'mild' | 'moderate' | 'severe';
-  }>;
-  recommendations: Array<{
-    type: 'immediate' | 'followup' | 'monitoring';
-    action: string;
-    priority: number;
-  }>;
-  specialistRecommendations: Array<{
-    specialty: string;
-    reason: string;
-    urgency: 'routine' | 'urgent' | 'emergency';
-  }>;
-  summary: string;
-  trends: {
-    improving: boolean;
-    worsening: boolean;
-    stable: boolean;
-    pattern: string;
-  };
-}
+import type { SymptomReport } from '@/@types/core';
+import type { AIAnalysisResult } from '@/@types/services/aiAnalysis';
 
 class AIAnalysisService {
   private apiKey: string;
@@ -228,5 +194,4 @@ Consider:
 }
 
 export const aiAnalysisService = new AIAnalysisService();
-export type { AIAnalysisResult, SymptomReport };
 export { AIAnalysisService };

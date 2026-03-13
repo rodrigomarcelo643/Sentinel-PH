@@ -1,62 +1,12 @@
 import axios from 'axios';
-
-export interface PatternAnalysisResult {
-  outbreakRisk: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  riskScore: number;
-  clusters: ClusterData[];
-  diseases: DiseasePattern[];
-  anomalies: AnomalyData[];
-  predictions: PredictionData[];
-  affectedResidents: number;
-  totalReports: number;
-  timeframe: string;
-  aiRecommendations?: string[];
-}
-
-export interface ClusterData {
-  id: string;
-  center: { lat: number; lng: number };
-  radius: number;
-  reportCount: number;
-  residents: number;
-  dominantSymptoms: string[];
-  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-}
-
-export interface DiseasePattern {
-  disease: string;
-  probability: number;
-  affectedCount: number;
-  symptoms: string[];
-  locations: string[];
-  trend: 'INCREASING' | 'STABLE' | 'DECREASING';
-}
-
-export interface AnomalyData {
-  type: 'SPATIAL' | 'TEMPORAL' | 'SYMPTOM';
-  description: string;
-  severity: number;
-  location?: string;
-  timestamp: string;
-}
-
-export interface PredictionData {
-  disease: string;
-  predictedCases: number;
-  confidence: number;
-  timeframe: string;
-  preventionMeasures: string[];
-}
-
-interface ReportData {
-  id: string;
-  symptoms: string[];
-  location: { lat: number; lng: number };
-  timestamp: string;
-  barangay: string;
-  municipality: string;
-  residentId: string;
-}
+import type { 
+  PatternAnalysisResult, 
+  ClusterData, 
+  DiseasePattern, 
+  AnomalyData, 
+  PredictionData, 
+  ReportData 
+} from '@/@types/services/patternAnalysis';
 
 class PatternAnalysisService {
   private readonly openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
@@ -520,3 +470,12 @@ export const analyzeHealthPatterns = async (): Promise<PatternAnalysisResult> =>
     throw error;
   }
 };
+// Re-export types for backward compatibility
+export type { 
+  PatternAnalysisResult, 
+  ClusterData, 
+  DiseasePattern, 
+  AnomalyData, 
+  PredictionData, 
+  ReportData 
+} from '@/@types/services/patternAnalysis';

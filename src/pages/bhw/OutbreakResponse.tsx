@@ -36,8 +36,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import { showAnnouncementCreatedToast } from "@/services/toastService";
 import { uploadImage } from "@/services/cloudinaryService";
+import type { OutbreakAlert, AnnouncementType } from "@/@types";
 
-const ANNOUNCEMENT_TYPES = [
+const ANNOUNCEMENT_TYPES: AnnouncementType[] = [
   { value: "health_advisory", label: "Health Advisory", icon: Info },
   { value: "outbreak_alert", label: "Outbreak Alert", icon: Siren },
   {
@@ -53,25 +54,6 @@ const ANNOUNCEMENT_TYPES = [
   },
   { value: "other", label: "Other (Specify)", icon: Megaphone },
 ];
-
-interface OutbreakAlert {
-  id: string;
-  disease: string;
-  location: string;
-  severity: "low" | "medium" | "high";
-  cases: number;
-  residents: string[] | number;
-  trend: "increasing" | "stable" | "decreasing";
-  detectedAt: any;
-  status: "pending" | "ongoing" | "resolved";
-  respondedAt?: any;
-  respondedBy?: string;
-  title?: string;
-  riskScore?: number;
-  clusters?: number;
-  recommendations?: string[];
-  analysisData?: any;
-}
 
 export default function OutbreakResponse() {
   const { user } = useAuth();

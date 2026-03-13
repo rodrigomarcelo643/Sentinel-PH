@@ -1,12 +1,5 @@
-import type { PatternAnalysisResult } from './patternAnalysisService';
-
-export interface OutbreakAnnouncementData {
-  title: string;
-  message: string;
-  type: string;
-  priority: 'low' | 'medium' | 'high';
-  recommendations: string[];
-}
+import type { PatternAnalysisResult } from '@/@types/services/patternAnalysis';
+import type { OutbreakAnnouncementData } from '@/@types/services/outbreakAnnouncement';
 
 export const generateOutbreakAnnouncement = (analysis: PatternAnalysisResult): OutbreakAnnouncementData => {
   const { outbreakRisk, diseases } = analysis;
@@ -188,3 +181,5 @@ export const formatAnnouncementForDisplay = (data: OutbreakAnnouncementData): st
   
   return formatted;
 };
+// Re-export types for backward compatibility
+export type { OutbreakAnnouncementData } from '@/@types/services/outbreakAnnouncement';

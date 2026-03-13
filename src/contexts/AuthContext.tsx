@@ -10,36 +10,7 @@ import {
   type User as FirebaseUser
 } from 'firebase/auth';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-
-interface User {
-  email: string | null;
-  uid: string;
-  displayName?: string | null;
-  role?: string;
-  fullName?: string;
-  phone?: string;
-  officeName?: string;
-  headOfficer?: string;
-  officialEmail?: string;
-  address?: string;
-  municipality?: string;
-  region?: string;
-  accountType?: string;
-  status?: string;
-  subscription?: string;
-  subscriptionStatus?: string;
-  documentUrls?: string[];
-  profilePicture?: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  updateUserProfile: (updates: Partial<User>) => void;
-}
+import type { User, AuthContextType } from '@/@types/contexts/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

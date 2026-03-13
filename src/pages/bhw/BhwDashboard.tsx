@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import type { RecentReport } from '@/@types';
 
 const observationData = [
   { day: 'Mon', observations: 12, verified: 10 },
@@ -31,10 +32,9 @@ export default function BhwDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState('week');
   const [totalSentinels, setTotalSentinels] = useState(0);
   const [activeSentinels, setActiveSentinels] = useState(0);
-
   const [pendingReports, setPendingReports] = useState(0);
   const [verifiedToday, setVerifiedToday] = useState(0);
-  const [recentReports, setRecentReports] = useState<any[]>([]);
+  const [recentReports, setRecentReports] = useState<RecentReport[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -102,9 +102,13 @@ export default function BhwDashboard() {
           
           return {
             id: reportDoc.id,
-            ...reportData,
+            userName: reportData.userName || '',
+            description: reportData.description || '',
+            status: reportData.status || '',
+            createdAt: reportData.createdAt,
+            userId: reportData.userId,
             userSelfieUrl
-          };
+          } as RecentReport;
         })
       );
       setRecentReports(recentData);

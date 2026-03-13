@@ -18,58 +18,7 @@ import AnalysesTable from "@/components/qr-scanner/AnalysesTable";
 import Pagination from "@/components/qr-scanner/Pagination";
 import ScannerInterface from "@/components/qr-scanner/ScannerInterface";
 import ResidentModal from "@/components/qr-scanner/ResidentModal";
-
-interface UserData {
-  firstName: string;
-  lastName: string;
-  middleInitial: string;
-  email: string;
-  contactNumber: string;
-  communityRole: string;
-  address: {
-    region: string;
-    municipality: string;
-    barangay: string;
-  };
-  documents: {
-    idType: string;
-    validIdUrl: string;
-    selfieUrl: string;
-  };
-  status: string;
-  uid: string;
-}
-
-interface QRCodeData {
-  qrId: string;
-  userData: UserData;
-  symptomReports: any[];
-  createdAt: any;
-  updatedAt: any;
-}
-
-interface SavedAnalysis {
-  id: string;
-  patientUid: string;
-  patientName: string;
-  patientLocation: string;
-  analysisResult: any;
-  selfReportsCount: number;
-  observedReportsCount: number;
-  totalReports: number;
-  analyzedBy: string;
-  createdAt: any;
-  reportDate: string;
-}
-
-interface Visit {
-  id: string;
-  residentName: string;
-  qrId: string;
-  selfieUrl?: string;
-  visitDate: any;
-  scannedBy: string;
-}
+import type { UserData, QRCodeData, SavedAnalysis, Visit } from "@/@types";
 
 export default function QRScanner() {
   const { user } = useAuth();

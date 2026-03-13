@@ -5,20 +5,9 @@ import { collection, getDocs, addDoc, serverTimestamp, orderBy, query, doc, upda
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { uploadImage } from '@/services/cloudinaryService';
+import  type { Announcement, AnnouncementType } from '@/@types';
 
-interface Announcement {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-  customType?: string;
-  priority: 'low' | 'medium' | 'high';
-  createdAt: any;
-  createdBy: string;
-  imageUrl?: string;
-}
-
-const ANNOUNCEMENT_TYPES = [
+const ANNOUNCEMENT_TYPES: AnnouncementType[] = [
   { value: 'health_advisory', label: 'Health Advisory', icon: Info },
   { value: 'outbreak_alert', label: 'Outbreak Alert', icon: Siren },
   { value: 'medical_supplies', label: 'Medical Supplies Arriving', icon: Package },
