@@ -4,22 +4,23 @@ import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 import { TrendingUp, Users, Activity, AlertTriangle, CheckCircle, Bell, X } from 'lucide-react';
 import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import type  { ObservationStats } from '@/@types';
 
 export default function BhwObservations() {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showNewCaseAlert, setShowNewCaseAlert] = useState(false);
   const previousReportCount = useRef<number>(0);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<ObservationStats>({
     totalReports: 0,
     activeSentinels: 0,
     pendingCases: 0,
     verifiedCases: 0,
-    trendData: [] as any[],
-    symptomRadar: [] as any[],
-    severityData: [] as any[],
-    reportTypeData: [] as any[],
-    topReporters: [] as any[]
+    trendData: [],
+    symptomRadar: [],
+    severityData: [],
+    reportTypeData: [],
+    topReporters: []
   });
 
   useEffect(() => {
