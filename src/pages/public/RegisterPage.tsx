@@ -67,6 +67,15 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
+    cardNumber: "",
+    cardExpiry: "",
+    cardCvv: "",
+    cardholderName: "",
+    gcashNumber: "",
+    paymayaNumber: "",
+    bankName: "",
+    bankAccountNumber: "",
+    bankAccountName: "",
   });
 
   // Load regions on component mount
@@ -274,6 +283,24 @@ export default function RegisterPage() {
         if (!formData.agreeToTerms) {
           newErrors.agreeToTerms = "You must agree to the terms and conditions";
         }
+
+        // Payment validation
+        if (formData.paymentMethod === 'card') {
+          if (!formData.cardNumber) newErrors.cardNumber = "Card number is required";
+          if (!formData.cardExpiry) newErrors.cardExpiry = "Expiry date is required";
+          if (!formData.cardCvv) newErrors.cardCvv = "CVV is required";
+          if (!formData.cardholderName) newErrors.cardholderName = "Cardholder name is required";
+        } else if (formData.paymentMethod === 'gcash') {
+          if (!formData.gcashNumber) newErrors.gcashNumber = "GCash number is required";
+          if (!formData.bankAccountName) newErrors.bankAccountName = "Account name is required";
+        } else if (formData.paymentMethod === 'paymaya') {
+          if (!formData.paymayaNumber) newErrors.paymayaNumber = "Maya number is required";
+          if (!formData.bankAccountName) newErrors.bankAccountName = "Account name is required";
+        } else if (formData.paymentMethod === 'bank') {
+          if (!formData.bankName) newErrors.bankName = "Bank name is required";
+          if (!formData.bankAccountNumber) newErrors.bankAccountNumber = "Account number is required";
+          if (!formData.bankAccountName) newErrors.bankAccountName = "Account name is required";
+        }
         break;
     }
 
@@ -294,6 +321,15 @@ export default function RegisterPage() {
   };
 
   const isStep4Complete = () => {
+    const isPaymentComplete = () => {
+      if (!formData.paymentMethod) return false;
+      if (formData.paymentMethod === 'card') return !!(formData.cardNumber && formData.cardExpiry && formData.cardCvv && formData.cardholderName);
+      if (formData.paymentMethod === 'gcash') return !!(formData.gcashNumber && formData.bankAccountName);
+      if (formData.paymentMethod === 'paymaya') return !!(formData.paymayaNumber && formData.bankAccountName);
+      if (formData.paymentMethod === 'bank') return !!(formData.bankName && formData.bankAccountNumber && formData.bankAccountName);
+      return false;
+    };
+
     return (
       formData.username.trim().length >= 3 &&
       formData.password.length >= 8 &&
@@ -301,7 +337,8 @@ export default function RegisterPage() {
       formData.password === formData.confirmPassword &&
       formData.subscription &&
       formData.paymentMethod &&
-      formData.agreeToTerms
+      formData.agreeToTerms &&
+      isPaymentComplete()
     );
   };
 
@@ -312,10 +349,10 @@ export default function RegisterPage() {
 
     try {
       // Upload documents to Cloudinary
-      toast({
+      /**toast({
         title: "Uploading documents...",
         description: "Please wait while we upload your documents.",
-      });
+      }); **/ 
 
       const documentUrls: string[] = [];
       for (const file of formData.documents) {
@@ -363,8 +400,14 @@ export default function RegisterPage() {
         username: formData.username,
         subscription: formData.subscription,
         paymentMethod: formData.paymentMethod,
+        paymentStatus: "success", // Automatically set to success upon completion of this form
+        paymentDetails: {
+          method: formData.paymentMethod,
+          reference: `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          timestamp: new Date().toISOString(),
+        },
         status: "pending",
-        subscriptionStatus: "pending",
+        subscriptionStatus: "active", // Subscription active as payment is success
         createdAt: serverTimestamp(),
         documentUrls: documentUrls,
         documentsCount: documentUrls.length,
@@ -1118,10 +1161,112 @@ export default function RegisterPage() {
                   {touched.paymentMethod && errors.paymentMethod && (
                     <p className="text-xs sm:text-sm text-red-500 mt-1">{errors.paymentMethod}</p>
                   )}
+
+                  {/* Dynamic Payment Fields */}
+                  {formData.paymentMethod === 'card' && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 p-4 border rounded-lg bg-gray-50 grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <Label htmlFor="cardNumber">Card Number</Label>
+                        <div className="relative mt-1">
+                          <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input id="cardNumber" value={formData.cardNumber} onChange={(e) => { setFormData({ ...formData, cardNumber: e.target.value }); setErrors({ ...errors, cardNumber: "" }); }} className="pl-10" placeholder="0000 0000 0000 0000" />
+                        </div>
+                        {errors.cardNumber && <p className="text-xs text-red-500 mt-1">{errors.cardNumber}</p>}
+                      </div>
+                      <div className="col-span-2">
+                        <Label htmlFor="cardholderName">Cardholder Name</Label>
+                        <div className="relative mt-1">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input id="cardholderName" value={formData.cardholderName} onChange={(e) => { setFormData({ ...formData, cardholderName: e.target.value }); setErrors({ ...errors, cardholderName: "" }); }} className="pl-10" placeholder="Name on card" />
+                        </div>
+                        {errors.cardholderName && <p className="text-xs text-red-500 mt-1">{errors.cardholderName}</p>}
+                      </div>
+                      <div>
+                        <Label htmlFor="cardExpiry">Expiry Date</Label>
+                        <Input id="cardExpiry" value={formData.cardExpiry} onChange={(e) => { setFormData({ ...formData, cardExpiry: e.target.value }); setErrors({ ...errors, cardExpiry: "" }); }} placeholder="MM/YY" className="mt-1" />
+                        {errors.cardExpiry && <p className="text-xs text-red-500 mt-1">{errors.cardExpiry}</p>}
+                      </div>
+                      <div>
+                        <Label htmlFor="cardCvv">CVV</Label>
+                        <Input id="cardCvv" value={formData.cardCvv} onChange={(e) => { setFormData({ ...formData, cardCvv: e.target.value }); setErrors({ ...errors, cardCvv: "" }); }} placeholder="123" className="mt-1" />
+                        {errors.cardCvv && <p className="text-xs text-red-500 mt-1">{errors.cardCvv}</p>}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {(formData.paymentMethod === 'gcash' || formData.paymentMethod === 'paymaya') && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 p-4 border rounded-lg bg-gray-50 space-y-4">
+                      <div>
+                        <Label htmlFor="ewalletNumber">{formData.paymentMethod === 'gcash' ? 'GCash' : 'Maya'} Number</Label>
+                        <div className="relative mt-1">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input 
+                            id="ewalletNumber" 
+                            value={formData.paymentMethod === 'gcash' ? formData.gcashNumber : formData.paymayaNumber} 
+                            onChange={(e) => {
+                              if(formData.paymentMethod === 'gcash') setFormData({...formData, gcashNumber: e.target.value});
+                              else setFormData({...formData, paymayaNumber: e.target.value});
+                              
+                              if(formData.paymentMethod === 'gcash') setErrors({ ...errors, gcashNumber: "" });
+                              else setErrors({ ...errors, paymayaNumber: "" });
+                            }} 
+                            className="pl-10" 
+                            placeholder="09XX XXX XXXX" 
+                          />
+                        </div>
+                        {formData.paymentMethod === 'gcash' && errors.gcashNumber && <p className="text-xs text-red-500 mt-1">{errors.gcashNumber}</p>}
+                        {formData.paymentMethod === 'paymaya' && errors.paymayaNumber && <p className="text-xs text-red-500 mt-1">{errors.paymayaNumber}</p>}
+                      </div>
+                      <div>
+                        <Label htmlFor="accountName">Account Name</Label>
+                        <div className="relative mt-1">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input 
+                            id="accountName" 
+                            value={formData.bankAccountName} 
+                            onChange={(e) => { setFormData({ ...formData, bankAccountName: e.target.value }); setErrors({ ...errors, bankAccountName: "" }); }} 
+                            className="pl-10" 
+                            placeholder="Account Name" 
+                          />
+                        </div>
+                        {errors.bankAccountName && <p className="text-xs text-red-500 mt-1">{errors.bankAccountName}</p>}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {formData.paymentMethod === 'bank' && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 p-4 border rounded-lg bg-gray-50 space-y-4">
+                      <div>
+                        <Label htmlFor="bankName">Bank Name</Label>
+                        <div className="relative mt-1">
+                          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input id="bankName" value={formData.bankName} onChange={(e) => { setFormData({ ...formData, bankName: e.target.value }); setErrors({ ...errors, bankName: "" }); }} className="pl-10" placeholder="e.g. BDO, BPI" />
+                        </div>
+                        {errors.bankName && <p className="text-xs text-red-500 mt-1">{errors.bankName}</p>}
+                      </div>
+                      <div>
+                        <Label htmlFor="bankAccountNumber">Account Number</Label>
+                        <div className="relative mt-1">
+                          <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input id="bankAccountNumber" value={formData.bankAccountNumber} onChange={(e) => { setFormData({ ...formData, bankAccountNumber: e.target.value }); setErrors({ ...errors, bankAccountNumber: "" }); }} className="pl-10" placeholder="Account Number" />
+                        </div>
+                        {errors.bankAccountNumber && <p className="text-xs text-red-500 mt-1">{errors.bankAccountNumber}</p>}
+                      </div>
+                      <div>
+                        <Label htmlFor="bankAccountName">Account Name</Label>
+                        <div className="relative mt-1">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input id="bankAccountName" value={formData.bankAccountName} onChange={(e) => { setFormData({ ...formData, bankAccountName: e.target.value }); setErrors({ ...errors, bankAccountName: "" }); }} className="pl-10" placeholder="Account Name" />
+                        </div>
+                        {errors.bankAccountName && <p className="text-xs text-red-500 mt-1">{errors.bankAccountName}</p>}
+                      </div>
+                    </motion.div>
+                  )}
+
                   <Alert className="bg-blue-50 border-blue-200 mt-3">
-                    <Mail className="h-4 w-4 text-blue-600" />
+                    <Check className="h-4 w-4 text-blue-600" />
                     <AlertDescription className="text-blue-700 text-xs sm:text-sm">
-                      Payment will be processed once your account is verified. Complete registration details will be sent to your email.
+                      Payment will be processed immediately. Subscription will be active upon successful registration.
                     </AlertDescription>
                   </Alert>
                 </div>
@@ -1233,7 +1378,7 @@ export default function RegisterPage() {
 
       {/* Loading Dialog */}
       {isRegistering && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-sm mx-4 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <h3 className="text-lg font-semibold mb-2">Creating Your Account</h3>
