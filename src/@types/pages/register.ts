@@ -16,6 +16,16 @@ export interface FormData {
   documents: File[];
   subscription: string;
   paymentMethod: string;
+  // Payment details fields
+  cardNumber: string;
+  cardExpiry: string;
+  cardCvv: string;
+  cardholderName: string;
+  gcashNumber: string;
+  paymayaNumber: string;
+  bankName: string;
+  bankAccountNumber: string;
+  bankAccountName: string;
   username: string;
   password: string;
   confirmPassword: string;
