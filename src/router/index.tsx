@@ -84,7 +84,7 @@ export default function AppRoutes() {
         <ProtectedRoute>
           {user?.role === "admin" ? <Navigate to="/admin/dashboard" replace /> :
            user?.role === "bhw" ? <Navigate to="/bhw/dashboard" replace /> :
-           <div className="pt-20 p-8">Dashboard (Protected)</div>}
+           user?.role === "guest" ? <Navigate to="/" replace /> : <Navigate to="/" replace />}
         </ProtectedRoute>
       } />
     </Routes>
