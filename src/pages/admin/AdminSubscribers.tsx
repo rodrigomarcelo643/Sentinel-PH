@@ -9,7 +9,6 @@ import {
   Building2,
   CreditCard,
   MapPin,
-  Calendar,
   X
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
@@ -72,7 +71,7 @@ interface Registration {
 
 export default function AdminSubscribers() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [/*loading,*/, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
