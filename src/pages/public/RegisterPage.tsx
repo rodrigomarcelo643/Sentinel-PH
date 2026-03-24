@@ -1,21 +1,25 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { geoapifyService, type PhilippineRegion, type PhilippineMunicipality, type PhilippineBarangay } from "@/services/geoapifyService";
-import { CloudUpload, Check, CreditCard, Building2, UserCog, Mail, Phone, MapPin, User, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Shield, AlertCircle, FileText, X, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Check, CreditCard, Building2, ArrowRight, ArrowLeft, Lock, Shield, Loader2 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, doc, setDoc } from "firebase/firestore";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { uploadImage } from "@/services/cloudinaryService";
 import { syncUserQRCode } from "@/services/qrSyncService";
 import type { FormData, FormErrors } from '@/@types/pages/register';
+import { useMayaPayment } from "@/hooks/useMayaPayment";
+import { initiateMayaWalletPayment } from "@/services/mayaService";
+import { useXenditPayment } from "@/hooks/useXenditPayment";
+import { AccountTypeStep } from "@/components/register/AccountTypeStep";
+import { OrganizationInfoStep } from "@/components/register/OrganizationInfoStep";
+import { DocumentVerificationStep } from "@/components/register/DocumentVerificationStep";
+import { CredentialsStep } from "@/components/register/CredentialsStep";
+import { RegistrationSuccess } from "@/components/register/RegistrationSuccess";
 
 const steps = [
   { number: 1, title: "Account Type", description: "Select your organization", icon: Building2 },
@@ -24,20 +28,47 @@ const steps = [
   { number: 4, title: "Credentials", description: "Create login & subscribe", icon: Lock },
 ];
 
+// Helpers for file persistence across redirects
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
 
+const base64ToFile = (dataurl: string, filename: string): File => {
+  const arr = dataurl.split(',');
+  const mime = arr[0].match(/:(.*?);/)?.[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while(n--){
+      u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, {type:mime});
+};
 
 
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<{[key: string]: boolean}>({});
-
   const [isRegistering, setIsRegistering] = useState(false);
+  
+  // Maya Payment Hook and States
+  const { startPayment: startMayaPayment, loading: isMayaRedirecting } = useMayaPayment();
+  const { startXenditPayment, loading: isXenditRedirecting } = useXenditPayment();
+  const isPaymentRedirecting = isMayaRedirecting || isXenditRedirecting;
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [creditedAmount, setCreditedAmount] = useState<string>("");
   
   // Location data states
   const [regions, setRegions] = useState<PhilippineRegion[]>([]);
@@ -62,7 +93,7 @@ export default function RegisterPage() {
     phone: "",
     documents: [],
     subscription: "",
-    paymentMethod: "",
+    paymentMethod: "", // No default, user must choose
     username: "",
     password: "",
     confirmPassword: "",
@@ -76,7 +107,139 @@ export default function RegisterPage() {
     bankName: "",
     bankAccountNumber: "",
     bankAccountName: "",
+  numberOfMunicipalities: "1",
   });
+
+  // Core registration logic - separated to be called either directly or after redirect
+  const processRegistration = async (data: FormData, files: File[], amount: string | number) => {
+    setIsRegistering(true);
+    try {
+      // 1. Upload Documents (Only now, after payment success)
+      const documentUrls: string[] = [];
+      for (const file of files) {
+        try {
+          const url = await uploadImage(file);
+          documentUrls.push(url);
+        } catch (error) {
+          console.error('Error uploading file:', error);
+          throw new Error(`Failed to upload ${file.name}`);
+        }
+      }
+
+      // 2. Create Auth User
+      const roleMap: Record<string, string> = {
+        regional: "regional_admin",
+        municipal: "municipal_admin",
+        bhw: "bhw"
+      };
+      const userRole = roleMap[data.accountType] || "user";
+
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+
+      // 3. Create Firestore Records
+      await addDoc(collection(db, "registrations"), {
+        uid: userCredential.user.uid,
+        accountType: data.accountType,
+        role: userRole,
+        region: data.region,
+        municipality: data.municipality,
+        barangay: data.barangay,
+        officeName: data.officeName,
+        headOfficer: data.headOfficer,
+        address: data.address,
+        estimatedPopulation: data.estimatedPopulation,
+        officialEmail: data.officialEmail,
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        username: data.username,
+        subscription: data.subscription,
+        numberOfMunicipalities: data.accountType === 'regional' ? parseInt(data.numberOfMunicipalities, 10) : null,
+        paymentMethod: data.paymentMethod,
+        paymentStatus: "paid", // Confirmed paid
+        paymentDetails: {
+          method: data.paymentMethod,
+          amount: amount,
+          reference: `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          timestamp: new Date().toISOString(),
+        },
+        status: "pending",
+        subscriptionStatus: "active",
+        createdAt: serverTimestamp(),
+        documentUrls: documentUrls,
+        documentsCount: documentUrls.length,
+      });
+
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        uid: userCredential.user.uid,
+        firstName: data.fullName.split(' ')[0],
+        lastName: data.fullName.split(' ').slice(1).join(' '),
+        email: data.email,
+        contactNumber: data.phone,
+        role: userRole,
+        status: "pending",
+        createdAt: serverTimestamp()
+      });
+
+      await syncUserQRCode(userCredential.user.uid);
+      
+      // Sign out the user to prevent auto-login since approval is pending
+      await signOut(auth);
+      
+      setPaymentSuccess(true);
+      setCreditedAmount(amount.toString());
+
+    } catch (error: any) {
+      console.error("Registration processing error:", error);
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: error.message || "Could not finalize registration.",
+      });
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  // Handle Payment Return from Maya
+  useEffect(() => {
+    const status = searchParams.get('status');
+    const amountParam = searchParams.get('amount');
+    
+    if (status === 'success') {
+      const storedState = sessionStorage.getItem('sentinel_reg_state');
+      if (storedState) {
+        const { formData: savedData, docFiles } = JSON.parse(storedState);
+        // Reconstruct files
+        const files = docFiles.map((f: any) => base64ToFile(f.data, f.name));
+        
+        // Execute registration (upload & db insert)
+        processRegistration(savedData, files, amountParam || "0").then(() => {
+          sessionStorage.removeItem('sentinel_reg_state');
+        });
+      }
+    } else if (status === 'failed' || status === 'cancel') {
+      toast({
+        variant: "destructive",
+        title: "Payment Failed",
+        description: "Transaction was not completed. Please try again.",
+      });
+      // Restore form data from storage if available so user doesn't lose input
+      const storedState = sessionStorage.getItem('sentinel_reg_state');
+      if (storedState) {
+        const { formData: savedData } = JSON.parse(storedState);
+        // We can't easily restore files to file inputs, but we can restore text fields
+        // For now, we rely on the component state if they haven't refreshed, 
+        // or just let them re-fill if they refreshed.
+        // If the component mounted fresh (redirected back), formData is empty.
+        setFormData(prev => ({...prev, ...savedData}));
+      }
+    }
+  }, [searchParams, toast]);
 
   // Load regions on component mount
   useEffect(() => {
@@ -138,11 +301,11 @@ export default function RegisterPage() {
         }
         
         if (regionsData.length >= 15) {
-          toast({
+         /**  toast({
             variant: "default",
             title: "Regions loaded successfully",
             description: `Loaded all ${regionsData.length} Philippine regions.`,
-          });
+          });*/
         } else {
           toast({
             variant: "default",
@@ -175,7 +338,7 @@ export default function RegisterPage() {
 
       try {
         setLoadingMunicipalities(true);
-        console.log(`Loading municipalities for region: ${formData.region}`);
+       // console.log(`Loading municipalities for region: ${formData.region}`);
         
         const municipalitiesData = await geoapifyService.getMunicipalitiesByRegion(formData.region);
         console.log(`Loaded ${municipalitiesData.length} municipalities for ${formData.region}:`, municipalitiesData.map(m => m.name));
@@ -218,7 +381,7 @@ export default function RegisterPage() {
         console.log(`Loading barangays for municipality: ${formData.municipality}`);
         
         const barangaysData = await geoapifyService.getBarangaysByMunicipality(formData.municipality, formData.region);
-        console.log(`Loaded ${barangaysData.length} barangays for ${formData.municipality}:`, barangaysData.map(b => b.name));
+       // console.log(`Loaded ${barangaysData.length} barangays for ${formData.municipality}:`, barangaysData.map(b => b.name));
         
         setBarangays(barangaysData);
         
@@ -242,6 +405,14 @@ export default function RegisterPage() {
     switch (step) {
       case 1:
         if (!formData.accountType) newErrors.accountType = "Please select an account type";
+        if (formData.accountType === 'regional') {
+            const numMun = parseInt(formData.numberOfMunicipalities, 10);
+            if (!formData.numberOfMunicipalities) {
+                newErrors.numberOfMunicipalities = "Please specify the number of municipalities";
+            } else if (isNaN(numMun) || numMun < 1) {
+                newErrors.numberOfMunicipalities = "Please enter a valid number (at least 1)";
+            }
+        }
         if (!formData.region) newErrors.region = "Please select a region";
         if (!formData.municipality.trim()) newErrors.municipality = "Municipality is required";
         if (!formData.barangay.trim()) newErrors.barangay = "Barangay is required";
@@ -285,22 +456,8 @@ export default function RegisterPage() {
         }
 
         // Payment validation
-        if (formData.paymentMethod === 'card') {
-          if (!formData.cardNumber) newErrors.cardNumber = "Card number is required";
-          if (!formData.cardExpiry) newErrors.cardExpiry = "Expiry date is required";
-          if (!formData.cardCvv) newErrors.cardCvv = "CVV is required";
-          if (!formData.cardholderName) newErrors.cardholderName = "Cardholder name is required";
-        } else if (formData.paymentMethod === 'gcash') {
-          if (!formData.gcashNumber) newErrors.gcashNumber = "GCash number is required";
-          if (!formData.bankAccountName) newErrors.bankAccountName = "Account name is required";
-        } else if (formData.paymentMethod === 'paymaya') {
-          if (!formData.paymayaNumber) newErrors.paymayaNumber = "Maya number is required";
-          if (!formData.bankAccountName) newErrors.bankAccountName = "Account name is required";
-        } else if (formData.paymentMethod === 'bank') {
-          if (!formData.bankName) newErrors.bankName = "Bank name is required";
-          if (!formData.bankAccountNumber) newErrors.bankAccountNumber = "Account number is required";
-          if (!formData.bankAccountName) newErrors.bankAccountName = "Account name is required";
-        }
+        // Skipped specific card field validation for Maya Sandbox redirect flow
+        // as the actual card entry happens on the Maya Checkout page.
         break;
     }
 
@@ -322,12 +479,7 @@ export default function RegisterPage() {
 
   const isStep4Complete = () => {
     const isPaymentComplete = () => {
-      if (!formData.paymentMethod) return false;
-      if (formData.paymentMethod === 'card') return !!(formData.cardNumber && formData.cardExpiry && formData.cardCvv && formData.cardholderName);
-      if (formData.paymentMethod === 'gcash') return !!(formData.gcashNumber && formData.bankAccountName);
-      if (formData.paymentMethod === 'paymaya') return !!(formData.paymayaNumber && formData.bankAccountName);
-      if (formData.paymentMethod === 'bank') return !!(formData.bankName && formData.bankAccountNumber && formData.bankAccountName);
-      return false;
+      return !!formData.paymentMethod; // For Maya redirect, we just need the method selected
     };
 
     return (
@@ -345,109 +497,115 @@ export default function RegisterPage() {
   const handleSubmit = async () => {
     if (!validateStep(4)) return;
 
-    setIsRegistering(true);
+    // Determine amount
+    let amount = 0;
+    if (formData.subscription === 'barangay') amount = 300;
+    else if (formData.subscription === 'municipal') amount = 1500;
+    else if (formData.subscription === 'provincial') amount = 4000;
+    
+    if (formData.accountType === 'regional') {
+      const numMunicipalities = parseInt(formData.numberOfMunicipalities, 10) || 0;
+      amount = numMunicipalities * 1000;
+    }
 
-    try {
-      // Upload documents to Cloudinary
-      /**toast({
-        title: "Uploading documents...",
-        description: "Please wait while we upload your documents.",
-      }); **/ 
+    // Branch logic based on payment method
+    if (formData.paymentMethod === 'maya') {
+      setIsRegistering(true); // Show loading while preparing redirect
+      try {
+        // 1. Serialize files to base64
+        const docFiles = await Promise.all(formData.documents.map(async (file) => ({
+          name: file.name,
+          data: await fileToBase64(file)
+        })));
 
-      const documentUrls: string[] = [];
-      for (const file of formData.documents) {
-        try {
-          const url = await uploadImage(file);
-          documentUrls.push(url);
-        } catch (error) {
-          console.error('Error uploading file:', error);
-          throw new Error(`Failed to upload ${file.name}`);
-        }
+        // 2. Save state to sessionStorage
+        sessionStorage.setItem('sentinel_reg_state', JSON.stringify({
+          formData,
+          docFiles
+        }));
+
+        // 3. Initiate Maya Redirect
+        await startMayaPayment({
+          amount,
+          description: `SentinelPH ${formData.subscription} Plan`,
+          requestReferenceNumber: `REF-${Date.now()}`,
+          buyer: {
+            firstName: formData.fullName.split(' ')[0],
+            lastName: formData.fullName.split(' ').slice(1).join(' ') || '',
+            contact: {
+              email: formData.email,
+              phone: formData.phone
+            }
+          }
+        });
+      } catch (error) {
+        console.error("Payment initiation failed", error);
+        setIsRegistering(false);
       }
+    } else if (formData.paymentMethod === 'maya_wallet') {
+      setIsRegistering(true);
+      try {
+        // 1. Serialize files to base64
+        const docFiles = await Promise.all(formData.documents.map(async (file) => ({
+          name: file.name,
+          data: await fileToBase64(file)
+        })));
 
-      // Map account type to role
-      const roleMap: Record<string, string> = {
-        regional: "regional_admin",
-        municipal: "municipal_admin",
-        bhw: "bhw"
-      };
+        // 2. Save state to sessionStorage
+        sessionStorage.setItem('sentinel_reg_state', JSON.stringify({
+          formData,
+          docFiles
+        }));
 
-      const userRole = roleMap[formData.accountType] || "user";
+        // 3. Initiate Maya Wallet Payment
+        const response = await initiateMayaWalletPayment({
+          amount,
+          description: `SentinelPH ${formData.subscription} Plan`,
+          requestReferenceNumber: `REF-${Date.now()}`,
+          buyer: {
+            firstName: formData.fullName.split(' ')[0],
+            lastName: formData.fullName.split(' ').slice(1).join(' ') || '',
+            contact: {
+              email: formData.email,
+              phone: formData.phone
+            }
+          },
+          redirectUrl: {
+            success: `${window.location.origin}/register?status=success&amount=${amount}`,
+            failure: `${window.location.origin}/register?status=failed`,
+            cancel: `${window.location.origin}/register?status=cancel`
+          }
+        });
 
-      // Create user account
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-
-      // Save registration data to Firestore with document URLs
-      await addDoc(collection(db, "registrations"), {
-        uid: userCredential.user.uid,
-        accountType: formData.accountType,
-        role: userRole,
-        region: formData.region,
-        municipality: formData.municipality,
-        barangay: formData.barangay,
-        officeName: formData.officeName,
-        headOfficer: formData.headOfficer,
-        address: formData.address,
-        estimatedPopulation: formData.estimatedPopulation,
-        officialEmail: formData.officialEmail,
-        fullName: formData.fullName,
-        email: formData.email,
-        phone: formData.phone,
-        username: formData.username,
-        subscription: formData.subscription,
-        paymentMethod: formData.paymentMethod,
-        paymentStatus: "success", // Automatically set to success upon completion of this form
-        paymentDetails: {
-          method: formData.paymentMethod,
-          reference: `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          timestamp: new Date().toISOString(),
-        },
-        status: "pending",
-        subscriptionStatus: "active", // Subscription active as payment is success
-        createdAt: serverTimestamp(),
-        documentUrls: documentUrls,
-        documentsCount: documentUrls.length,
-      });
-
-      // Create user document
-      await setDoc(doc(db, "users", userCredential.user.uid), {
-        uid: userCredential.user.uid,
-        firstName: formData.fullName.split(' ')[0],
-        lastName: formData.fullName.split(' ').slice(1).join(' '),
-        email: formData.email,
-        contactNumber: formData.phone,
-        role: userRole,
-        status: "pending",
-        createdAt: serverTimestamp()
-      });
-
-      // Sync QR code if exists
-      await syncUserQRCode(userCredential.user.uid);
-
-      toast({
-        variant: "success",
-        title: "Registration Successful!",
-        description: "Your account has been created. Please check your email for verification.",
-      });
-
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      toast({
-        variant: "destructive",
-        title: "Registration Failed",
-        description: error.message || "An error occurred during registration. Please try again.",
-      });
-    } finally {
-      setIsRegistering(false);
+        if (response.redirectUrl) {
+          window.location.href = response.redirectUrl;
+        } else {
+          throw new Error("No redirect URL received from Maya Wallet");
+        }
+      } catch (error: any) {
+        console.error("Maya Wallet Payment initiation failed", error);
+        setIsRegistering(false);
+        toast({
+          variant: "destructive",
+          title: "Payment Failed",
+          description: error.message || "Could not initiate Maya Wallet payment.",
+        });
+      }
+    } else {
+      // "Manual" / GCash (Direct) / Other flow (Simulated success for demo)
+      await processRegistration(formData, formData.documents, amount);
     }
   };
+
+  /* Removed the old handleSubmit logic that did everything at once */
+  /*
+  const handleSubmitOld = async () => {
+    if (!validateStep(4)) return;
+
+    // 1. First register the user to create the account
+    setIsRegistering(true);
+    try {
+  */
 
   const handleBlur = (field: string) => {
     setTouched({ ...touched, [field]: true });
@@ -496,6 +654,16 @@ export default function RegisterPage() {
   };
 
   const progress = (currentStep / steps.length) * 100;
+
+  // If payment was successful (returned from Maya), show success view
+  if (paymentSuccess) {
+    return (
+      <RegistrationSuccess 
+        creditedAmount={creditedAmount} 
+        onNavigateHome={() => navigate("/")} 
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 py-4 sm:py-8 lg:py-12 px-2 sm:px-4">
@@ -592,717 +760,59 @@ export default function RegisterPage() {
             className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 lg:p-8 xl:p-10 mx-2 sm:mx-0"
           >
             {currentStep === 1 && (
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#1B365D] mb-1 sm:mb-2">Account Type & Location</h2>
-                  <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Tell us about your organization</p>
-                </div>
-
-                <div className="grid gap-4 sm:gap-6">
-                  <div>
-                    <Label htmlFor="accountType" className="mb-2 block font-medium text-sm sm:text-base">
-                      Account Type <span className="text-red-500">*</span>
-                    </Label>
-                    <Select 
-                      value={formData.accountType} 
-                      onValueChange={(value) => {
-                        const subscriptionMap: Record<string, string> = {
-                          regional: "provincial",
-                          municipal: "municipal",
-                          bhw: "barangay"
-                        };
-                        setFormData({ ...formData, accountType: value, subscription: subscriptionMap[value] || "" });
-                        setErrors({ ...errors, accountType: "" });
-                      }}
-                    >
-                      <SelectTrigger className={`h-10 sm:h-12 text-sm sm:text-base ${touched.accountType && errors.accountType ? "border-red-500" : ""}`}>
-                        <SelectValue placeholder="Select account type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="regional">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="text-sm sm:text-base">Regional Health Office</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="municipal">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="text-sm sm:text-base">Municipal Health Office</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="bhw">
-                          <div className="flex items-center gap-2">
-                            <UserCog className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="text-sm sm:text-base">Barangay Health Worker</span>
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {touched.accountType && errors.accountType && (
-                      <p className="text-xs sm:text-sm text-red-500 mt-1">{errors.accountType}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="region" className="mb-2 block font-medium text-sm sm:text-base">
-                      Region <span className="text-red-500">*</span>
-                    </Label>
-                    <Select 
-                      value={formData.region} 
-                      onValueChange={(value) => {
-                        setFormData({ ...formData, region: value, municipality: "", barangay: "" }); // Reset municipality and barangay when region changes
-                        setErrors({ ...errors, region: "" });
-                      }}
-                      disabled={loadingRegions}
-                    >
-                      <SelectTrigger className={`h-10 sm:h-12 text-sm sm:text-base ${touched.region && errors.region ? "border-red-500" : ""}`}>
-                        <SelectValue placeholder={loadingRegions ? "Loading regions..." : "Select region"} />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-48 sm:max-h-60">
-                        {regions.length > 0 ? (
-                          regions.map((region) => (
-                            <SelectItem key={region.code} value={region.name}>
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
-                                <span className="text-sm sm:text-base">{region.name} - {region.fullName}</span>
-                              </div>
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <div className="px-2 py-6 text-center text-xs sm:text-sm text-gray-500">
-                            {loadingRegions ? "Loading regions..." : "No regions available"}
-                          </div>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    {touched.region && errors.region && (
-                      <p className="text-xs sm:text-sm text-red-500 mt-1">{errors.region}</p>
-                    )}
-                    {loadingRegions && (
-                      <div className="flex items-center gap-2 mt-2 text-xs sm:text-sm text-gray-500">
-                        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                        <span>Loading Philippine regions...</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="municipality" className="mb-2 block font-medium text-sm sm:text-base">
-                      Municipality <span className="text-red-500">*</span>
-                    </Label>
-                    <Select 
-                      value={formData.municipality} 
-                      onValueChange={(value) => {
-                        setFormData({ ...formData, municipality: value, barangay: "" }); // Reset barangay when municipality changes
-                        setErrors({ ...errors, municipality: "" });
-                      }}
-                      disabled={!formData.region || loadingMunicipalities}
-                    >
-                      <SelectTrigger className={`h-10 sm:h-12 text-sm sm:text-base ${touched.municipality && errors.municipality ? "border-red-500" : ""}`}>
-                        <SelectValue placeholder={
-                          !formData.region 
-                            ? "Select region first" 
-                            : loadingMunicipalities 
-                            ? "Loading municipalities..." 
-                            : "Select municipality"
-                        } />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-48 sm:max-h-60 overflow-y-auto">
-                        {municipalities.length > 0 ? (
-                          municipalities
-                            .filter(muni => muni.name && muni.name.trim() !== '') // Filter out empty names
-                            .map((muni, index) => (
-                              <SelectItem key={`${muni.name}-${muni.province || muni.region}-${index}`} value={muni.name}>
-                                <div className="flex items-center justify-between w-full gap-2">
-                                  <div className="flex items-center gap-2">
-                                    <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
-                                    <span className="text-sm sm:text-base">{muni.name}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1 flex-wrap">
-                                    {muni.type === 'highly_urbanized_city' && (
-                                      <span className="text-xs bg-purple-100 text-purple-800 px-1 sm:px-2 py-1 rounded font-medium">HUC</span>
-                                    )}
-                                    {muni.type === 'independent_component_city' && (
-                                      <span className="text-xs bg-blue-100 text-blue-800 px-1 sm:px-2 py-1 rounded font-medium">ICC</span>
-                                    )}
-                                    {muni.type === 'component_city' && (
-                                      <span className="text-xs bg-green-100 text-green-800 px-1 sm:px-2 py-1 rounded font-medium">City</span>
-                                    )}
-                                    {muni.type === 'municipality' && (
-                                      <span className="text-xs bg-gray-100 text-gray-800 px-1 sm:px-2 py-1 rounded">Municipality</span>
-                                    )}
-                                    {muni.type === 'district' && (
-                                      <span className="text-xs bg-orange-100 text-orange-800 px-1 sm:px-2 py-1 rounded">District</span>
-                                    )}
-                                    {muni.income_class && (
-                                      <span className="text-xs text-gray-500 hidden sm:inline">{muni.income_class} Class</span>
-                                    )}
-                                    {muni.province && (
-                                      <span className="text-xs text-gray-500 hidden md:inline">{muni.province}</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </SelectItem>
-                            ))
-                        ) : (
-                          <div className="px-2 py-6 text-center text-xs sm:text-sm text-gray-500">
-                            {formData.region && !loadingMunicipalities 
-                              ? `No municipalities found for ${formData.region}` 
-                              : "Select a region first"}
-                          </div>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    {touched.municipality && errors.municipality && (
-                      <p className="text-xs sm:text-sm text-red-500 mt-1">{errors.municipality}</p>
-                    )}
-                    {loadingMunicipalities && (
-                      <div className="flex items-center gap-2 mt-2 text-xs sm:text-sm text-gray-500">
-                        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                        <span>Loading municipalities...</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="barangay" className="mb-2 block font-medium text-sm sm:text-base">
-                      Barangay <span className="text-red-500">*</span>
-                    </Label>
-                    <Select 
-                      value={formData.barangay} 
-                      onValueChange={(value) => {
-                        setFormData({ ...formData, barangay: value });
-                        setErrors({ ...errors, barangay: "" });
-                      }}
-                      disabled={!formData.municipality || loadingBarangays}
-                    >
-                      <SelectTrigger className={`h-10 sm:h-12 text-sm sm:text-base ${touched.barangay && errors.barangay ? "border-red-500" : ""}`}>
-                        <SelectValue placeholder={
-                          !formData.municipality 
-                            ? "Select municipality first" 
-                            : loadingBarangays 
-                            ? "Loading barangays..." 
-                            : "Select barangay"
-                        } />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-48 sm:max-h-60 overflow-y-auto">
-                        {barangays.length > 0 ? (
-                          barangays
-                            .filter(brgy => brgy.name && brgy.name.trim() !== '') // Filter out empty names
-                            .map((brgy, index) => (
-                              <SelectItem key={`${brgy.name}-${brgy.municipality}-${index}`} value={brgy.name}>
-                                <div className="flex items-center justify-between w-full gap-2">
-                                  <div className="flex items-center gap-2">
-                                    <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
-                                    <span className="text-sm sm:text-base">{brgy.name}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1 flex-wrap">
-                                    {brgy.type === 'poblacion' && (
-                                      <span className="text-xs bg-blue-100 text-blue-800 px-1 sm:px-2 py-1 rounded font-medium">Poblacion</span>
-                                    )}
-                                    {brgy.type === 'urban' && (
-                                      <span className="text-xs bg-green-100 text-green-800 px-1 sm:px-2 py-1 rounded">Urban</span>
-                                    )}
-                                    {brgy.type === 'rural' && (
-                                      <span className="text-xs bg-gray-100 text-gray-800 px-1 sm:px-2 py-1 rounded">Rural</span>
-                                    )}
-                                    {brgy.postal_code && (
-                                      <span className="text-xs text-gray-500 hidden sm:inline">{brgy.postal_code}</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </SelectItem>
-                            ))
-                        ) : (
-                          <div className="px-2 py-6 text-center text-xs sm:text-sm text-gray-500">
-                            {formData.municipality && !loadingBarangays 
-                              ? `No barangays found for ${formData.municipality}` 
-                              : "Select a municipality first"}
-                          </div>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    {touched.barangay && errors.barangay && (
-                      <p className="text-xs sm:text-sm text-red-500 mt-1">{errors.barangay}</p>
-                    )}
-                    {loadingBarangays && (
-                      <div className="flex items-center gap-2 mt-2 text-xs sm:text-sm text-gray-500">
-                        <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
-                        <span>Loading barangays...</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <AccountTypeStep 
+                formData={formData} 
+                setFormData={setFormData} 
+                errors={errors} 
+                setErrors={setErrors}
+                touched={touched} 
+                handleBlur={handleBlur} 
+                regions={regions} 
+                municipalities={municipalities} 
+                barangays={barangays} 
+                loadingRegions={loadingRegions} 
+                loadingMunicipalities={loadingMunicipalities} 
+                loadingBarangays={loadingBarangays} 
+              />
             )}
 
             {currentStep === 2 && (
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#1B365D] mb-1 sm:mb-2">
-                    {formData.accountType === "regional" ? "Regional Health Office Information" :
-                     formData.accountType === "municipal" ? "Municipal Health Office Information" :
-                     formData.accountType === "bhw" ? "Barangay Health Worker Information" : "Organization Information"}
-                  </h2>
-                  <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Provide your organization details</p>
-                </div>
-
-                <div className="grid gap-4 sm:gap-6">
-                  {formData.accountType && (
-                    <>
-                      <div>
-                        <Label htmlFor="officeName" className="mb-2 block font-medium text-sm sm:text-base">
-                          {formData.accountType === "bhw" ? "Barangay Health Center Name" : "Office Name"} <span className="text-red-500">*</span>
-                        </Label>
-                        <div className="relative">
-                          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                          <Input id="officeName" type="text" value={formData.officeName} onChange={(e) => setFormData({ ...formData, officeName: e.target.value })} className="pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base" placeholder={formData.accountType === "bhw" ? "Enter health center name" : "Enter office name"} />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="headOfficer" className="mb-2 block font-medium text-sm sm:text-base">
-                          {formData.accountType === "bhw" ? "Head BHW Name" : "Head Officer Name"} <span className="text-red-500">*</span>
-                        </Label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                          <Input id="headOfficer" type="text" value={formData.headOfficer} onChange={(e) => setFormData({ ...formData, headOfficer: e.target.value })} className="pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base" placeholder="Enter head officer name" />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="address" className="mb-2 block font-medium text-sm sm:text-base">Office Address <span className="text-red-500">*</span></Label>
-                        <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                          <Input id="address" type="text" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className="pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base" placeholder="Enter complete office address" />
-                        </div>
-                      </div>
-                      {(formData.accountType === "regional" || formData.accountType === "municipal") && (
-                        <>
-                          <div>
-                            <Label htmlFor="estimatedPopulation" className="mb-2 block font-medium text-sm sm:text-base">Estimated Population</Label>
-                            <div className="relative">
-                              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                              <Input id="estimatedPopulation" type="text" value={formData.estimatedPopulation} onChange={(e) => setFormData({ ...formData, estimatedPopulation: e.target.value })} className="pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base" placeholder="e.g., 1.2M" />
-                            </div>
-                          </div>
-                          <div>
-                            <Label htmlFor="officialEmail" className="mb-2 block font-medium text-sm sm:text-base">Official Email</Label>
-                            <div className="relative">
-                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                              <Input id="officialEmail" type="email" value={formData.officialEmail} onChange={(e) => setFormData({ ...formData, officialEmail: e.target.value })} className="pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base" placeholder="email@gov.ph" />
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-                  <div>
-                    <Label htmlFor="fullName" className="mb-2 block font-medium text-sm sm:text-base">Contact Person Name <span className="text-red-500">*</span></Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                      <Input id="fullName" type="text" value={formData.fullName} onChange={(e) => { setFormData({ ...formData, fullName: e.target.value }); setErrors({ ...errors, fullName: "" }); }} onBlur={() => handleBlur("fullName")} className={`pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base ${touched.fullName && errors.fullName ? "border-red-500" : ""}`} placeholder="Enter contact person name" />
-                    </div>
-                    {touched.fullName && errors.fullName && (<p className="text-xs sm:text-sm text-red-500 mt-1">{errors.fullName}</p>)}
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className="mb-2 block font-medium text-sm sm:text-base">Email Address <span className="text-red-500">*</span></Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                      <Input id="email" type="email" value={formData.email} onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setErrors({ ...errors, email: "" }); }} onBlur={() => handleBlur("email")} className={`pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base ${touched.email && errors.email ? "border-red-500" : ""}`} placeholder="you@example.com" />
-                    </div>
-                    {touched.email && errors.email && (<p className="text-xs sm:text-sm text-red-500 mt-1">{errors.email}</p>)}
-                  </div>
-                  <div>
-                    <Label htmlFor="phone" className="mb-2 block font-medium text-sm sm:text-base">Phone Number <span className="text-red-500">*</span></Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                      <Input id="phone" type="text" value={formData.phone} onChange={(e) => { setFormData({ ...formData, phone: e.target.value }); setErrors({ ...errors, phone: "" }); }} onBlur={() => handleBlur("phone")} className={`pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base ${touched.phone && errors.phone ? "border-red-500" : ""}`} placeholder="+63 XXX XXX XXXX" />
-                    </div>
-                    {touched.phone && errors.phone && (<p className="text-xs sm:text-sm text-red-500 mt-1">{errors.phone}</p>)}
-                  </div>
-                </div>
-                <Alert className="bg-blue-50 border-blue-200"><AlertCircle className="h-4 w-4 text-blue-600" /><AlertDescription className="text-blue-700 text-sm sm:text-base">We'll use this information to verify your account and send important updates.</AlertDescription></Alert>
-              </div>
+              <OrganizationInfoStep 
+                formData={formData} 
+                setFormData={setFormData} 
+                errors={errors} 
+                touched={touched} 
+                handleBlur={handleBlur} 
+                setErrors={setErrors}
+              />
             )}
 
             {currentStep === 3 && (
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#1B365D] mb-1 sm:mb-2">Document Verification</h2>
-                  <p className="text-gray-600 mb-4 sm:mb-6 text-center text-sm sm:text-base">Please upload the required documents for verification</p>
-                </div>
-                <div className="space-y-4 sm:space-y-6">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg sm:rounded-xl p-6 sm:p-8 lg:p-12 text-center hover:border-[#1B365D] transition-all bg-gray-50 hover:bg-blue-50 cursor-pointer">
-                    <input id="documents" type="file" multiple accept=".pdf,.png,.jpg,.jpeg" className="hidden" onChange={handleFileUpload} onBlur={() => handleBlur("documents")} />
-                    <label htmlFor="documents" className="cursor-pointer flex flex-col items-center gap-3 sm:gap-4">
-                      <div className="bg-blue-100 p-3 sm:p-4 rounded-full"><CloudUpload className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-[#1B365D]" /></div>
-                      <div><p className="text-base sm:text-lg font-semibold text-[#1B365D] mb-1">Click to upload or drag and drop</p><p className="text-xs sm:text-sm text-gray-500">PDF, PNG, JPG up to 10MB each</p></div>
-                      <Button type="button" variant="outline" className="mt-2 pointer-events-none text-sm sm:text-base"><CloudUpload className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />Browse Files</Button>
-                    </label>
-                  </div>
-                  {touched.documents && errors.documents && (<p className="text-xs sm:text-sm text-red-500 text-center">{errors.documents}</p>)}
-                  {formData.documents.length > 0 && ( 
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Uploaded Documents ({formData.documents.length})</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                        {formData.documents.map((file, index) => {
-                          const isImage = file.type.startsWith('image/');
-                          const imageUrl = isImage ? URL.createObjectURL(file) : null;
-                          
-                          return (
-                            <div key={index} className="relative group">
-                              <div className="aspect-square rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-50">
-                                {isImage ? (
-                                  <img 
-                                    src={imageUrl!} 
-                                    alt={file.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex flex-col items-center justify-center p-2">
-                                    <FileText className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-[#1B365D] mb-2" />
-                                    <p className="text-xs text-gray-500 px-2 text-center truncate w-full">{file.name}</p>
-                                  </div>
-                                )}
-                              </div>
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => removeFile(index)} 
-                                className="absolute top-1 right-1 sm:top-2 sm:right-2 h-6 w-6 sm:h-8 sm:w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full"
-                              >
-                                <X className="h-3 w-3 sm:h-4 sm:w-4" />
-                              </Button>
-                              <p className="text-xs text-gray-600 mt-1 truncate">{file.name}</p>
-                              <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(2)} KB</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {formData.accountType && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg sm:rounded-xl p-4 sm:p-6">
-                      <h3 className="font-semibold text-[#1B365D] mb-3 sm:mb-4 flex items-center gap-2 text-base sm:text-lg"><Shield className="h-4 w-4 sm:h-5 sm:w-5" />Required Documents:</h3>
-                      <ul className="space-y-2">
-                        {getDocumentRequirements().map((req, index) => (<li key={index} className="flex items-start gap-2 text-xs sm:text-sm text-gray-700"><Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 mt-0.5 flex-shrink-0" /><span>{req}</span></li>))}
-                      </ul>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
+              <DocumentVerificationStep 
+                formData={formData} 
+                setFormData={setFormData} 
+                errors={errors} 
+                touched={touched} 
+                handleBlur={handleBlur} 
+                handleFileUpload={handleFileUpload} 
+                removeFile={removeFile}
+                setErrors={setErrors}
+              />
             )}
 
             {currentStep === 4 && (
-              <div className="space-y-6 sm:space-y-8">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#1B365D] mb-1 sm:mb-2">Account Credentials</h2>
-                  <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">Create your login and choose a subscription</p>
-                </div>
-
-                {/* Username and Password Section */}
-                <div className="space-y-4 sm:space-y-6">
-                  <div>
-                    <Label htmlFor="username" className="mb-2 block font-medium text-sm sm:text-base">
-                      Username <span className="text-red-500">*</span>
-                    </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                      <Input
-                        id="username"
-                        type="text"
-                        value={formData.username}
-                        onChange={(e) => {
-                          setFormData({ ...formData, username: e.target.value });
-                          setErrors({ ...errors, username: "" });
-                        }}
-                        onBlur={() => handleBlur("username")}
-                        className={`pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base ${touched.username && errors.username ? "border-red-500" : ""}`}
-                        placeholder="Choose a username"
-                      />
-                    </div>
-                    {touched.username && errors.username && (
-                      <p className="text-xs sm:text-sm text-red-500 mt-1">{errors.username}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="password" className="mb-2 block font-medium text-sm sm:text-base">
-                      Password <span className="text-red-500">*</span>
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        value={formData.password}
-                        onChange={(e) => {
-                          setFormData({ ...formData, password: e.target.value });
-                          setErrors({ ...errors, password: "" });
-                        }}
-                        onBlur={() => handleBlur("password")}
-                        className={`pl-10 sm:pl-12 pr-10 sm:pr-12 h-10 sm:h-12 text-sm sm:text-base ${touched.password && errors.password ? "border-red-500" : ""}`}
-                        placeholder="Create a strong password"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
-                      </button>
-                    </div>
-                    {touched.password && errors.password && (
-                      <p className="text-xs sm:text-sm text-red-500 mt-1">{errors.password}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="confirmPassword" className="mb-2 block font-medium text-sm sm:text-base">
-                      Confirm Password <span className="text-red-500">*</span>
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                      <Input
-                        id="confirmPassword"
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={formData.confirmPassword}
-                        onChange={(e) => {
-                          setFormData({ ...formData, confirmPassword: e.target.value });
-                          setErrors({ ...errors, confirmPassword: "" });
-                        }}
-                        onBlur={() => handleBlur("confirmPassword")}
-                        className={`pl-10 sm:pl-12 pr-10 sm:pr-12 h-10 sm:h-12 text-sm sm:text-base ${touched.confirmPassword && errors.confirmPassword ? "border-red-500" : ""}`}
-                        placeholder="Confirm your password"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
-                      </button>
-                    </div>
-                    {touched.confirmPassword && errors.confirmPassword && (
-                      <p className="text-xs sm:text-sm text-red-500 mt-1">{errors.confirmPassword}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Subscription Plans */}
-                <div>
-                  <Label className="mb-3 sm:mb-4 block font-medium text-sm sm:text-base">
-                    Subscription Plan <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    {[
-                      { id: "barangay", name: "Barangay Plan", price: "300", features: ["Up to 20 sentinels", "Basic analytics", "Email support"] },
-                      { id: "municipal", name: "Municipal Plan", price: "1,500", features: ["Unlimited sentinels", "Advanced analytics", "Priority support"] },
-                      { id: "provincial", name: "Provincial Plan", price: "4,000", features: ["Regional coverage", "API access", "Dedicated support"] },
-                    ].map((plan) => (
-                      <motion.div
-                        key={plan.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => {
-                          setFormData({ ...formData, subscription: plan.id });
-                          setErrors({ ...errors, subscription: "" });
-                        }}
-                        className={`border-2 rounded-lg sm:rounded-xl p-4 sm:p-6 cursor-pointer transition-all
-                          ${formData.subscription === plan.id 
-                            ? "border-[#1B365D] bg-blue-50 shadow-lg" 
-                            : "border-gray-200 hover:border-[#1B365D] hover:shadow-md"}`}
-                      >
-                        <h3 className="font-bold text-base sm:text-lg mb-2">{plan.name}</h3>
-                        <p className="text-2xl sm:text-3xl font-bold text-[#1B365D] mb-3 sm:mb-4">
-                          ₱{plan.price}<span className="text-xs sm:text-sm font-normal text-gray-600">/month</span>
-                        </p>
-                        <ul className="space-y-1 sm:space-y-2">
-                          {plan.features.map((feature, idx) => (
-                            <li key={idx} className="text-xs sm:text-sm text-gray-600 flex items-center gap-2">
-                              <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                      </motion.div>
-                    ))}
-                  </div>
-                  {touched.subscription && errors.subscription && (
-                    <p className="text-xs sm:text-sm text-red-500 mt-2">{errors.subscription}</p>
-                  )}
-                </div>
-
-                {/* Payment Method */}
-                <div>
-                  <Label htmlFor="paymentMethod" className="mb-2 block font-medium text-sm sm:text-base">
-                    Payment Method <span className="text-red-500">*</span>
-                  </Label>
-                  <Select 
-                    value={formData.paymentMethod} 
-                    onValueChange={(value) => {
-                      setFormData({ ...formData, paymentMethod: value });
-                      setErrors({ ...errors, paymentMethod: "" });
-                    }}
-                  >
-                    <SelectTrigger className={`h-10 sm:h-12 text-sm sm:text-base ${touched.paymentMethod && errors.paymentMethod ? "border-red-500" : ""}`}>
-                      <SelectValue placeholder="Select payment method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gcash">
-                        <div className="flex items-center gap-2 text-sm sm:text-base">GCash</div>
-                      </SelectItem>
-                      <SelectItem value="paymaya"><span className="text-sm sm:text-base">PayMaya</span></SelectItem>
-                      <SelectItem value="bank"><span className="text-sm sm:text-base">Bank Transfer</span></SelectItem>
-                      <SelectItem value="card"><span className="text-sm sm:text-base">Credit/Debit Card</span></SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {touched.paymentMethod && errors.paymentMethod && (
-                    <p className="text-xs sm:text-sm text-red-500 mt-1">{errors.paymentMethod}</p>
-                  )}
-
-                  {/* Dynamic Payment Fields */}
-                  {formData.paymentMethod === 'card' && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 p-4 border rounded-lg bg-gray-50 grid grid-cols-2 gap-4">
-                      <div className="col-span-2">
-                        <Label htmlFor="cardNumber">Card Number</Label>
-                        <div className="relative mt-1">
-                          <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input id="cardNumber" value={formData.cardNumber} onChange={(e) => { setFormData({ ...formData, cardNumber: e.target.value }); setErrors({ ...errors, cardNumber: "" }); }} className="pl-10" placeholder="0000 0000 0000 0000" />
-                        </div>
-                        {errors.cardNumber && <p className="text-xs text-red-500 mt-1">{errors.cardNumber}</p>}
-                      </div>
-                      <div className="col-span-2">
-                        <Label htmlFor="cardholderName">Cardholder Name</Label>
-                        <div className="relative mt-1">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input id="cardholderName" value={formData.cardholderName} onChange={(e) => { setFormData({ ...formData, cardholderName: e.target.value }); setErrors({ ...errors, cardholderName: "" }); }} className="pl-10" placeholder="Name on card" />
-                        </div>
-                        {errors.cardholderName && <p className="text-xs text-red-500 mt-1">{errors.cardholderName}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="cardExpiry">Expiry Date</Label>
-                        <Input id="cardExpiry" value={formData.cardExpiry} onChange={(e) => { setFormData({ ...formData, cardExpiry: e.target.value }); setErrors({ ...errors, cardExpiry: "" }); }} placeholder="MM/YY" className="mt-1" />
-                        {errors.cardExpiry && <p className="text-xs text-red-500 mt-1">{errors.cardExpiry}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="cardCvv">CVV</Label>
-                        <Input id="cardCvv" value={formData.cardCvv} onChange={(e) => { setFormData({ ...formData, cardCvv: e.target.value }); setErrors({ ...errors, cardCvv: "" }); }} placeholder="123" className="mt-1" />
-                        {errors.cardCvv && <p className="text-xs text-red-500 mt-1">{errors.cardCvv}</p>}
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {(formData.paymentMethod === 'gcash' || formData.paymentMethod === 'paymaya') && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 p-4 border rounded-lg bg-gray-50 space-y-4">
-                      <div>
-                        <Label htmlFor="ewalletNumber">{formData.paymentMethod === 'gcash' ? 'GCash' : 'Maya'} Number</Label>
-                        <div className="relative mt-1">
-                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input 
-                            id="ewalletNumber" 
-                            value={formData.paymentMethod === 'gcash' ? formData.gcashNumber : formData.paymayaNumber} 
-                            onChange={(e) => {
-                              if(formData.paymentMethod === 'gcash') setFormData({...formData, gcashNumber: e.target.value});
-                              else setFormData({...formData, paymayaNumber: e.target.value});
-                              
-                              if(formData.paymentMethod === 'gcash') setErrors({ ...errors, gcashNumber: "" });
-                              else setErrors({ ...errors, paymayaNumber: "" });
-                            }} 
-                            className="pl-10" 
-                            placeholder="09XX XXX XXXX" 
-                          />
-                        </div>
-                        {formData.paymentMethod === 'gcash' && errors.gcashNumber && <p className="text-xs text-red-500 mt-1">{errors.gcashNumber}</p>}
-                        {formData.paymentMethod === 'paymaya' && errors.paymayaNumber && <p className="text-xs text-red-500 mt-1">{errors.paymayaNumber}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="accountName">Account Name</Label>
-                        <div className="relative mt-1">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input 
-                            id="accountName" 
-                            value={formData.bankAccountName} 
-                            onChange={(e) => { setFormData({ ...formData, bankAccountName: e.target.value }); setErrors({ ...errors, bankAccountName: "" }); }} 
-                            className="pl-10" 
-                            placeholder="Account Name" 
-                          />
-                        </div>
-                        {errors.bankAccountName && <p className="text-xs text-red-500 mt-1">{errors.bankAccountName}</p>}
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {formData.paymentMethod === 'bank' && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 p-4 border rounded-lg bg-gray-50 space-y-4">
-                      <div>
-                        <Label htmlFor="bankName">Bank Name</Label>
-                        <div className="relative mt-1">
-                          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input id="bankName" value={formData.bankName} onChange={(e) => { setFormData({ ...formData, bankName: e.target.value }); setErrors({ ...errors, bankName: "" }); }} className="pl-10" placeholder="e.g. BDO, BPI" />
-                        </div>
-                        {errors.bankName && <p className="text-xs text-red-500 mt-1">{errors.bankName}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="bankAccountNumber">Account Number</Label>
-                        <div className="relative mt-1">
-                          <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input id="bankAccountNumber" value={formData.bankAccountNumber} onChange={(e) => { setFormData({ ...formData, bankAccountNumber: e.target.value }); setErrors({ ...errors, bankAccountNumber: "" }); }} className="pl-10" placeholder="Account Number" />
-                        </div>
-                        {errors.bankAccountNumber && <p className="text-xs text-red-500 mt-1">{errors.bankAccountNumber}</p>}
-                      </div>
-                      <div>
-                        <Label htmlFor="bankAccountName">Account Name</Label>
-                        <div className="relative mt-1">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input id="bankAccountName" value={formData.bankAccountName} onChange={(e) => { setFormData({ ...formData, bankAccountName: e.target.value }); setErrors({ ...errors, bankAccountName: "" }); }} className="pl-10" placeholder="Account Name" />
-                        </div>
-                        {errors.bankAccountName && <p className="text-xs text-red-500 mt-1">{errors.bankAccountName}</p>}
-                      </div>
-                    </motion.div>
-                  )}
-
-                  <Alert className="bg-blue-50 border-blue-200 mt-3">
-                    <Check className="h-4 w-4 text-blue-600" />
-                    <AlertDescription className="text-blue-700 text-xs sm:text-sm">
-                      Payment will be processed immediately. Subscription will be active upon successful registration.
-                    </AlertDescription>
-                  </Alert>
-                </div>
-
-                {/* Terms Agreement */}
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-start gap-2 sm:gap-3 lg:gap-4">
-                    <input
-                      type="checkbox"
-                      id="terms"
-                      checked={formData.agreeToTerms}
-                      onChange={(e) => {
-                        setFormData({ ...formData, agreeToTerms: e.target.checked });
-                        setErrors({ ...errors, agreeToTerms: "" });
-                      }}
-                      onBlur={() => handleBlur("agreeToTerms")}
-                      className="mt-0.5 sm:mt-1 lg:mt-1.5 h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 rounded border-gray-300 text-[#1B365D] focus:ring-[#1B365D] flex-shrink-0 cursor-pointer"
-                    />
-                    <div className="text-xs sm:text-sm lg:text-base xl:text-lg text-gray-600 leading-relaxed cursor-pointer select-none" onClick={() => document.getElementById('terms')?.click()}>
-                      I agree to the <a href="/terms" className="text-[#1B365D] font-medium hover:underline transition-colors duration-200 hover:text-blue-700" target="_blank" rel="noopener noreferrer">Terms of Service and Privacy Policy</a>. I confirm that the information provided is accurate and complete.
-                    </div>
-
-                  </div>
-                  {touched.agreeToTerms && errors.agreeToTerms && (
-                    <p className="text-xs sm:text-sm lg:text-base text-red-500 ml-6 sm:ml-8 lg:ml-10 xl:ml-12 font-medium">{errors.agreeToTerms}</p>
-                  )}
-                </div>
-
-                {/* Demo Notice */}
-                <Alert className="bg-yellow-50 border-yellow-200">
-                  <CreditCard className="h-4 w-4 text-yellow-600" />
-                  <AlertDescription className="text-yellow-700 text-xs sm:text-sm">
-                    This is a demo application. No actual payment will be processed.
-                  </AlertDescription>
-                </Alert>
-              </div>
+              <CredentialsStep 
+                formData={formData} 
+                setFormData={setFormData} 
+                errors={errors} 
+                touched={touched} 
+                handleBlur={handleBlur} 
+                showPassword={showPassword} 
+                setShowPassword={setShowPassword} 
+                showConfirmPassword={showConfirmPassword} 
+                setShowConfirmPassword={setShowConfirmPassword}
+                setErrors={setErrors}
+              />
             )}
 
             {/* Navigation Buttons */}
@@ -1341,22 +851,22 @@ export default function RegisterPage() {
                       onClick={handleSubmit}
                       disabled={isRegistering || !isStep4Complete()}
                       className={`h-12 sm:h-14 text-base sm:text-lg font-semibold transition-all duration-200 ${
-                        isStep4Complete() && !isRegistering
-                          ? "bg-green-600 hover:bg-green-700 cursor-pointer"
+                        isStep4Complete() && !isRegistering && !isPaymentRedirecting
+                          ? "bg-[#1B365D] hover:bg-[#1B365D]/90 cursor-pointer"
                           : "bg-gray-400 cursor-not-allowed opacity-60"
                       }`}
                     >
-                      {isRegistering ? (
+                      {isRegistering || isPaymentRedirecting ? (
                         <>
                           <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin mr-2" />
-                          <span className="hidden sm:inline">Processing...</span>
+                          <span className="hidden sm:inline">Redirecting...</span>
                           <span className="sm:hidden">Wait...</span>
                         </>
                       ) : (
                         <>
-                          <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                          <span className="hidden sm:inline">Complete Registration</span>
-                          <span className="sm:hidden">Complete</span>
+                          <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                          <span className="hidden sm:inline">Pay & Register</span>
+                          <span className="sm:hidden">Pay</span>
                         </>
                       )}
                     </Button>
@@ -1378,15 +888,54 @@ export default function RegisterPage() {
 
       {/* Loading Dialog */}
       {isRegistering && (
-        <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-sm mx-4 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h3 className="text-lg font-semibold mb-2">Creating Your Account</h3>
-            <p className="text-gray-600 text-sm mb-4">Uploading documents and setting up your profile...</p>
-            <div className="text-xs text-gray-500">Please wait, this may take a few moments</div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          
+          <div className="w-full max-w-sm mx-4 rounded-2xl bg-white p-8 shadow-2xl text-center relative overflow-hidden">
+            
+            {/* Top Gradient Accent */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+
+            {/* Spinner */}
+            <div className="flex justify-center mb-6">
+              <div className="relative h-14 w-14">
+                <div className="absolute inset-0 rounded-full border-4 border-blue-100"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              Creating Your Account
+            </h3>
+
+            {/* Description */}
+            <p className="text-gray-500 text-sm mb-6">
+              Uploading your documents and setting up your profile securely...
+            </p>
+
+            {/* Progress Bar Animation */}
+            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-4">
+              <div className="h-full bg-blue-600 animate-[loading_1.5s_ease-in-out_infinite]"></div>
+            </div>
+
+            {/* Subtext */}
+            <p className="text-xs text-gray-400">
+              This may take a few seconds. Please don’t close this window.
+            </p>
           </div>
+
+          {/* Custom Animation */}
+          <style>
+            {`
+              @keyframes loading {
+                0% { width: 0%; }
+                50% { width: 70%; }
+                100% { width: 100%; }
+              }
+            `}
+          </style>
         </div>
       )}
     </div>
   );
-}
+}              
