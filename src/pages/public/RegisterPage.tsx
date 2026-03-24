@@ -14,7 +14,7 @@ import { syncUserQRCode } from "@/services/qrSyncService";
 import type { FormData, FormErrors } from '@/@types/pages/register';
 import { useMayaPayment } from "@/hooks/useMayaPayment";
 import { initiateMayaWalletPayment } from "@/services/mayaService";
-import { useXenditPayment } from "@/hooks/useXenditPayment";
+//import { useXenditPayment } from "@/hooks/useXenditPayment";
 import { AccountTypeStep } from "@/components/register/AccountTypeStep";
 import { OrganizationInfoStep } from "@/components/register/OrganizationInfoStep";
 import { DocumentVerificationStep } from "@/components/register/DocumentVerificationStep";
@@ -65,8 +65,8 @@ export default function RegisterPage() {
   
   // Maya Payment Hook and States
   const { startPayment: startMayaPayment, loading: isMayaRedirecting } = useMayaPayment();
-  const { startXenditPayment, loading: isXenditRedirecting } = useXenditPayment();
-  const isPaymentRedirecting = isMayaRedirecting || isXenditRedirecting;
+  // const { startXenditPayment, loading: isXenditRedirecting } = useXenditPayment();
+  const isPaymentRedirecting = isMayaRedirecting //|| isXenditRedirecting;
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [creditedAmount, setCreditedAmount] = useState<string>("");
   
@@ -622,7 +622,7 @@ export default function RegisterPage() {
     setFormData({ ...formData, documents: newDocs });
   };
 
-  const getDocumentRequirements = () => {
+  /*const getDocumentRequirements = () => {
     switch (formData.accountType) {
       case "regional":
         return [
@@ -652,6 +652,7 @@ export default function RegisterPage() {
         return [];
     }
   };
+  */
 
   const progress = (currentStep / steps.length) * 100;
 
