@@ -9,6 +9,7 @@ export interface FormData {
   headOfficer: string;
   address: string;
   estimatedPopulation: string;
+  numberOfMunicipalities: string;
   officialEmail: string;
   fullName: string;
   email: string;

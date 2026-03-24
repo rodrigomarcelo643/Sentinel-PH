@@ -24,6 +24,7 @@ import Municipalities from "@/pages/admin/Municipalities";
 import BHWs from "@/pages/admin/BHWs";
 import Sentinels from "@/pages/admin/Sentinels";
 import Map from "@/pages/admin/Map";
+import AdminSubscribers from "@/pages/admin/AdminSubscribers";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function AppRoutes() {
@@ -74,7 +75,7 @@ export default function AppRoutes() {
         <Route path="sentinels" element={<Sentinels />} />
         <Route path="observations" element={<div className="p-8"><h1 className="text-2xl font-bold">Observations</h1></div>} />
         <Route path="alerts" element={<div className="p-8"><h1 className="text-2xl font-bold">Alerts</h1></div>} />
-        <Route path="subscriptions" element={<div className="p-8"><h1 className="text-2xl font-bold">Subscriptions</h1></div>} />
+        <Route path="subscribers" element={<AdminSubscribers />} />
         <Route path="map" element={<Map />} />
         <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>} />
       </Route>

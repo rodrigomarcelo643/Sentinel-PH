@@ -146,7 +146,7 @@ export default function AdminLayout() {
 
           <NavLink to="/admin/observations" icon={Bell} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/admin/alerts" icon={AlertTriangle} label="Alerts" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/admin/subscriptions" icon={CreditCard} label="Subscriptions" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/admin/subscribers" icon={CreditCard} label="Subscribers" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/admin/map" icon={MapPin} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/admin/settings" icon={Settings} label="Settings" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
         </nav>
