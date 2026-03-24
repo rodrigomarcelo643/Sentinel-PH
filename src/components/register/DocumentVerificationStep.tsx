@@ -14,7 +14,7 @@ interface DocumentVerificationStepProps {
   setErrors: (errors: FormErrors) => void;
 }
 
-export function DocumentVerificationStep({ formData, setFormData, errors, touched, handleBlur, handleFileUpload, removeFile, setErrors }: DocumentVerificationStepProps) {
+export function DocumentVerificationStep({ formData, errors, touched, handleBlur, handleFileUpload, removeFile }: DocumentVerificationStepProps) {
   const getDocumentRequirements = () => {
     switch (formData.accountType) {
       case "regional": return ["Regional Health Office Authorization Letter", "DOH Accreditation Certificate", "Valid Government ID of Regional Health Officer", "Proof of Office Address", "Official Seal/Logo (Digital Copy)"];
