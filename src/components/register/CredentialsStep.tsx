@@ -1,7 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, Lock, Eye, EyeOff, Check, CreditCard, Phone, Wallet } from "lucide-react";
+import { User, Lock, Eye, EyeOff, Check, CreditCard, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import type { FormData, FormErrors } from '@/@types/pages/register';
 
