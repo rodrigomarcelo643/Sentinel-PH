@@ -148,7 +148,7 @@ export default function AdminLayout() {
           <NavLink to="/admin/alerts" icon={AlertTriangle} label="Alerts" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/admin/subscribers" icon={CreditCard} label="Subscribers" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/admin/map" icon={MapPin} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/admin/settings" icon={Settings} label="Settings" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+      
         </nav>
       </div>
       <div className="border-t p-4 bg-white dark:bg-gray-800">
