@@ -164,7 +164,7 @@ export default function RegisterPage() {
         paymentDetails: {
           method: data.paymentMethod,
           amount: amount,
-          reference: `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          reference: `REF-${Date.now()}-${Math.floor(Math.random() * 5000)}`,
           timestamp: new Date().toISOString(),
         },
         status: "pending",
@@ -505,7 +505,7 @@ export default function RegisterPage() {
     
     if (formData.accountType === 'regional') {
       const numMunicipalities = parseInt(formData.numberOfMunicipalities, 10) || 0;
-      amount = numMunicipalities * 1000;
+      amount = numMunicipalities * 5000;
     }
 
     // Branch logic based on payment method
