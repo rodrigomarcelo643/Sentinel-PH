@@ -108,7 +108,7 @@ export default function ResidentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-[95vw] !w-[95vw] max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="!max-w-[95vw] !w-[95vw] max-h-[90vh] rounded-[2px]! overflow-y-auto p-0">
         <div className="sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-10">
           <div className="flex items-center gap-2">
             <User className="h-5 w-5 text-[#1B365D]" />
