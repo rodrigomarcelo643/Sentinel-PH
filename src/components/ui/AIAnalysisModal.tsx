@@ -155,7 +155,7 @@ export default function AIAnalysisModal({
 
   return (
     <Dialog open={open} onOpenChange={handleModalClose}>
-      <DialogContent className="!max-w-[95vw] !w-[95vw] max-h-[90vh] overflow-y-auto p-0 dark:bg-gray-800">
+      <DialogContent className="!max-w-[95vw] !w-[95vw] max-h-[90vh] overflow-y-auto rounded-[2px]! p-0 dark:bg-gray-800">
         <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
