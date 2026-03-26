@@ -21,8 +21,6 @@ export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
-
-
   const handleLogout = async () => {
     await logout();
     setLogoutDialogOpen(false);
@@ -50,10 +48,10 @@ export default function AdminLayout() {
     const content = (
       <Link
         to={to}
-        className={`flex items-center ${isDesktop && sidebarCollapsed ? 'justify-center' : 'gap-2'} px-3 py-1.5 rounded-lg text-sm transition-colors ${
+        className={`flex items-center ${isDesktop && sidebarCollapsed ? 'justify-center' : 'gap-2'} px-3 py-1.5 text-sm transition-colors border-l-4 ${
           active 
-            ? "bg-[#1B365D] text-white hover:bg-[#1B365D]/90" 
-            : "hover:bg-gray-100 active:bg-gray-200"
+          ? "border-l-[#1B365D] bg-blue-200 text-[#1B365D] font-medium"
+          : "border-l-transparent dark:hover:border-l-[#1B365D] hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-gray-500 dark:text-white"
         }`}
         onClick={onClick}
       >
