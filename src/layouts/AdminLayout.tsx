@@ -82,8 +82,8 @@ export default function AdminLayout() {
                   onClick={() => setIsSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-blue-50 text-[#1B365D] shadow-sm"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                       ? "border-l-[#1B365D] bg-blue-200 text-[#1B365D] font-medium"
+                    : "border-l-transparent dark:hover:border-l-[#1B365D] hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-gray-500 dark:text-white"
                   }`}
                 >
                   <item.icon className={`h-5 w-5 ${isActive ? "text-[#1B365D]" : "text-gray-400"}`} />
