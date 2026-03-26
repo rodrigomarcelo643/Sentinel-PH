@@ -38,7 +38,6 @@ export default function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     
     try {
       let loginEmail = username;
-      let userRole = null;
       
       // If username doesn't contain @, fetch email from both collections
       if (!username.includes("@")) {
@@ -80,45 +79,14 @@ export default function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       }
       
       // Login with Firebase Auth
-      await login(loginEmail, password);
+      const userData = await login(loginEmail, password);
       
-      // Get current user from auth
-      const { auth: firebaseAuth } = await import("@/lib/firebase");
-      const currentUser = firebaseAuth.currentUser;
-      
-      if (!currentUser) {
-        setError("Login failed. Please try again.");
-        setLoading(false);
-        return;
-      }
-      
-      // Fetch user role from registrations first, then admins
-      const registrationsRef = collection(db, "registrations");
-      const regQuery = query(registrationsRef, where("uid", "==", currentUser.uid));
-      const regSnapshot = await getDocs(regQuery);
-      
-      if (!regSnapshot.empty) {
-        const userData = regSnapshot.docs[0].data();
-        userRole = userData.role;
-      } else {
-        // Check admins collection
-        const adminsRef = collection(db, "admins");
-        const adminQuery = query(adminsRef, where("uid", "==", currentUser.uid));
-        const adminSnapshot = await getDocs(adminQuery);
-        
-        if (!adminSnapshot.empty) {
-          const adminData = adminSnapshot.docs[0].data();
-          userRole = adminData.role || "admin";
-        }
-      }
-      
-      // Force token refresh to update role claim
-      await currentUser.getIdToken(true);
+      const role = userData?.role || userData?.accountType;
       
       onOpenChange(false);
       
       // Redirect based on role
-      switch (userRole) {
+      switch (role) {
         case "admin":
         case "regional_admin":
         case "municipal_admin":
