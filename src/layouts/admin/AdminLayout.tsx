@@ -1,5 +1,5 @@
 import { Outlet, useLocation, Link } from "react-router-dom";
-import { LayoutDashboard, Users, MapPin, LogOut, ChevronDown, MapPinned, UserCog, Shield, Bell, AlertTriangle, Settings, PanelLeftClose, PanelLeft, User, Globe, CreditCard } from "lucide-react";
+import { LayoutDashboard, Users, MapPin, LogOut, ChevronDown, MapPinned, UserCog, Shield, Settings, PanelLeftClose, PanelLeft, User, Globe, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -142,8 +142,6 @@ export default function AdminLayout() {
             </Collapsible>
           )}
 
-          <NavLink to="/admin/observations" icon={Bell} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/admin/alerts" icon={AlertTriangle} label="Alerts" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/admin/subscribers" icon={CreditCard} label="Subscribers" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
           <NavLink to="/admin/map" icon={MapPin} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
       

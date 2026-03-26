@@ -16,6 +16,8 @@ function AppContent() {
   const isDashboardRoute = location.pathname.startsWith('/admin') || 
                           location.pathname.startsWith('/dashboard') ||
                           location.pathname.startsWith('/bhw') ||
+                          location.pathname.startsWith('/regional') ||
+                          location.pathname.startsWith('/municipal') ||
                           location.pathname === '/register';
   
   return (

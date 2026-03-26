@@ -1,80 +1,25 @@
 import { Outlet, useLocation, Link } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  MapPinned,
-  LogOut,
-  ChevronDown,
-  ShieldAlert,
-  Settings,
-  Telescope,
-  PanelLeftClose,
-  PanelLeft,
-  User,
-  AlertTriangle,
-  Megaphone,
-  QrCode,
-  UserCog,
-  Shield,
-} from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { LayoutDashboard, Users, MapPin, LogOut, ChevronDown, UserCog, Settings, PanelLeftClose, PanelLeft, User, Building } from "lucide-react";
+import { useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import type { NavLinkProps, SidebarContentProps } from '@/@types/layouts/common';
 
-export default function MunicipalLayout() {
+export default function RegionalLayout() {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [usersOpen, setUsersOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [usersOpen, setUsersOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    };
-
-    if (userMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [userMenuOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -84,6 +29,7 @@ export default function MunicipalLayout() {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Get user initials for avatar fallback
   const getInitials = (name?: string | null, email?: string | null) => {
     if (name) {
       return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -91,25 +37,25 @@ export default function MunicipalLayout() {
     if (email) {
       return email.slice(0, 2).toUpperCase();
     }
-    return 'MU';
+    return 'RA';
   };
 
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Municipal User';
-  const userRole = user?.role || 'Municipal Officer';
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Regional Admin';
+  const userRole = user?.role === 'regional_admin' ? 'Regional Administrator' : user?.role || 'Administrator';
 
   const NavLink = ({ to, icon: Icon, label, onClick, isDesktop = false }: NavLinkProps) => {
     const active = isActive(to);
     const content = (
       <Link
         to={to}
-        className={`flex items-center ${isDesktop && sidebarCollapsed ? 'justify-center' : 'gap-2'} px-3 py-1.5 rounded-lg text-sm transition-colors ${
+        className={`flex items-center ${isDesktop && sidebarCollapsed ? 'justify-center' : 'gap-2'} px-3 py-1.5 text-sm transition-colors border-l-4 ${
           active 
-            ? "bg-[#1B365D] text-white hover:bg-[#1B365D]/90" 
-            : "hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600"
+          ? "border-l-[#1B365D] bg-blue-200 text-[#1B365D] font-medium"
+          : "border-l-transparent dark:hover:border-l-[#1B365D] hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-gray-500 dark:text-white"
         }`}
         onClick={onClick}
       >
-        <Icon className="h-4 w-4 shrink-0" />
+        <Icon className="h-4 w-4 flex-shrink-0" />
         {!(isDesktop && sidebarCollapsed) && <span className="text-sm">{label}</span>}
       </Link>
     );
@@ -136,13 +82,34 @@ export default function MunicipalLayout() {
       </div>
       <div className="bg-white dark:bg-gray-800 px-3 py-4 flex-1 overflow-y-auto">
         <nav className="space-y-1">
-          <NavLink to="/municipal/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/regional/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
 
           {isDesktop && sidebarCollapsed ? (
-            <div className="space-y-1">
-              <NavLink to="/municipal/bhws" icon={UserCog} label="BHWs" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-              <NavLink to="/municipal/sentinels" icon={Shield} label="Sentinels" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="flex items-center justify-center px-3 py-1.5 rounded-lg w-full hover:bg-gray-100 active:bg-gray-200 transition-colors">
+                  <Users className="h-4 w-4 flex-shrink-0" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent side="right" className="w-48 p-2">
+                <div className="space-y-1">
+                  <Link
+                    to="/regional/municipalities"
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${isActive("/regional/municipalities") ? "bg-[#1B365D] text-white hover:bg-[#1B365D]/90" : "hover:bg-gray-100 active:bg-gray-200"}`}
+                  >
+                    <Building className="h-4 w-4" />
+                    <span>Municipalities</span>
+                  </Link>
+                  <Link
+                    to="/regional/bhws"
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${isActive("/regional/bhws") ? "bg-[#1B365D] text-white hover:bg-[#1B365D]/90" : "hover:bg-gray-100 active:bg-gray-200"}`}
+                  >
+                    <UserCog className="h-4 w-4" />
+                    <span>BHWs</span>
+                  </Link>
+                </div>
+              </PopoverContent>
+            </Popover>
           ) : (
             <Collapsible open={usersOpen} onOpenChange={setUsersOpen}>
               <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-1.5 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors">
@@ -153,27 +120,23 @@ export default function MunicipalLayout() {
                 <ChevronDown className={`h-4 w-4 transition-transform ${usersOpen ? "rotate-180" : ""}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="ml-3 mt-1 space-y-1">
-                <NavLink to="/municipal/bhws" icon={UserCog} label="BHWs" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-                <NavLink to="/municipal/sentinels" icon={Shield} label="Sentinels" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+                <NavLink to="/regional/municipalities" icon={Building} label="Municipalities" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+                <NavLink to="/regional/bhws" icon={UserCog} label="BHWs" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
               </CollapsibleContent>
             </Collapsible>
           )}
 
-          <NavLink to="/municipal/reports" icon={ShieldAlert} label="Reports" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/municipal/map" icon={MapPinned} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/municipal/observations" icon={Telescope} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/municipal/qr-scanner" icon={QrCode} label="QR Scanner" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/municipal/outbreak-response" icon={AlertTriangle} label="Outbreak Response" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/municipal/announcements" icon={Megaphone} label="Announcements" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink to="/regional/map" icon={MapPin} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+      
         </nav>
       </div>
-      <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
+      <div className="border-t p-4 bg-white dark:bg-gray-800">
         {isDesktop && sidebarCollapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={() => setLogoutDialogOpen(true)}
-                className="flex items-center justify-center px-3 py-1.5 rounded-lg w-full hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 text-destructive transition-colors"
+                className="flex items-center justify-center px-3 py-1.5 rounded-lg w-full hover:bg-red-50 active:bg-red-100 text-destructive transition-colors"
               >
                 <LogOut className="h-4 w-4" />
               </button>
@@ -183,7 +146,7 @@ export default function MunicipalLayout() {
         ) : (
           <button
             onClick={() => setLogoutDialogOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg w-full hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 text-destructive transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg w-full hover:bg-red-50 active:bg-red-100 text-destructive transition-colors"
           >
             <LogOut className="h-4 w-4" />
             <span className="text-sm">Logout</span>
@@ -214,34 +177,34 @@ export default function MunicipalLayout() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setMobileOpen(true)}
-                className="lg:hidden p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 active:scale-95 rounded-lg transition-all duration-150"
+                className="lg:hidden p-1.5 hover:bg-gray-100 active:bg-gray-200 active:scale-95 rounded-lg transition-all duration-150"
               >
-                <PanelLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                <PanelLeft className="h-5 w-5 text-gray-600" />
               </button>
               <button
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="hidden lg:block p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 active:scale-95 rounded-lg transition-all duration-150"
+                className="hidden lg:block p-1.5 hover:bg-gray-100 active:bg-gray-200 active:scale-95 rounded-lg transition-all duration-150"
               >
                 {sidebarCollapsed ? (
-                  <PanelLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                  <PanelLeft className="h-5 w-5 text-gray-600" />
                 ) : (
-                  <PanelLeftClose className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                  <PanelLeftClose className="h-5 w-5 text-gray-600" />
                 )}
               </button>
             </div>
             
             {/* Profile Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-3 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 rounded-lg transition-colors outline-none">
+              <DropdownMenuTrigger className="flex items-center gap-3 p-1.5 hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors outline-none">
                 <Avatar size="default">
                   <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt={displayName} />
                   <AvatarFallback>{getInitials(user?.displayName, user?.email)}</AvatarFallback>
                 </Avatar>
                 <div className="hidden md:flex flex-col items-start">
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">{displayName}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{userRole}</span>
+                  <span className="text-sm font-medium text-gray-900">{displayName}</span>
+                  <span className="text-xs text-gray-500">{userRole}</span>
                 </div>
-                <ChevronDown className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                <ChevronDown className="h-4 w-4 text-gray-600" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
@@ -251,11 +214,11 @@ export default function MunicipalLayout() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/municipal/profile")}>
+                <DropdownMenuItem onClick={() => navigate("/regional/profile")}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/municipal/settings")}>
+                <DropdownMenuItem onClick={() => navigate("/regional/settings")}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>

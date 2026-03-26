@@ -8,6 +8,14 @@ import PricingPage from "@/pages/public/PricingPage";
 import RegisterPage from "@/pages/public/RegisterPage";
 import AdminLayout from "@/layouts/admin/AdminLayout";
 import BhwLayout from "@/layouts/bhw/BhwLayout";
+import RegionalLayout from "@/layouts/regional/RegionalLayout";
+import MunicipalLayout from "@/layouts/municipal/MunicipalLayout";
+import RegionalDashboard from "@/pages/regional/RegionalDashboard";
+import RegionalBHWs from "@/pages/regional/RegionalBHWs";
+import RegionalMunicipalities from "@/pages/regional/RegionalMunicipalities";
+import RegionalObservations from "@/pages/regional/RegionalObservations";
+import RegionalMap from "@/pages/regional/RegionalMap";
+import MunicipalDashboard from "@/pages/municipal/MunicipalDashboard";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import BhwDashboard from "@/pages/bhw/BhwDashboard";
 import BhwProfile from "@/pages/bhw/BhwProfile";
@@ -60,6 +68,43 @@ export default function AppRoutes() {
         <Route path="settings" element={<BhwSettings />} />
       </Route>
       
+      {/* Regional Routes */}
+      <Route path="/regional" element={
+        <ProtectedRoute requiredRole="regional_admin">
+          <RegionalLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<RegionalDashboard />} />
+        <Route path="municipalities" element={<RegionalMunicipalities />} />
+        <Route path="bhws" element={<RegionalBHWs />} />
+        <Route path="observations" element={<RegionalObservations />} />
+        <Route path="alerts" element={<div className="p-8"><h1 className="text-2xl font-bold">Regional Alerts</h1></div>} />
+        <Route path="map" element={<RegionalMap />} />
+        <Route path="profile" element={<div className="p-8"><h1 className="text-2xl font-bold">Regional Profile</h1></div>} />
+        <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Regional Settings</h1></div>} />
+      </Route>
+
+      {/* Municipal Routes */}
+      <Route path="/municipal" element={
+        <ProtectedRoute requiredRole="municipal_admin">
+          <MunicipalLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<MunicipalDashboard />} />
+        <Route path="bhws" element={<div className="p-8"><h1 className="text-2xl font-bold">Municipal BHW Management</h1></div>} />
+        <Route path="sentinels" element={<div className="p-8"><h1 className="text-2xl font-bold">Municipal Sentinels</h1></div>} />
+        <Route path="reports" element={<div className="p-8"><h1 className="text-2xl font-bold">Municipal Reports</h1></div>} />
+        <Route path="map" element={<div className="p-8"><h1 className="text-2xl font-bold">Municipal Map</h1></div>} />
+        <Route path="observations" element={<div className="p-8"><h1 className="text-2xl font-bold">Municipal Observations</h1></div>} />
+        <Route path="qr-scanner" element={<div className="p-8"><h1 className="text-2xl font-bold">Municipal QR Scanner</h1></div>} />
+        <Route path="outbreak-response" element={<div className="p-8"><h1 className="text-2xl font-bold">Municipal Outbreak Response</h1></div>} />
+        <Route path="announcements" element={<div className="p-8"><h1 className="text-2xl font-bold">Municipal Announcements</h1></div>} />
+        <Route path="profile" element={<div className="p-8"><h1 className="text-2xl font-bold">Municipal Profile</h1></div>} />
+        <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Municipal Settings</h1></div>} />
+      </Route>
+      
       {/* Admin Routes */}
       <Route path="/admin" element={
         <ProtectedRoute requiredRole={["admin", "regional_admin", "municipal_admin"]}>
@@ -83,13 +128,22 @@ export default function AppRoutes() {
       {/* Dashboard redirect based on role */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
-          {user?.role === "bhw" ? (
-            <Navigate to="/bhw/dashboard" replace />
-          ) : ["admin", "regional_admin", "municipal_admin"].includes(user?.role || "") ? (
-            <Navigate to="/admin/dashboard" replace />
-          ) : (
-            <div className="pt-20 p-8">Dashboard (Role: {user?.role})</div>
-          )}
+          {(() => {
+            console.log("Dashboard redirect - User role:", user?.role);
+            console.log("Dashboard redirect - User data:", user);
+            
+            if (user?.role === "bhw") {
+              return <Navigate to="/bhw/dashboard" replace />;
+            } else if (user?.role === "regional_admin") {
+              return <Navigate to="/regional/dashboard" replace />;
+            } else if (user?.role === "municipal_admin") {
+              return <Navigate to="/municipal/dashboard" replace />;
+            } else if (user?.role === "admin") {
+              return <Navigate to="/admin/dashboard" replace />;
+            } else {
+              return <div className="pt-20 p-8">Dashboard (Role: {user?.role})</div>;
+            }
+          })()}
         </ProtectedRoute>
       } />
     </Routes>

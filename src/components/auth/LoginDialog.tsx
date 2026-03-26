@@ -36,8 +36,9 @@ export default function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     setError("");
     setLoading(true);
     
+    let loginEmail = username;
+    
     try {
-      let loginEmail = username;
       
       // If username doesn't contain @, fetch email from both collections
       if (!username.includes("@")) {
@@ -74,12 +75,21 @@ export default function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             return;
           }
           
-          loginEmail = adminSnapshot.docs[0].data().email;
+          const adminData = adminSnapshot.docs[0].data();
+          loginEmail = adminData.email;
+          
+          console.log("Admin login attempt:", {
+            username,
+            foundEmail: loginEmail,
+            adminData
+          });
         }
       }
       
       // Login with Firebase Auth
+      console.log("Attempting Firebase login with:", loginEmail);
       const userData = await login(loginEmail, password);
+      console.log("Firebase login successful, userData:", userData);
       
       const role = userData?.role || userData?.accountType;
       
@@ -88,9 +98,13 @@ export default function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       // Redirect based on role
       switch (role) {
         case "admin":
-        case "regional_admin":
-        case "municipal_admin":
           navigate("/admin/dashboard");
+          break;
+        case "regional_admin":
+          navigate("/regional/dashboard");
+          break;
+        case "municipal_admin":
+          navigate("/municipal/dashboard");
           break;
         case "bhw":
           navigate("/bhw/dashboard");
@@ -99,7 +113,25 @@ export default function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
           navigate("/");
       }
     } catch (err: any) {
-      setError(err.message || "Invalid credentials");
+      console.error("Login error details:", {
+        code: err.code,
+        message: err.message,
+        email: loginEmail || username,
+        username
+      });
+      
+      // Handle specific Firebase auth errors
+      if (err.code === 'auth/invalid-credential') {
+        setError("Invalid email or password. Please check your credentials.");
+      } else if (err.code === 'auth/user-not-found') {
+        setError("User not found. Please check your email or username.");
+      } else if (err.code === 'auth/wrong-password') {
+        setError("Incorrect password. Please try again.");
+      } else if (err.code === 'auth/too-many-requests') {
+        setError("Too many failed attempts. Please try again later.");
+      } else {
+        setError(err.message || "Invalid credentials");
+      }
     } finally {
       setLoading(false);
     }

@@ -45,8 +45,14 @@ export default function Navbar() {
   };
 
   const getDashboardLink = () => {
-    if (user?.role === "admin" || user?.role === "regional_admin" || user?.role === "municipal_admin") {
+    if (user?.role === "admin") {
       return "/admin/dashboard";
+    }
+    if (user?.role === "regional_admin") {
+      return "/regional/dashboard";
+    }
+    if (user?.role === "municipal_admin") {
+      return "/municipal/dashboard";
     }
     if (user?.role === "bhw") {
       return "/bhw/dashboard";

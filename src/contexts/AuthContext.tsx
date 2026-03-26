@@ -100,9 +100,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
+    console.log("AuthContext login attempt with email:", email);
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    console.log("Firebase auth successful, user:", userCredential.user);
+    
     const userData = await fetchUserData(userCredential.user);
+    console.log("Fetched user data:", userData);
+    
     updateUser(userCredential.user, userData);
+    console.log("User updated in context:", userData);
     return userData; // Return data for immediate use in redirection
   };
 
