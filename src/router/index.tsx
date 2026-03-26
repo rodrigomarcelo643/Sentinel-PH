@@ -62,7 +62,7 @@ export default function AppRoutes() {
       
       {/* Admin Routes */}
       <Route path="/admin" element={
-        <ProtectedRoute requiredRole="admin">
+        <ProtectedRoute requiredRole={["admin", "regional_admin", "municipal_admin"]}>
           <AdminLayout />
         </ProtectedRoute>
       }>
@@ -83,9 +83,13 @@ export default function AppRoutes() {
       {/* Dashboard redirect based on role */}
       <Route path="/dashboard" element={
         <ProtectedRoute>
-          {user?.role === "admin" ? <Navigate to="/admin/dashboard" replace /> :
-           user?.role === "bhw" ? <Navigate to="/bhw/dashboard" replace /> :
-           <div className="pt-20 p-8">Dashboard (Protected)</div>}
+          {user?.role === "bhw" ? (
+            <Navigate to="/bhw/dashboard" replace />
+          ) : ["admin", "regional_admin", "municipal_admin"].includes(user?.role || "") ? (
+            <Navigate to="/admin/dashboard" replace />
+          ) : (
+            <div className="pt-20 p-8">Dashboard (Role: {user?.role})</div>
+          )}
         </ProtectedRoute>
       } />
     </Routes>
