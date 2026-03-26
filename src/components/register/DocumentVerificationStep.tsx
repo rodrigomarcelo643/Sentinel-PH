@@ -45,20 +45,20 @@ export function DocumentVerificationStep({ formData, errors, touched, handleBlur
             <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Uploaded Documents ({formData.documents.length})</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {formData.documents.map((file, index) => {
-                const isImage = file.type.startsWith('image/');
+                const isImage = file.type?.startsWith('image/');
                 const imageUrl = isImage ? URL.createObjectURL(file) : null;
                 return (
                   <div key={index} className="relative group">
                     <div className="aspect-square rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-50">
                       {isImage ? (
-                        <img src={imageUrl!} alt={file.name} className="w-full h-full object-cover" />
+                        <img src={imageUrl!} alt={file.name || 'Image'} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center p-2"><FileText className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-[#1B365D] mb-2" /><p className="text-xs text-gray-500 px-2 text-center truncate w-full">{file.name}</p></div>
+                        <div className="w-full h-full flex flex-col items-center justify-center p-2"><FileText className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-[#1B365D] mb-2" /><p className="text-xs text-gray-500 px-2 text-center truncate w-full">{file.name || 'Unknown File'}</p></div>
                       )}
                     </div>
                     <Button type="button" variant="ghost" size="sm" onClick={() => removeFile(index)} className="absolute top-1 right-1 sm:top-2 sm:right-2 h-6 w-6 sm:h-8 sm:w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full"><X className="h-3 w-3 sm:h-4 sm:w-4" /></Button>
-                    <p className="text-xs text-gray-600 mt-1 truncate">{file.name}</p>
-                    <p className="text-xs text-gray-400">{(file.size / 1024).toFixed(2)} KB</p>
+                    <p className="text-xs text-gray-600 mt-1 truncate">{file.name || 'Unknown File'}</p>
+                    <p className="text-xs text-gray-400">{((file.size || 0) / 1024).toFixed(2)} KB</p>
                   </div>
                 );
               })}
