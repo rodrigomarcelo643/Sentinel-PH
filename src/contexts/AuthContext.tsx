@@ -9,7 +9,7 @@ import {
   browserLocalPersistence,
   type User as FirebaseUser
 } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import type { User, AuthContextType } from '@/@types/contexts/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,28 +30,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserData = async (firebaseUser: FirebaseUser): Promise<any> => {
     try {
-      // Check registrations collection first (where BHW data is stored)
+      // 1. Try direct lookup in admins (Document ID is UID)
+      const adminDoc = await getDoc(doc(db, "admins", firebaseUser.uid));
+      if (adminDoc.exists()) return adminDoc.data();
+
+      // 2. Check registrations collection (Query needed as IDs are random)
       const registrationsRef = collection(db, "registrations");
       const regQuery = query(registrationsRef, where("uid", "==", firebaseUser.uid));
       const regSnapshot = await getDocs(regQuery);
-      
       if (!regSnapshot.empty) {
         return regSnapshot.docs[0].data();
       }
 
-      // Fallback to other collections
-      const collections = [
-        { ref: collection(db, "users"), priority: 1 },
-        { ref: collection(db, "admins"), priority: 2 }
-      ];
+      // 3. Fallback to users collection (Document ID is UID)
+      const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+      if (userDoc.exists()) return userDoc.data();
 
-      for (const { ref } of collections) {
-        const q = query(ref, where("uid", "==", firebaseUser.uid));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          return snapshot.docs[0].data();
-        }
-      }
       return null;
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -93,18 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPersistence(auth, browserLocalPersistence);
     
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      // Only update if this is the active tab or if there's no stored user
-      const isActiveTab = document.visibilityState === 'visible' || !localStorage.getItem(USER_STORAGE_KEY);
-      
       if (firebaseUser) {
         const userData = await fetchUserData(firebaseUser);
-        if (isActiveTab) {
-          updateUser(firebaseUser, userData);
-        }
+        updateUser(firebaseUser, userData);
       } else {
-        if (isActiveTab) {
-          updateUser(null);
-        }
+        updateUser(null);
       }
       setLoading(false);
     });
@@ -116,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const userData = await fetchUserData(userCredential.user);
     updateUser(userCredential.user, userData);
+    return userData; // Return data for immediate use in redirection
   };
 
   const signup = async (email: string, password: string) => {
