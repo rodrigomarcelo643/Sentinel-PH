@@ -231,12 +231,15 @@ export default function RegisterPage() {
       // Restore form data from storage if available so user doesn't lose input
       const storedState = sessionStorage.getItem('sentinel_reg_state');
       if (storedState) {
-        const { formData: savedData } = JSON.parse(storedState);
-        // We can't easily restore files to file inputs, but we can restore text fields
-        // For now, we rely on the component state if they haven't refreshed, 
-        // or just let them re-fill if they refreshed.
-        // If the component mounted fresh (redirected back), formData is empty.
-        setFormData(prev => ({...prev, ...savedData}));
+        const { formData: savedData, docFiles } = JSON.parse(storedState);
+        // Reconstruct File objects from base64 storage
+        const restoredFiles = docFiles ? docFiles.map((f: any) => base64ToFile(f.data, f.name)) : [];
+        
+        setFormData(prev => ({
+          ...prev, 
+          ...savedData,
+          documents: restoredFiles
+        }));
       }
     }
   }, [searchParams, toast]);
