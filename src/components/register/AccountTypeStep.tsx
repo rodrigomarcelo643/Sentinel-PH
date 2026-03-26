@@ -99,7 +99,7 @@ export function AccountTypeStep({
                     <AlertCircle className="h-4 w-4 text-blue-600" />
                     <AlertTitle className="font-semibold text-blue-800">Regional Contract Plan</AlertTitle>
                     <AlertDescription className="text-blue-700 text-sm">
-                        This is a pay-as-you-go plan. You will be billed ₱1,000 per municipality per month. Each municipality can manage up to 20 barangays.
+                        This is a pay-as-you-go plan. You will be billed ₱5,000 per municipality per month. Each municipality can manage up to 20 barangays.
                     </AlertDescription>
                 </Alert>
                 <div>
