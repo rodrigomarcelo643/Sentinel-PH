@@ -94,19 +94,19 @@ export default function Map() {
         transition={{ duration: 0.5, delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
       >
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Total Reports</p>
           <p className="text-2xl font-bold text-[#1B365D]">{outbreakReports.length}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Total Cases</p>
           <p className="text-2xl font-bold text-[#1B365D]">{totalCases}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">Cebu City Cases</p>
           <p className="text-2xl font-bold text-[#CE1126]">{cebuCityCases}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="bg-white rounded-[2px] shadow-sm border border-gray-100 p-4">
           <p className="text-sm text-gray-500">High Severity</p>
           <p className="text-2xl font-bold text-[#CE1126]">{highSeverityCount}</p>
         </div>
@@ -118,20 +118,20 @@ export default function Map() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden relative"
+        className="bg-white rounded-[2px] shadow-lg border border-gray-100 overflow-hidden relative"
       >
 
         {/* Map Controls */}
         <div className="absolute top-4 right-4 z-10 flex gap-2">
           <button
             onClick={toggleFullscreen}
-            className="bg-white p-2 rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
+            className="bg-white p-2 rounded-[2px] shadow-lg hover:bg-gray-50 transition-colors"
           >
             {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
           </button>
           <button
             onClick={() => window.open('https://www.openstreetmap.org/#map=12/10.3157/123.8854', '_blank')}
-            className="bg-white p-2 rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
+            className="bg-white p-2 rounded-[2px] shadow-lg hover:bg-gray-50 transition-colors"
           >
             <Navigation className="h-5 w-5" />
           </button>
@@ -153,7 +153,7 @@ export default function Map() {
           />
           
           {/* Custom Overlay Pins (since iframe can't be directly modified, we add a note) */}
-          <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-lg shadow-lg p-3 max-w-xs">
+          <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-[2px] shadow-lg p-3 max-w-xs">
             <h4 className="font-bold text-[#1B365D] mb-2">📍 Outbreak Locations</h4>
             <div className="space-y-1 text-sm">
               {outbreakReports.slice(0, 5).map(report => (
@@ -201,7 +201,7 @@ export default function Map() {
           <motion.div
             key={location}
             whileHover={{ scale: 1.02 }}
-            className={`bg-white rounded-xl shadow-sm border p-4 cursor-pointer transition-all ${
+            className={`bg-white rounded-[2px] shadow-sm border p-4 cursor-pointer transition-all ${
               selectedLocation === location ? 'ring-2 ring-[#1B365D]' : ''
             } ${location === 'Cebu City' ? 'border-[#CE1126] border-2 bg-red-50' : 'border-gray-100'}`}
             onClick={() => setSelectedLocation(location === selectedLocation ? null : location)}
@@ -264,7 +264,7 @@ export default function Map() {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
+              className="bg-white rounded-[2px] shadow-2xl max-w-md w-full p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-start justify-between mb-4">
@@ -283,7 +283,7 @@ export default function Map() {
                   <span className="text-gray-700">{selectedReport.location}</span>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="bg-gray-50 p-4 rounded-[2px]">
                   <p className="text-sm text-gray-600 mb-1">Total Cases</p>
                   <p className="text-3xl font-bold text-[#1B365D]">{selectedReport.count}</p>
                 </div>
@@ -301,7 +301,7 @@ export default function Map() {
               
               <div className="flex gap-3">
                 <button
-                  className="flex-1 bg-[#1B365D] text-white py-2 rounded-lg hover:bg-[#2A4A7A] transition-colors"
+                  className="flex-1 bg-[#1B365D] text-white py-2 rounded-[2px] hover:bg-[#2A4A7A] transition-colors"
                   onClick={() => {
                     window.open(`https://www.openstreetmap.org/?mlat=${selectedReport.lat}&mlon=${selectedReport.lng}#map=15/${selectedReport.lat}/${selectedReport.lng}`, '_blank');
                   }}
@@ -309,7 +309,7 @@ export default function Map() {
                   View on Map
                 </button>
                 <button
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-300 rounded-[2px] hover:bg-gray-50 transition-colors"
                   onClick={() => setSelectedReport(null)}
                 >
                   Close
@@ -325,7 +325,7 @@ export default function Map() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
-        className="mt-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4"
+        className="mt-6 bg-white rounded-[2px] shadow-sm border border-gray-100 p-4"
       >
         <div className="flex flex-wrap items-center justify-between">
           <div className="flex items-center gap-6">
