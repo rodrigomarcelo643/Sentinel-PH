@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="public/sentinel_ph_logo.png" alt="SentinelPH Logo" width="300"/>
-  <h1>SentinelPH: Community Intelligence Network for Early Outbreak Detection</h1>
+  <img src="public/logo_main.png" alt="HealthWatch Logo" width="300"/>
+  <h1>HealthWatch: Community Intelligence Network for Early Outbreak Detection</h1>
 </div>
 
 <div align="center">
@@ -15,13 +15,14 @@
 
 </div>
 
-**Track:** 3 – Good Health and Well-Being
+**Category:** – Good Health and Well-Being
 
 ## 🎯 Problem Statement
 
 The Philippines has no shortage of health data—it has a shortage of the right data at the right time. The current approach to outbreak detection is reactive, seeing outbreaks only after hospital admissions spike—when it's already too late for prevention. Communities themselves—the people who notice the first fever, the first child with diarrhea, the first neighbor who looks sick—have no structured way to share what they see.
 
 **Current System Inefficiencies:**
+
 - **Manual Reporting Delays** - Paper-based reports take weeks to process and reach health authorities
 - **Health Center Bottlenecks** - Long waiting times during outbreak investigations while cases multiply
 - **Repetitive Data Collection** - BHWs repeatedly ask the same questions during health visits, wasting valuable time
@@ -30,13 +31,14 @@ The Philippines has no shortage of health data—it has a shortage of the right 
 
 ## 💡 Solution
 
-SentinelPH builds a community intelligence network that trains everyday Filipinos—sari-sari store owners, tricycle drivers, market vendors, traditional hilots, and religious leaders—to become the first line of outbreak detection in their neighborhoods. Each resident receives a unique QR code that health workers, partner clinics, and authorized healthcare providers can scan to instantly access complete health profiles, self-reported symptoms, verified health trends, and real-time pattern analysis—transforming weeks of manual processing into seconds of digital intelligence with built-in safeguards that separate genuine signals from noise and misinformation.
+HealthWatch builds a community intelligence network that trains everyday Filipinos—sari-sari store owners, tricycle drivers, market vendors, traditional hilots, and religious leaders—to become the first line of outbreak detection in their neighborhoods. Each resident receives a unique QR code that health workers, partner clinics, and authorized healthcare providers can scan to instantly access complete health profiles, self-reported symptoms, verified health trends, and real-time pattern analysis—transforming weeks of manual processing into seconds of digital intelligence with built-in safeguards that separate genuine signals from noise and misinformation.
 
 **Digital QR Health Passport:** When residents visit potential healthcare partners (clinics, hospitals, pharmacies), their QR code provides instant access to all self-reported symptoms, verified health trends, and pattern analysis—eliminating repetitive questioning and enabling faster, more informed medical responses based on comprehensive health data rather than starting from scratch each visit.
 
 ## 👥 Target Users
 
-**Primary Users (Community Sentinels):**
+**Primary Users (Community Health Watchers):**
+
 - Sari-Sari Store Owners & Market Vendors
 - Tricycle Drivers & PUV Operators
 - Barangay Tanods & Leaders
@@ -45,6 +47,7 @@ SentinelPH builds a community intelligence network that trains everyday Filipino
 - Barangay Health Workers
 
 **Beneficiaries:**
+
 - Entire Communities (faster detection = faster response)
 - Vulnerable Populations (elderly, children, pregnant women, PWDs)
 - Municipal & Provincial Health Officers
@@ -53,14 +56,16 @@ SentinelPH builds a community intelligence network that trains everyday Filipino
 ## ✨ MVP Core Features
 
 ### 🏥 **BHW (Barangay Health Worker) Dashboard**
-- **Sentinel Management** - Approve/reject community sentinel applications with document verification
+
+- **Health Watcher Management** - Approve/reject community watcher applications with document verification
 - **Real-time Observations** - Live monitoring with 7-day trend analysis and symptom radar charts
 - **QR Code Scanner** - Instant resident lookup with live health data, symptom history, and trend visualization
 - **Interactive Mapping** - Real-time outbreak visualization with geographic clustering
 - **Outbreak Pattern Recognition** - AI-powered detection of disease patterns and anomalies
 - **Community Announcements** - Broadcast health advisories and alerts to residents
 
-### 👥 **Community Sentinel Network**
+### 👥 **Community Health Watcher Network**
+
 - **Multi-Step Registration Process**
   - Step 1: Personal verification (name, email, contact, region/municipality/barangay)
   - Step 2: Document verification (valid ID upload + selfie verification)
@@ -83,13 +88,15 @@ SentinelPH builds a community intelligence network that trains everyday Filipino
 - **Future Integration** - Community forums for health discussions
 
 ### 🔍 **Real-Time Intelligence**
+
 - **Live Data Sync** - Instant updates across all dashboards and mobile devices
-- **3-Sentinel Rule** - Multi-source validation before outbreak alerts
-- **AI Trust Scoring** - Validates sentinel reliability and filters spam
+- **3-Watcher Rule** - Multi-source validation before outbreak alerts
+- **AI Trust Scoring** - Validates watcher reliability and filters spam
 - **Spatial Clustering** - DBSCAN algorithm for geographic pattern detection
-- **Predictive Analytics** - Early w  arning system for potential outbreaks
+- **Predictive Analytics** - Early warning system for potential outbreaks
 
 ### 📱 **Mobile-First Design**
+
 - **Progressive Web App (PWA)** - Works offline, low-bandwidth optimized
 - **Audio Feedback** - Beep sounds and text-to-speech for accessibility
 - **Real-time Notifications** - Instant alerts for new cases and announcements
@@ -98,8 +105,8 @@ SentinelPH builds a community intelligence network that trains everyday Filipino
 ## 🎯 Key Innovations
 
 - 📱 **Mobile-First PWA** - Works offline, low-bandwidth optimized
-- 🔒 **AI-Powered Trust Scoring** - Validates sentinel reliability (0-100 score)
-- ✅ **3-Sentinel Rule** - Multi-source validation before alerts
+- 🔒 **AI-Powered Trust Scoring** - Validates watcher reliability (0-100 score)
+- ✅ **3-Watcher Rule** - Multi-source validation before alerts
 - 🗺️ **Observation Heatmaps** - Real-time geographic clustering
 - 🔄 **Two-Way Feedback Loop** - Communities receive acknowledgments and advisories
 - 🛡️ **Multi-Layered Spam Prevention** - Rate limiting, behavior monitoring, AI filtering
@@ -111,6 +118,7 @@ SentinelPH builds a community intelligence network that trains everyday Filipino
 ## 🏗️ Tech Stack
 
 **Frontend:**
+
 - React 18.3 + TypeScript 5.6
 - Vite 6.0
 - Tailwind CSS + Framer Motion
@@ -118,11 +126,13 @@ SentinelPH builds a community intelligence network that trains everyday Filipino
 - Axios for HTTP requests
 
 **Backend & Database:**
+
 - Firebase (Auth, Firestore, Cloud Functions, Hosting)
 - Real-time observation processing
 - Multi-tenant architecture for LGUs
 
 **AI/ML Components:**
+
 - Trust Score Engine
 - DBSCAN Spatial Clustering
 - NLP for observation categorization (GPT API)
@@ -130,6 +140,7 @@ SentinelPH builds a community intelligence network that trains everyday Filipino
 - Predictive Correlation Models
 
 **Integrations:**
+
 - Google Maps API (observation heatmaps)
 - Twilio API (SMS alerts & feedback)
 - EmailJS (health officer notifications)
@@ -240,6 +251,7 @@ SentinelPh/
 ## 🚀 Getting Started
 
 ### Frontend
+
 ```bash
 # Install dependencies
 pnpm install
@@ -252,6 +264,7 @@ pnpm run build
 ```
 
 ### Backend
+
 ```bash
 # Install dependencies
 cd backend
@@ -267,6 +280,7 @@ pnpm run rag:prepare
 ## 🔑 Core Innovation
 
 Instead of asking communities to report symptoms (which feels like surveillance), SentinelPH asks them to report **what they observe** (which feels like community participation):
+
 - More people buying paracetamol than usual?
 - Several children absent from community gatherings?
 - Neighbors mentioning the same illness?
@@ -286,22 +300,21 @@ Instead of asking communities to report symptoms (which feels like surveillance)
 ## 💰 Revenue Model
 
 **LGU & Health System Subscriptions (85%):**
+
 - Barangay Plan: ₱300/month (up to 20 sentinels)
 - Municipal Plan: ₱1,500/month (unlimited sentinels, advanced analytics)
 - Provincial Plan: ₱4,000/month (regional pattern detection, API access)
 
 **Partnerships & Services (15%):**
+
 - Telecom partnerships (load credit revenue share)
 - NGO health program integration
 - Corporate CSR sponsorship
 - Training & certification services
 - Anonymized data research licenses
 
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
-
-**Built for Innovation Cup Hackathon** | Empowering Communities, Protecting Health
