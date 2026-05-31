@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="/logo_main.png" alt="HealthWatch Logo" width="300"/>
+  <img src="/public/logo.png" alt="HealthWatch Logo" width="300"/>
   <h1>HealthWatch: Community Intelligence Network for Early Outbreak Detection</h1>
 </div>
 
