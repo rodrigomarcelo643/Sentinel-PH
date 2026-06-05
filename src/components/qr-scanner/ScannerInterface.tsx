@@ -135,13 +135,13 @@ export default function ScannerInterface({ error, onStopScanning, onCameraChange
             </div>
             <div>
               <span className="text-sm font-semibold">QR Scanner Active</span>
-              <div className="text-xs text-gray-300">SentinelPH Health System</div>
+              <div className="text-xs text-gray-300">HealthWatch Health System</div>
             </div>
           </div>
         </div>
         
         <div className="flex items-center gap-3">
-          <img src="/sentinel_ph_logo.png" alt="SentinelPH" className="h-10 w-auto" />
+          <img src="/logo.png" alt="HealthWatch" className="h-10 w-auto" />
         </div>
         
         <div className="flex items-center gap-2">
@@ -248,7 +248,7 @@ export default function ScannerInterface({ error, onStopScanning, onCameraChange
             <span>{cameras[selectedCameraIndex]?.label || 'Default Camera'}</span>
           </div>
           <div className="text-gray-400">•</div>
-          <div className="font-medium text-blue-300">SentinelPH Health System</div>
+          <div className="font-medium text-blue-300">HealthWatch Health System</div>
         </div>
       </div>
     </div>
