@@ -241,7 +241,7 @@ export default function ReportPage() {
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0 justify-end">
               <a 
                 href="#download" 
-                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-5 py-2.5 rounded-[5px] text-sm font-semibold transition-all duration-200 shadow-lg shadow-teal-500/20"
+                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-5 py-2.5 rounded-[5px] text-sm font-semibold transition-all duration-200 shadow-lg shadow-teal-500/20 w-full sm:w-auto"
               >
                 Get HealthWatch App
                 <ArrowRight className="h-4 w-4" />
@@ -559,32 +559,35 @@ export default function ReportPage() {
                 </div>
 
                 {/* Submit Actions */}
-                <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <ShieldAlert className="h-4 w-4 text-amber-500" />
-                    Emergency reports are subject to review by local BHWs.
+                <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                  {/* Warning banner on mobile/tablet, clean inline text on desktop */}
+                  <div className="flex items-start gap-2.5 text-xs text-slate-500 w-full lg:w-auto text-left bg-amber-500/5 dark:bg-amber-500/10 lg:bg-transparent dark:lg:bg-transparent p-3 lg:p-0 rounded-[6px] border border-amber-500/10 lg:border-0">
+                    <ShieldAlert className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    <span>Emergency reports are subject to review by local BHWs.</span>
                   </div>
                   
-                  <div className="flex w-full sm:w-auto gap-3 justify-end">
+                  <div className="flex flex-col-reverse lg:flex-row w-full lg:w-auto gap-3 justify-end">
                     <Link
                       to="/"
-                      className="inline-flex items-center justify-center border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 px-6 py-2.5 rounded-[5px] text-sm font-semibold transition-colors w-full sm:w-auto"
+                      className="inline-flex items-center justify-center border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 px-6 py-2.5 rounded-[5px] text-sm font-semibold transition-colors w-full lg:w-auto"
                     >
                       Cancel
                     </Link>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="inline-flex items-center justify-center bg-gradient-to-r from-[#1B365D] to-indigo-950 hover:from-indigo-900 hover:to-slate-950 text-white px-7 py-2.5 rounded-[5px] text-sm font-bold shadow-lg transition-all duration-200 w-full sm:w-auto disabled:opacity-50"
+                      className="inline-flex items-center justify-center bg-gradient-to-r from-[#1B365D] to-indigo-950 hover:from-indigo-900 hover:to-slate-950 text-white px-7 py-2.5 rounded-[5px] text-sm font-bold shadow-lg transition-all duration-200 w-full lg:w-auto disabled:opacity-50"
                     >
                       {loading ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Submitting Report...
+                          <span className="hidden lg:inline">Submitting Report...</span>
+                          <span className="lg:hidden">Submitting...</span>
                         </>
                       ) : (
                         <>
-                          Submit Emergency Report
+                          <span className="hidden lg:inline">Submit Emergency Report</span>
+                          <span className="lg:hidden">Submit Report</span>
                           <ChevronRight className="h-4 w-4 ml-1.5" />
                         </>
                       )}
@@ -634,13 +637,13 @@ export default function ReportPage() {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
                   <button
                     onClick={handleResetForm}
-                    className="inline-flex items-center justify-center border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 px-6 py-2.5 rounded-[5px] text-sm font-semibold transition-colors"
+                    className="inline-flex items-center justify-center border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 px-6 py-2.5 rounded-[5px] text-sm font-semibold transition-colors w-full sm:w-auto"
                   >
                     Submit Another
                   </button>
                   <Link
                     to="/"
-                    className="inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-6 py-2.5 rounded-[5px] text-sm font-bold shadow-md shadow-blue-500/20"
+                    className="inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-6 py-2.5 rounded-[5px] text-sm font-bold shadow-md shadow-blue-500/20 w-full sm:w-auto"
                   >
                     <Home className="h-4 w-4 mr-2" />
                     Back to Home
@@ -698,11 +701,11 @@ export default function ReportPage() {
               </div>
 
               {/* Official, Formal App Download Badges */}
-              <div className="pt-4 flex flex-wrap gap-4">
+              <div className="pt-4 flex flex-col sm:flex-row justify-center md:justify-start gap-4">
                 {/* Formal Google Play Store Button */}
                 <a 
                   href="#playstore" 
-                  className="inline-flex items-center bg-black hover:bg-slate-950 text-white rounded-[6px] px-4 py-2 border border-slate-800 transition-all duration-200 shadow-md hover:border-slate-700"
+                  className="inline-flex items-center justify-center bg-black hover:bg-slate-950 text-white rounded-[6px] px-4 py-2 border border-slate-800 transition-all duration-200 shadow-md hover:border-slate-700 w-full sm:w-auto"
                 >
                   <svg className="w-6 h-6 mr-3.5 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M3 20.29V3.71C3 3.12 3.48 2.68 4.07 2.76L13.71 12L4.07 21.24C3.48 21.32 3 20.88 3 20.29Z" fill="#00E5FF"/>
@@ -719,7 +722,7 @@ export default function ReportPage() {
                 {/* Formal Apple App Store Button */}
                 <a 
                   href="#appstore" 
-                  className="inline-flex items-center bg-black hover:bg-slate-950 text-white rounded-[6px] px-4 py-2 border border-slate-800 transition-all duration-200 shadow-md hover:border-slate-700"
+                  className="inline-flex items-center justify-center bg-black hover:bg-slate-950 text-white rounded-[6px] px-4 py-2 border border-slate-800 transition-all duration-200 shadow-md hover:border-slate-700 w-full sm:w-auto"
                 >
                   <svg className="w-6 h-6 mr-3.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                     <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.48C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.1 16.67C20.08 16.74 19.67 18.11 18.71 19.5M15.97 4.17C16.63 3.37 17.07 2.28 16.95 1C16 1.04 14.9 1.6 14.24 2.38C13.68 3.04 13.19 4.14 13.34 5.39C14.39 5.47 15.4 4.88 15.97 4.17Z"/>
