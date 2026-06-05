@@ -51,14 +51,14 @@ export default function LoadingAnimation() {
             className="flex justify-center items-center"
           >
             <img
-              src="/transparent_sentinel_ph_logo.png"
-              alt="SentinelPH"
-              className="h-32 md:h-40 w-auto "
+              src="/logo.png"
+              alt="HealthWatch"
+              className="h-40 md:h-40 w-auto "
             />
           </motion.div>
 
           {/* BIGGER LOADING TEXT / STATUS */}
-          <div className="mt-12 flex flex-col items-center gap-4">
+          <div className="mt-5 flex flex-col items-center gap-4">
             <div className="flex gap-3">
               {[0, 0.2, 0.4].map((delay) => (
                 <motion.div
