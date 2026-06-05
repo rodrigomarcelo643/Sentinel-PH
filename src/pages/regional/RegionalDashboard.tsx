@@ -6,6 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRegionScope } from '@/contexts/RegionScopeContext';
+import { isMockUser } from '@/data/mockUsers';
+import { loadMockMunicipalities, loadMockBHWs } from '@/data/dohRegionViiSeedData';
 
 const alertData = [
   { name: 'Mon', alerts: 4 },
@@ -18,7 +21,9 @@ const alertData = [
 ];
 
 export default function RegionalDashboard() {
-  const { } = useAuth();
+  const { user } = useAuth();
+  const { region, dashboardTitle, dashboardSubtitle } = useRegionScope();
+  const regionFilter = region || user?.region || '';
   const [selectedMunicipality, setSelectedMunicipality] = useState('all');
   const [stats, setStats] = useState({
     totalObservations: 0,
@@ -36,23 +41,36 @@ export default function RegionalDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // Fetch all municipalities
-      const municipalitiesRef = collection(db, 'municipalities');
-      const municipalitiesSnapshot = await getDocs(municipalitiesRef);
-      const municipalitiesList = municipalitiesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      let municipalitiesList: any[] = [];
+
+      if (isMockUser(user)) {
+        municipalitiesList = loadMockMunicipalities();
+      } else {
+        const municipalitiesRef = collection(db, 'municipalities');
+        const municipalitiesSnapshot = regionFilter
+          ? await getDocs(query(municipalitiesRef, where('region', '==', regionFilter)))
+          : await getDocs(municipalitiesRef);
+        municipalitiesList = municipalitiesSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      }
       setMunicipalities(municipalitiesList);
 
-      // Fetch all BHWs
-      const bhwsRef = collection(db, 'registrations');
-      const bhwsQuery = query(bhwsRef, where('role', '==', 'bhw'));
-      const bhwsSnapshot = await getDocs(bhwsQuery);
-      const bhwsList = bhwsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      let bhwsList: any[] = [];
+      if (isMockUser(user)) {
+        bhwsList = loadMockBHWs();
+      } else {
+        const bhwsRef = collection(db, 'registrations');
+        const bhwsQuery = regionFilter
+          ? query(bhwsRef, where('role', '==', 'bhw'), where('region', '==', regionFilter))
+          : query(bhwsRef, where('role', '==', 'bhw'));
+        const bhwsSnapshot = await getDocs(bhwsQuery);
+        bhwsList = bhwsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      }
 
       // Fetch all sentinels
       const sentinelsRef = collection(db, 'sentinels');
@@ -116,8 +134,8 @@ export default function RegionalDashboard() {
       >
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-[#1B365D] mb-2">Regional Dashboard</h1>
-            <p className="text-gray-600">Regional health intelligence across municipalities</p>
+            <h1 className="text-3xl font-bold text-[#1B365D] mb-2">{dashboardTitle}</h1>
+            <p className="text-gray-600">{dashboardSubtitle}</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Select value={selectedMunicipality} onValueChange={setSelectedMunicipality}>
