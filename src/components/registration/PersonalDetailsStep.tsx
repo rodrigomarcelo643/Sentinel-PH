@@ -219,7 +219,7 @@ export function PersonalDetailsStep({
 
       <div>
         <h2 className="text-lg font-semibold text-[#1B365D] mb-4">Contact Information</h2>
-        <div className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label>Contact Number *</Label>
             <div
@@ -280,7 +280,7 @@ export function PersonalDetailsStep({
             {loadingLocation ? "Getting..." : "Auto-fill"}
           </Button>
         </div>
-        <div className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="region">Region *</Label>
             <Input
