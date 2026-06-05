@@ -310,30 +310,30 @@ export default function Navbar() {
             <NavigationMenu className="mx-auto">
               <NavigationMenuList className="gap-1">
                 <NavigationMenuItem>
-                  <Link to="/" className="tracking-wide">
-                    <NavigationMenuLink className={getNavLinkClass("/")}>
+                  <NavigationMenuLink asChild className={getNavLinkClass("/")}>
+                    <Link to="/" className="tracking-wide">
                       HOME
                       <span className={getIndicatorClass("/")} />
-                    </NavigationMenuLink>
-                  </Link>
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <Link to="/about" className="tracking-wide">
-                    <NavigationMenuLink className={getNavLinkClass("/about")}>
+                  <NavigationMenuLink asChild className={getNavLinkClass("/about")}>
+                    <Link to="/about" className="tracking-wide">
                       ABOUT US
                       <span className={getIndicatorClass("/about")} />
-                    </NavigationMenuLink>
-                  </Link>
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <Link to="/map" className="tracking-wide">
-                    <NavigationMenuLink className={getNavLinkClass("/map")}>
+                  <NavigationMenuLink asChild className={getNavLinkClass("/map")}>
+                    <Link to="/map" className="tracking-wide">
                       MAP
                       <span className={getIndicatorClass("/map")} />
-                    </NavigationMenuLink>
-                  </Link>
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
