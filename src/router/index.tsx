@@ -323,8 +323,8 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             {(() => {
-              console.log("Dashboard redirect - User role:", user?.role);
-              console.log("Dashboard redirect - User data:", user);
+              //console.log("Dashboard redirect - User role:", user?.role);
+              //console.log("Dashboard redirect - User data:", user);
 
               if (user?.role || user?.accountType) {
                 return (
