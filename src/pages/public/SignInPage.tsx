@@ -251,14 +251,16 @@ export default function SignInPage() {
             animate="visible"
           >
             <motion.div variants={fadeUp} className="text-center mb-8">
-              <motion.img
-                src="/logo.png"
-                alt="HealthWatch"
-                className="h-40 w-40 object-contain mx-auto mb-4"
-                initial={{ scale: 0.85, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5, ease: "easeOut", delay: 0.15 }}
-              />
+              <Link to="/" className="inline-block cursor-pointer group">
+                <motion.img
+                  src="/logo.png"
+                  alt="HealthWatch"
+                  className="h-40 w-40 object-contain mx-auto mb-4 "
+                  initial={{ scale: 0.85, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5, ease: "easeOut", delay: 0.15 }}
+                />
+              </Link>
             </motion.div>
 
             <motion.form
