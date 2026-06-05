@@ -145,25 +145,7 @@ export default function BhwMap() {
 
   return (
     <div className="p-2 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-4 sm:mb-6"
-      >
-        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-sm p-4 sm:p-6 shadow-md border border-blue-100 dark:border-blue-800">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="bg-linear-to-br from-blue-500 to-indigo-600 p-2 sm:p-3 rounded-lg shadow-sm">
-              <MapPin className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-linear-to-r from-[#1B365D] to-indigo-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-1">Symptom Reports Map</h1>
-              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">Real-time visualization of community health observations</p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
+      
       <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden relative">
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
@@ -379,13 +361,13 @@ export default function BhwMap() {
               setSelectedReport(null);
               setDirections(null);
             }}
-            className="absolute top-2 sm:top-3 right-2 sm:right-3 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute cursor-pinter top-2 sm:top-3 right-2 sm:right-3 text-gray-400 hover:text-gray-600 transition-colors"
           >
             ✕
           </button>
           
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-gray-100">
-            <img src="/sentinel_ph_logo.png" alt="SentinelPH" className="h-8 sm:h-10" />
+            <img src="/logo.png" alt="HealthWatch" className="h-8 sm:h-10" />
             <div>
               <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Symptom Report</h4>
               <p className="text-xs text-gray-400 dark:text-gray-500">ID: {selectedReport.id.slice(0, 8)}</p>
