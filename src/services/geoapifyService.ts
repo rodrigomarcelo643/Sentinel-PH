@@ -939,6 +939,38 @@ class GeoapifyService {
 
     return fallbackData[regionName] || [];
   }
+
+  async reverseGeocode(lat: number, lon: number): Promise<{
+    state?: string;
+    city?: string;
+    suburb?: string;
+    district?: string;
+  } | null> {
+    if (!this.isApiKeyConfigured()) return null;
+
+    try {
+      const response = await axios.get(`${BASE_URL}/reverse`, {
+        params: { lat, lon, apiKey: GEOAPIFY_API_KEY, format: 'json' },
+        timeout: 10000,
+      });
+
+      const results = response.data?.results;
+      if (!results?.length) return null;
+
+      const place = results[0];
+      return {
+        state: place.state,
+        city: place.city || place.municipality,
+        suburb: place.suburb,
+        district: place.district,
+      };
+    } catch (error) {
+      if (this.debugMode) {
+        console.error('Geoapify reverse geocode error:', error);
+      }
+      return null;
+    }
+  }
 }
 
 export const geoapifyService = new GeoapifyService();
