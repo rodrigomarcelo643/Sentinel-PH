@@ -149,7 +149,7 @@ HealthWatch builds a community intelligence network that trains everyday Filipin
 ## 📁 Project Structure
 
 ```
-SentinelPh/
+HealthWatch/
 ├── src/                    # Frontend application
 │   ├── components/        # React components
 │   │   ├── ui/           # Base UI components (toast, dialog, button, etc.)
@@ -161,11 +161,11 @@ SentinelPh/
 │   │   │   ├── BHWs.tsx           # BHW management with subscription status
 │   │   │   ├── Municipalities.tsx
 │   │   │   ├── Regions.tsx
-│   │   │   ├── Sentinels.tsx
+│   │   │   ├── Residentss.tsx
 │   │   │   └── Map.tsx
 │   │   ├── bhw/          # BHW dashboard pages
 │   │   │   ├── BhwDashboard.tsx
-│   │   │   └── BhwSentinels.tsx
+│   │   │   └── BhwResidents.tsx
 │   │   └── public/       # Public pages
 │   │       ├── LandingPage.tsx
 │   │       ├── RegisterPage.tsx   # Registration with subscription status
@@ -218,7 +218,7 @@ SentinelPh/
 │   ├── disease-patterns/      # Historical outbreak data
 │   ├── symptoms-database/     # Verified symptoms
 │   ├── medication-reference/  # Common medications
-│   ├── training-materials/    # Sentinel training
+│   ├── training-materials/    # Healthwatch training
 │   ├── advisories/           # Health advisories
 │   └── RAG_DOCUMENTATION.md  # RAG system guide
 │
@@ -279,7 +279,7 @@ pnpm run rag:prepare
 
 ## 🔑 Core Innovation
 
-Instead of asking communities to report symptoms (which feels like surveillance), SentinelPH asks them to report **what they observe** (which feels like community participation):
+Instead of asking communities to report symptoms (which feels like surveillance), HealthWatch asks them to report **what they observe** (which feels like community participation):
 
 - More people buying paracetamol than usual?
 - Several children absent from community gatherings?
@@ -297,21 +297,6 @@ Instead of asking communities to report symptoms (which feels like surveillance)
 - **Proximal Intelligence** - Catches outbreaks at pre-clinic stage
 - **Community Empowerment** - Active participants, not passive data sources
 
-## 💰 Revenue Model
-
-**LGU & Health System Subscriptions (85%):**
-
-- Barangay Plan: ₱300/month (up to 20 sentinels)
-- Municipal Plan: ₱1,500/month (unlimited sentinels, advanced analytics)
-- Provincial Plan: ₱4,000/month (regional pattern detection, API access)
-
-**Partnerships & Services (15%):**
-
-- Telecom partnerships (load credit revenue share)
-- NGO health program integration
-- Corporate CSR sponsorship
-- Training & certification services
-- Anonymized data research licenses
 
 ## 🤝 Contributing
 
