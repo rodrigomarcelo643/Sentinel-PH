@@ -530,7 +530,7 @@ export default function RegisterPage() {
         // 3. Initiate Maya Redirect
         await startMayaPayment({
           amount,
-          description: `SentinelPH ${formData.subscription} Plan`,
+          description: `HealthWatch ${formData.subscription} Plan`,
           requestReferenceNumber: `REF-${Date.now()}`,
           buyer: {
             firstName: formData.fullName.split(' ')[0],
@@ -563,7 +563,7 @@ export default function RegisterPage() {
         // 3. Initiate Maya Wallet Payment
         const response = await initiateMayaWalletPayment({
           amount,
-          description: `SentinelPH ${formData.subscription} Plan`,
+          description: `HealthWatch ${formData.subscription} Plan`,
           requestReferenceNumber: `REF-${Date.now()}`,
           buyer: {
             firstName: formData.fullName.split(' ')[0],
@@ -691,14 +691,14 @@ export default function RegisterPage() {
         >
           <div className="relative inline-block">
             <img 
-              src="/sentinel_ph_logo.png" 
-              alt="SentinelPH" 
+              src="/logo.png" 
+              alt="HealthWatch" 
               className="h-16 sm:h-20 lg:h-24 mx-auto mb-3 sm:mb-4 lg:mb-6 relative z-10"
             />
             <div className="absolute inset-0 bg-blue-600 rounded-full blur-3xl opacity-20 -z-10"></div>
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1B365D] mb-1 sm:mb-2 px-4">Create Your Account</h1>
-          <p className="text-gray-600 text-sm sm:text-base lg:text-lg px-4">Join the SentinelPH community and help make your community safer</p>
+          <p className="text-gray-600 text-sm sm:text-base lg:text-lg px-4">Join the HealthWatch community and help make your community safer</p>
         </motion.div>
 
         {/* Progress Bar */}
@@ -884,8 +884,8 @@ export default function RegisterPage() {
         {/* Help Text */}
         <p className="text-center text-xs sm:text-sm text-gray-500 mt-4 sm:mt-6 px-4">
           Need help? Contact our support team at{' '}
-          <a href="mailto:support@sentinelph.com" className="text-[#1B365D] font-medium hover:underline">
-            support@sentinelph.com
+          <a href="mailto:support@healthwatch.com" className="text-[#1B365D] font-medium hover:underline">
+            support@healthwatch.com
           </a>
         </p>
       </div>
