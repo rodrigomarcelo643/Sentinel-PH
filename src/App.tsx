@@ -17,8 +17,11 @@ function AppContent() {
                           location.pathname.startsWith('/dashboard') ||
                           location.pathname.startsWith('/bhw') ||
                           location.pathname.startsWith('/regional') ||
+                          location.pathname.startsWith('/doh-r7') ||
                           location.pathname.startsWith('/municipal') ||
-                          location.pathname === '/register';
+                          location.pathname === '/register' ||
+                          location.pathname === '/resident/register' ||
+                          location.pathname === '/signin';
   
   return (
     <>
