@@ -96,76 +96,78 @@ export function DocumentVerificationStep({
         </div>
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <Label>Valid ID *</Label>
-          {validId && (
-            <button
-              type="button"
-              onClick={() => setValidId(null, null)}
-              className="rounded-full bg-red-500 p-2 text-white hover:bg-red-600"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
+      <div className="grid gap-6 md:grid-cols-2">
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <Label>Valid ID *</Label>
+            {validId && (
+              <button
+                type="button"
+                onClick={() => setValidId(null, null)}
+                className="rounded-full bg-red-500 p-2 text-white hover:bg-red-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <label
+            className={`block cursor-pointer rounded-xl border-2 border-dashed overflow-hidden transition-colors ${
+              errors.includes("Valid ID is required") ? "border-red-400" : "border-gray-300 hover:border-[#1B365D]"
+            }`}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, setValidId)}
+            />
+            {validIdPreview ? (
+              <img src={validIdPreview} alt="Valid ID" className="w-full h-48 object-cover" />
+            ) : (
+              <div className="p-8 flex flex-col items-center bg-white">
+                <ScanLine className="h-12 w-12 text-[#1B365D]" strokeWidth={1.5} />
+                <p className="text-[#1B365D] font-semibold mt-4">Scan or upload your ID</p>
+              </div>
+            )}
+          </label>
         </div>
-        <label
-          className={`block cursor-pointer rounded-xl border-2 border-dashed overflow-hidden transition-colors ${
-            errors.includes("Valid ID is required") ? "border-red-400" : "border-gray-300 hover:border-[#1B365D]"
-          }`}
-        >
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e, setValidId)}
-          />
-          {validIdPreview ? (
-            <img src={validIdPreview} alt="Valid ID" className="w-full h-48 object-cover" />
-          ) : (
-            <div className="p-8 flex flex-col items-center bg-white">
-              <ScanLine className="h-12 w-12 text-[#1B365D]" strokeWidth={1.5} />
-              <p className="text-[#1B365D] font-semibold mt-4">Scan or upload your ID</p>
-            </div>
-          )}
-        </label>
-      </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <Label>Selfie *</Label>
-          {selfie && (
-            <button
-              type="button"
-              onClick={() => setSelfie(null, null)}
-              className="rounded-full bg-red-500 p-2 text-white hover:bg-red-600"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <Label>Selfie *</Label>
+            {selfie && (
+              <button
+                type="button"
+                onClick={() => setSelfie(null, null)}
+                className="rounded-full bg-red-500 p-2 text-white hover:bg-red-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <label
+            className={`block cursor-pointer rounded-xl border-2 border-dashed overflow-hidden transition-colors ${
+              errors.includes("Selfie is required") ? "border-red-400" : "border-gray-300 hover:border-[#1B365D]"
+            }`}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              capture="user"
+              className="hidden"
+              onChange={(e) => handleFileSelect(e, setSelfie)}
+            />
+            {selfiePreview ? (
+              <img src={selfiePreview} alt="Selfie" className="w-full h-48 object-cover" />
+            ) : (
+              <div className="p-8 flex flex-col items-center bg-white">
+                <Camera className="h-12 w-12 text-[#1B365D]" strokeWidth={1.5} />
+                <p className="text-[#1B365D] font-semibold mt-4">Take or upload a selfie</p>
+              </div>
+            )}
+          </label>
         </div>
-        <label
-          className={`block cursor-pointer rounded-xl border-2 border-dashed overflow-hidden transition-colors ${
-            errors.includes("Selfie is required") ? "border-red-400" : "border-gray-300 hover:border-[#1B365D]"
-          }`}
-        >
-          <input
-            type="file"
-            accept="image/*"
-            capture="user"
-            className="hidden"
-            onChange={(e) => handleFileSelect(e, setSelfie)}
-          />
-          {selfiePreview ? (
-            <img src={selfiePreview} alt="Selfie" className="w-full h-48 object-cover" />
-          ) : (
-            <div className="p-8 flex flex-col items-center bg-white">
-              <Camera className="h-12 w-12 text-[#1B365D]" strokeWidth={1.5} />
-              <p className="text-[#1B365D] font-semibold mt-4">Take or upload a selfie</p>
-            </div>
-          )}
-        </label>
       </div>
     </div>
   );
