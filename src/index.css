@@ -1,4 +1,39 @@
 @import "tailwindcss";
+/* WebKit Scrollbar Customization */
+/* For Chrome, Edge, Safari, and other WebKit-based browsers */
+
+/* Scrollbar width (makes it smaller) */
+::-webkit-scrollbar {
+  width: 5px;               /* Vertical scrollbar width */
+  height: 5px;              /* Horizontal scrollbar height */
+}
+
+/* Scrollbar Track (background) */
+::-webkit-scrollbar-track {
+  background: #eef2fa;      /* Light grayish-blue track */
+  border-radius: 10px;
+}
+
+/* Scrollbar Handle (the draggable part) - BLUE COLOR */
+::-webkit-scrollbar-thumb {
+  background: #1e88e5a4;      /* Vibrant blue */
+  border-radius: 10px;
+}
+
+/* Handle on hover - darker blue for interaction */
+::-webkit-scrollbar-thumb:hover {
+  background: #0b5cab;      /* Deeper blue on hover */
+}
+
+/* Handle when active (clicking/dragging) */
+::-webkit-scrollbar-thumb:active {
+  background: #08427a;
+}
+
+/* Scrollbar corner (when both scrollbars appear) */
+::-webkit-scrollbar-corner {
+  background: #eef2fa;
+}
 @font-face {
   font-family: 'Inter';
   src: url('./assets/fonts/Inter_18pt-Light.ttf') format('truetype');
