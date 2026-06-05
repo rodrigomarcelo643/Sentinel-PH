@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { RegionScopeProvider } from "@/contexts/RegionScopeContext";
 import type { NavLinkProps, SidebarContentProps } from '@/@types/layouts/common';
 
 export default function RegionalLayout() {
@@ -75,8 +76,8 @@ export default function RegionalLayout() {
     <>
       <div className="border-b bg-white dark:bg-gray-800 p-2 flex items-center justify-center">
         <img 
-          src="/sentinel_ph_logo.png" 
-          alt="SentinelPH" 
+          src="/logo.png" 
+          alt="HealthWatch" 
           className={`transition-all duration-300 ${isDesktop && sidebarCollapsed ? 'h-10 w-auto object-contain' : 'h-30 w-auto'}`} 
         />
       </div>
@@ -157,6 +158,14 @@ export default function RegionalLayout() {
   );
 
   return (
+    <RegionScopeProvider
+      value={{
+        basePath: "/regional",
+        region: user?.region || "",
+        dashboardTitle: "Regional Dashboard",
+        dashboardSubtitle: "Regional health intelligence across municipalities",
+      }}
+    >
     <TooltipProvider>
       <div className="flex h-screen">
         {/* Desktop Sidebar */}
@@ -254,5 +263,6 @@ export default function RegionalLayout() {
         </AlertDialog>
       </div>
     </TooltipProvider>
+    </RegionScopeProvider>
   );
 }
