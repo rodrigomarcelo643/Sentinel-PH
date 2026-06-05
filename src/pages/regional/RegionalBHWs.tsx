@@ -14,10 +14,28 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRegionScope } from '@/contexts/RegionScopeContext';
+import { isMockUser, updateMockCredential } from '@/data/mockUsers';
+import {
+  loadMockBHWs,
+  saveMockBHWs,
+  loadMockMunicipalities,
+} from '@/data/dohRegionViiSeedData';
+import { AccountCredentialsFields } from '@/components/admin/AccountCredentialsFields';
+import { getPasswordValidationError } from '@/lib/passwordValidation';
+import {
+  buildBhwCredentialProfile,
+  changeManagedAccountPassword,
+  createManagedAccount,
+  deleteManagedAccountCredentials,
+} from '@/services/adminAccountService';
 
 export default function RegionalBHWs() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { basePath, region } = useRegionScope();
+  const regionFilter = region || user?.region || '';
+  const isDohPortal = basePath === '/doh-r7';
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const municipalityFilter = searchParams.get('municipality');
@@ -32,25 +50,57 @@ export default function RegionalBHWs() {
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [rejectionMessage, setRejectionMessage] = useState('');
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [municipalityFilterLocal, setMunicipalityFilterLocal] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [newBHW, setNewBHW] = useState({
+  const emptyBHWForm = () => ({
     fullName: '',
     email: '',
     phone: '',
     municipality: '',
     barangay: '',
     address: '',
+    officeName: '',
+    headOfficer: '',
+    username: '',
+    region: regionFilter,
     role: 'bhw',
-    status: 'pending',
-    assignedRegion: user?.region || '',
-    createdAt: serverTimestamp()
+    accountType: 'bhw',
+    subscription: 'barangay',
+    status: 'approved',
+    assignedRegion: regionFilter,
+    createdAt: serverTimestamp(),
   });
+  const [newBHW, setNewBHW] = useState(emptyBHWForm());
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+  const [changePassword, setChangePassword] = useState('');
+  const [changeConfirmPassword, setChangeConfirmPassword] = useState('');
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showChangeConfirmPassword, setShowChangeConfirmPassword] = useState(false);
   const itemsPerPage = 10;
+
+  const resetAddForm = () => {
+    setNewBHW(emptyBHWForm());
+    setNewPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  const resetChangePasswordForm = () => {
+    setChangePassword('');
+    setChangeConfirmPassword('');
+    setShowChangePassword(false);
+    setShowChangeConfirmPassword(false);
+  };
 
   useEffect(() => {
     fetchBHWs();
@@ -59,9 +109,15 @@ export default function RegionalBHWs() {
 
   const fetchMunicipalities = async () => {
     try {
+      if (isMockUser(user)) {
+        setMunicipalities(loadMockMunicipalities());
+        return;
+      }
       const municipalitiesRef = collection(db, 'municipalities');
-      // Fetch all municipalities, not just region-specific
-      const querySnapshot = await getDocs(municipalitiesRef);
+      const q = regionFilter
+        ? query(municipalitiesRef, where('region', '==', regionFilter))
+        : municipalitiesRef;
+      const querySnapshot = await getDocs(q);
       const municipalityData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -74,9 +130,15 @@ export default function RegionalBHWs() {
 
   const fetchBHWs = async () => {
     try {
+      if (isMockUser(user)) {
+        setBhws(loadMockBHWs());
+        return;
+      }
+
       const registrationsRef = collection(db, 'registrations');
-      // Fetch all BHWs regardless of region assignment
-      const q = query(registrationsRef, where('role', '==', 'bhw'));
+      const q = regionFilter
+        ? query(registrationsRef, where('role', '==', 'bhw'), where('region', '==', regionFilter))
+        : query(registrationsRef, where('role', '==', 'bhw'));
       const querySnapshot = await getDocs(q);
       
       const bhwData = querySnapshot.docs.map(doc => ({
@@ -108,39 +170,140 @@ export default function RegionalBHWs() {
   };
 
   const handleAddBHW = async () => {
+    const passwordError = getPasswordValidationError(newPassword, confirmPassword);
+    if (!newBHW.fullName || !newBHW.email || !newBHW.username || !newBHW.municipality || !newBHW.barangay) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in name, email, username, municipality, and barangay.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (passwordError) {
+      toast({
+        title: "Invalid password",
+        description: passwordError,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      await addDoc(collection(db, 'registrations'), {
+      const accountId = `mock-bhw-${Date.now()}`;
+      const entry = {
         ...newBHW,
-        createdAt: serverTimestamp(),
-        createdBy: user?.uid
+        id: accountId,
+        region: regionFilter,
+        sentinels: 0,
+        status: 'approved',
+        createdAt: new Date().toISOString(),
+      };
+
+      await createManagedAccount(isMockUser(user), {
+        accountId,
+        email: newBHW.email,
+        username: newBHW.username,
+        password: newPassword,
+        profile: buildBhwCredentialProfile(newBHW, regionFilter),
+        registrationData: {
+          ...newBHW,
+          region: regionFilter,
+          sentinels: 0,
+          createdBy: user?.uid,
+        },
       });
-      
-      setNewBHW({
-        fullName: '',
-        email: '',
-        phone: '',
-        municipality: '',
-        barangay: '',
-        address: '',
-        role: 'bhw',
-        status: 'pending',
-        assignedRegion: user?.region || '',
-        createdAt: serverTimestamp()
-      });
-      
+
+      if (isMockUser(user)) {
+        const current = loadMockBHWs();
+        saveMockBHWs([...current, entry] as typeof current);
+      }
+
+      resetAddForm();
       setIsAddDialogOpen(false);
       fetchBHWs();
-      
+
       toast({
         title: "BHW Added",
-        description: "New BHW has been added successfully.",
+        description: "Account auto-approved. They can sign in immediately with their username or email.",
         variant: "success",
       });
     } catch (error) {
       console.error('Error adding BHW:', error);
       toast({
         title: "Error",
-        description: "Failed to add BHW.",
+        description: error instanceof Error ? error.message : "Failed to add BHW.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleBHWActive = async (bhwId: string, activate: boolean) => {
+    const newStatus = activate ? 'approved' : 'inactive';
+    try {
+      if (isMockUser(user)) {
+        const current = loadMockBHWs();
+        const updated = current.map((b) =>
+          b.id === bhwId ? { ...b, status: newStatus } : b
+        );
+        saveMockBHWs(updated);
+        setBhws(updated);
+        updateMockCredential(bhwId, { profile: { status: newStatus } });
+      } else {
+        const bhwRef = doc(db, 'registrations', bhwId);
+        await updateDoc(bhwRef, { status: newStatus });
+        setBhws(bhws.map((b) => (b.id === bhwId ? { ...b, status: newStatus } : b)));
+      }
+
+      setIsDeactivateDialogOpen(false);
+      setIsViewDialogOpen(false);
+      setSelectedBHW(null);
+
+      toast({
+        title: activate ? "BHW Reactivated" : "BHW Deactivated",
+        description: activate
+          ? "This BHW can sign in again."
+          : "This BHW can no longer sign in until reactivated.",
+        variant: "success",
+      });
+    } catch (error) {
+      console.error('Error updating BHW status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update BHW account status.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!selectedBHW) return;
+    const passwordError = getPasswordValidationError(changePassword, changeConfirmPassword);
+    if (passwordError) {
+      toast({
+        title: "Invalid password",
+        description: passwordError,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await changeManagedAccountPassword(
+        isMockUser(user),
+        selectedBHW.id,
+        changePassword
+      );
+      resetChangePasswordForm();
+      setIsChangePasswordOpen(false);
+      toast({
+        title: "Password Updated",
+        description: "The BHW can now sign in with the new password.",
+        variant: "success",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update password.",
         variant: "destructive",
       });
     }
@@ -148,9 +311,21 @@ export default function RegionalBHWs() {
 
   const handleApprove = async (bhwId: string) => {
     try {
-      const bhwRef = doc(db, 'registrations', bhwId);
-      await updateDoc(bhwRef, { status: 'approved' });
-      setBhws(bhws.map(b => b.id === bhwId ? { ...b, status: 'approved' } : b));
+      if (isMockUser(user)) {
+        const current = loadMockBHWs();
+        const updated = current.map((b) =>
+          b.id === bhwId ? { ...b, status: 'approved' } : b
+        );
+        saveMockBHWs(updated);
+        setBhws(updated);
+        updateMockCredential(bhwId, {
+          profile: { status: 'approved' },
+        });
+      } else {
+        const bhwRef = doc(db, 'registrations', bhwId);
+        await updateDoc(bhwRef, { status: 'approved' });
+        setBhws(bhws.map(b => b.id === bhwId ? { ...b, status: 'approved' } : b));
+      }
       setIsApproveDialogOpen(false);
       setSelectedBHW(null);
       toast({
@@ -170,12 +345,21 @@ export default function RegionalBHWs() {
 
   const handleReject = async (bhwId: string) => {
     try {
-      const bhwRef = doc(db, 'registrations', bhwId);
-      await updateDoc(bhwRef, { 
-        status: 'rejected',
-        rejectionMessage: rejectionMessage 
-      });
-      setBhws(bhws.map(b => b.id === bhwId ? { ...b, status: 'rejected', rejectionMessage } : b));
+      if (isMockUser(user)) {
+        const current = loadMockBHWs();
+        const updated = current.map((b) =>
+          b.id === bhwId ? { ...b, status: 'rejected', rejectionMessage } : b
+        );
+        saveMockBHWs(updated);
+        setBhws(updated);
+      } else {
+        const bhwRef = doc(db, 'registrations', bhwId);
+        await updateDoc(bhwRef, { 
+          status: 'rejected',
+          rejectionMessage: rejectionMessage 
+        });
+        setBhws(bhws.map(b => b.id === bhwId ? { ...b, status: 'rejected', rejectionMessage } : b));
+      }
       setIsRejectDialogOpen(false);
       setSelectedBHW(null);
       setRejectionMessage('');
@@ -196,9 +380,17 @@ export default function RegionalBHWs() {
 
   const handleDelete = async (bhwId: string) => {
     try {
-      const bhwRef = doc(db, 'registrations', bhwId);
-      await deleteDoc(bhwRef);
-      setBhws(bhws.filter(b => b.id !== bhwId));
+      deleteManagedAccountCredentials(isMockUser(user), bhwId);
+      if (isMockUser(user)) {
+        const current = loadMockBHWs();
+        const updated = current.filter((b) => b.id !== bhwId);
+        saveMockBHWs(updated);
+        setBhws(updated);
+      } else {
+        const bhwRef = doc(db, 'registrations', bhwId);
+        await deleteDoc(bhwRef);
+        setBhws(bhws.filter(b => b.id !== bhwId));
+      }
       setIsDeleteDialogOpen(false);
       setSelectedBHW(null);
       toast({
@@ -302,6 +494,8 @@ export default function RegionalBHWs() {
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>;
       case 'rejected':
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Rejected</span>;
+      case 'inactive':
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Deactivated</span>;
       default:
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">{status}</span>;
     }
@@ -316,7 +510,7 @@ export default function RegionalBHWs() {
         className="mb-6"
       >
         {municipalityFilter && (
-          <Button variant="ghost" onClick={() => navigate('/regional/municipalities')} className="mb-2">
+          <Button variant="ghost" onClick={() => navigate(`${basePath}/municipalities`)} className="mb-2">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Municipalities
           </Button>
@@ -324,9 +518,17 @@ export default function RegionalBHWs() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-[#1B365D] mb-2">
-              {municipalityFilter ? `${municipalityFilter} BHWs` : 'Regional BHW Management'}
+              {municipalityFilter
+                ? `${municipalityFilter} BHWs`
+                : isDohPortal
+                  ? 'DOH Region VII BHW Management'
+                  : 'Regional BHW Management'}
             </h1>
-            <p className="text-gray-600">Manage BHW accounts and assignments in your region</p>
+            <p className="text-gray-600">
+              {isDohPortal
+                ? 'Manage BHW accounts and registrations in Central Visayas'
+                : 'Manage BHW accounts and assignments in your region'}
+            </p>
           </div>
           <Button
             onClick={() => setIsAddDialogOpen(true)}
@@ -363,6 +565,7 @@ export default function RegionalBHWs() {
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="inactive">Deactivated</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
@@ -516,6 +719,28 @@ export default function RegionalBHWs() {
                           </Button>
                         </>
                       )}
+                      {bhw.status === 'approved' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedBHW(bhw);
+                            setIsDeactivateDialogOpen(true);
+                          }}
+                          className="border-gray-500 text-gray-600 hover:bg-gray-50"
+                        >
+                          Deactivate
+                        </Button>
+                      )}
+                      {bhw.status === 'inactive' && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleToggleBHWActive(bhw.id, true)}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          Reactivate
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"
@@ -617,6 +842,33 @@ export default function RegionalBHWs() {
                 />
               </div>
               <div>
+                <Label htmlFor="officeName">Barangay Health Center</Label>
+                <Input
+                  id="officeName"
+                  value={newBHW.officeName}
+                  onChange={(e) => setNewBHW({...newBHW, officeName: e.target.value})}
+                  placeholder="Health center name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="headOfficer">Head BHW Name</Label>
+                <Input
+                  id="headOfficer"
+                  value={newBHW.headOfficer}
+                  onChange={(e) => setNewBHW({...newBHW, headOfficer: e.target.value})}
+                  placeholder="Head BHW name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  value={newBHW.username}
+                  onChange={(e) => setNewBHW({...newBHW, username: e.target.value})}
+                  placeholder="Login username"
+                />
+              </div>
+              <div>
                 <Label htmlFor="municipality">Municipality</Label>
                 <Select value={newBHW.municipality} onValueChange={(value) => setNewBHW({...newBHW, municipality: value})}>
                   <SelectTrigger>
@@ -648,9 +900,22 @@ export default function RegionalBHWs() {
                   rows={3}
                 />
               </div>
+              <AccountCredentialsFields
+                password={newPassword}
+                setPassword={setNewPassword}
+                confirmPassword={confirmPassword}
+                setConfirmPassword={setConfirmPassword}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+                showConfirmPassword={showConfirmPassword}
+                setShowConfirmPassword={setShowConfirmPassword}
+              />
             </div>
+            <p className="text-xs text-gray-500">
+              Manually added accounts are auto-approved and can sign in right away. You can deactivate them later if needed.
+            </p>
             <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              <Button variant="outline" onClick={() => { setIsAddDialogOpen(false); resetAddForm(); }}>
                 Cancel
               </Button>
               <Button onClick={handleAddBHW} className="bg-[#1B365D] hover:bg-[#1B365D]/90">
@@ -675,12 +940,28 @@ export default function RegionalBHWs() {
                   <p className="text-sm text-gray-900">{selectedBHW.fullName}</p>
                 </div>
                 <div>
+                  <p className="text-sm font-medium text-gray-500">Username</p>
+                  <p className="text-sm text-gray-900">{selectedBHW.username || '—'}</p>
+                </div>
+                <div>
                   <p className="text-sm font-medium text-gray-500">Email</p>
                   <p className="text-sm text-gray-900">{selectedBHW.email}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Phone</p>
                   <p className="text-sm text-gray-900">{selectedBHW.phone}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Health Center</p>
+                  <p className="text-sm text-gray-900">{selectedBHW.officeName || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Head BHW</p>
+                  <p className="text-sm text-gray-900">{selectedBHW.headOfficer || selectedBHW.fullName}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Region</p>
+                  <p className="text-sm text-gray-900">{selectedBHW.region || regionFilter}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Municipality</p>
@@ -691,17 +972,97 @@ export default function RegionalBHWs() {
                   <p className="text-sm text-gray-900">{selectedBHW.barangay}</p>
                 </div>
                 <div>
+                  <p className="text-sm font-medium text-gray-500">Subscription</p>
+                  <p className="text-sm text-gray-900 capitalize">{selectedBHW.subscription || 'barangay'}</p>
+                </div>
+                <div className="col-span-2">
                   <p className="text-sm font-medium text-gray-500">Address</p>
                   <p className="text-sm text-gray-900">{selectedBHW.address}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Account Type</p>
+                  <p className="text-sm text-gray-900 uppercase">{selectedBHW.accountType || 'bhw'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Status</p>
                   <p className="text-sm text-gray-900">{getStatusBadge(selectedBHW.status)}</p>
                 </div>
+                {selectedBHW.rejectionMessage && (
+                  <div className="col-span-2">
+                    <p className="text-sm font-medium text-gray-500">Rejection Reason</p>
+                    <p className="text-sm text-red-600">{selectedBHW.rejectionMessage}</p>
+                  </div>
+                )}
               </div>
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex flex-wrap justify-between gap-2 pt-4 border-t">
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsChangePasswordOpen(true)}
+                  >
+                    Change Password
+                  </Button>
+                  {selectedBHW.status === 'approved' && (
+                    <Button
+                      variant="outline"
+                      className="border-gray-500 text-gray-600 hover:bg-gray-50"
+                      onClick={() => setIsDeactivateDialogOpen(true)}
+                    >
+                      Deactivate
+                    </Button>
+                  )}
+                  {selectedBHW.status === 'inactive' && (
+                    <Button
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                      onClick={() => handleToggleBHWActive(selectedBHW.id, true)}
+                    >
+                      Reactivate
+                    </Button>
+                  )}
+                </div>
                 <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
                   Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Password Dialog */}
+      <Dialog open={isChangePasswordOpen} onOpenChange={(open) => {
+        setIsChangePasswordOpen(open);
+        if (!open) resetChangePasswordForm();
+      }}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+          </DialogHeader>
+          {selectedBHW && (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Set a new password for <strong>{selectedBHW.fullName}</strong> ({selectedBHW.username}).
+              </p>
+              <div className="grid grid-cols-1 gap-4">
+                <AccountCredentialsFields
+                  password={changePassword}
+                  setPassword={setChangePassword}
+                  confirmPassword={changeConfirmPassword}
+                  setConfirmPassword={setChangeConfirmPassword}
+                  showPassword={showChangePassword}
+                  setShowPassword={setShowChangePassword}
+                  showConfirmPassword={showChangeConfirmPassword}
+                  setShowConfirmPassword={setShowChangeConfirmPassword}
+                  passwordLabel="New Password"
+                  confirmLabel="Confirm New Password"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => { setIsChangePasswordOpen(false); resetChangePasswordForm(); }}>
+                  Cancel
+                </Button>
+                <Button onClick={handleChangePassword} className="bg-[#1B365D] hover:bg-[#1B365D]/90">
+                  Update Password
                 </Button>
               </div>
             </div>
@@ -760,6 +1121,28 @@ export default function RegionalBHWs() {
               disabled={!rejectionMessage.trim()}
             >
               Reject
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Deactivate Dialog */}
+      <AlertDialog open={isDeactivateDialogOpen} onOpenChange={setIsDeactivateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deactivate BHW Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deactivate <strong>{selectedBHW?.fullName}</strong>? They will not be able to sign in
+              until you reactivate the account. Their data will be kept.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => selectedBHW && handleToggleBHWActive(selectedBHW.id, false)}
+              className="bg-gray-700 hover:bg-gray-800"
+            >
+              Deactivate
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
