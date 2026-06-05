@@ -205,8 +205,15 @@ export default function ResidentRegisterPage() {
           />
         </div>
 
-        <div className="mb-6 sm:mb-8 lg:mb-12">
-          <div className="flex justify-between items-start max-w-3xl mx-auto px-2 sm:px-4">
+        <div className="mb-6 sm:mb-8 lg:mb-12 relative">
+          {/* Connector Line */}
+          <div className="absolute top-5 sm:top-6 lg:top-7 left-[15%] right-[15%] h-0.5 bg-gray-200 dark:bg-gray-700 -z-10">
+            <div 
+              className="h-full bg-cyan-600 transition-all duration-300" 
+              style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+            />
+          </div>
+          <div className="flex justify-between items-start max-w-3xl mx-auto px-2 sm:px-4 relative z-10">
             {steps.map((step) => {
               const Icon = step.icon;
               const isActive = currentStep >= step.number;
