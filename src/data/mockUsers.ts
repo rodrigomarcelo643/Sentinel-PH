@@ -161,7 +161,7 @@ export function addMockCredential(credential: MockCredential) {
 
 export function updateMockCredential(
   accountId: string,
-  updates: Partial<Pick<MockCredential, "email" | "username" | "password" | "profile">>
+  updates: Partial<Pick<MockCredential, "email" | "username" | "password">> & { profile?: Partial<User> }
 ) {
   const current = loadDynamicMockCredentials();
   const index = current.findIndex((c) => c.accountId === accountId);

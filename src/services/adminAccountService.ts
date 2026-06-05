@@ -101,7 +101,8 @@ export async function updateManagedAccountCredentials(
   }
 ) {
   if (isMock) {
-    updateMockCredential(accountId, updates);
+    const { email, username, password, profile } = updates;
+    updateMockCredential(accountId, { email, username, password, profile });
     return;
   }
 

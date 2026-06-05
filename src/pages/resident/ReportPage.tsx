@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ShieldAlert, User, Eye, Check, AlertCircle, MapPin, 
-  Camera, X, Smartphone, ArrowRight, Home, Upload, 
-  Map, Sparkles, CheckCircle2, ChevronRight, Info
+  X, Smartphone, ArrowRight, Home, Upload, 
+  Sparkles, CheckCircle2, ChevronRight, Info
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,7 +34,6 @@ const COMMON_SYMPTOMS = [
 
 export default function ReportPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   // Form states
   const [reportType, setReportType] = useState<"self" | "observed">("self");
@@ -107,7 +106,6 @@ export default function ReportPage() {
             const addressParts = data.address || {};
             
             const suburb = addressParts.suburb || addressParts.neighbourhood || addressParts.village || addressParts.quarter || "";
-            const city = addressParts.city || addressParts.town || addressParts.municipality || "";
             
             setBarangay(suburb ? `Brgy. ${suburb}` : "Unknown Barangay");
             setLocation(address || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);

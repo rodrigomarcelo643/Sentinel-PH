@@ -1,26 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Menu, 
   LogOut, 
@@ -135,37 +118,6 @@ export default function BhwNavbar() {
     setNotifications(prev =>
       prev.map(n => ({ ...n, read: true }))
     );
-  };
-
-  const getNotificationIcon = (type: Notification['type']) => {
-    switch (type) {
-      case 'alert':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case 'success':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 'warning':
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-      case 'info':
-        return <MessageCircle className="h-4 w-4 text-blue-500" />;
-      default:
-        return <Bell className="h-4 w-4" />;
-    }
-  };
-
-  const getNotificationBgColor = (type: Notification['type'], read: boolean) => {
-    if (read) return 'hover:bg-gray-50';
-    switch (type) {
-      case 'alert':
-        return 'bg-red-50 hover:bg-red-100';
-      case 'success':
-        return 'bg-green-50 hover:bg-green-100';
-      case 'warning':
-        return 'bg-yellow-50 hover:bg-yellow-100';
-      case 'info':
-        return 'bg-blue-50 hover:bg-blue-100';
-      default:
-        return 'hover:bg-gray-50';
-    }
   };
 
   const getInitials = (name?: string | null, email?: string | null) => {

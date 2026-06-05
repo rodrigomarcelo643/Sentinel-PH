@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion';
 import { 
-  Shield, Users, MapPin, TrendingUp, Heart, Award, Target, Eye, 
-  Activity, Zap, QrCode, AlertTriangle, Phone, Globe, 
-  BarChart3, Bot, Wifi, Battery, ChevronRight, Store, 
+  Shield, Users, Heart, Target,
+  Activity, Zap, QrCode, AlertTriangle, 
+  Bot, Wifi, ChevronRight, Store, 
   Truck, Church, Stethoscope, UserCheck, Map, Bell, 
   Database, Sparkles, Layers, ShieldCheck, MessageCircle, 
-  Clock, Briefcase, Building2, Home, Droplet, Thermometer,
-  AlertCircle, CheckCircle, Radio, Scan, LineChart, 
-  FileCheck, Fingerprint, Star, Gift, CreditCard, Volume2,
+  Clock, Building2,
+  AlertCircle, CheckCircle, Scan,
+  FileCheck, Gift,
   Smartphone, UserPlus
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
