@@ -463,7 +463,7 @@ export default function RegionPage() {
                 className="bg-[#1B365D] text-white px-8 py-4 rounded-xl font-semibold hover:bg-[#1B365D]/90 transition-colors shadow-xl"
                 onClick={() => window.location.href = '/register'}
               >
-                Join SentinelPH Network
+                Join HealthWatch Network
               </motion.button>
             </motion.div>
           </div>

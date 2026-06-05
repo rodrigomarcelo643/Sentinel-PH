@@ -3,12 +3,12 @@ import { GoogleMap, useLoadScript, Marker, DirectionsRenderer } from '@react-goo
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { motion } from 'framer-motion';
-import { MapPin, Navigation } from 'lucide-react';
+import { MapPin, Navigation, X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
 const mapContainerStyle = {
   width: '100%',
-  height: 'calc(100vh - 200px)',
+  height: 'calc(100vh - 64px)', // Full height minus navbar
 };
 
 const center = {
@@ -126,27 +126,8 @@ export default function PublicMapPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="pt-20">
-        <div className="p-2 bg-gray-50 min-h-screen">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-6"
-          >
-            <div className="bg-linear-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-sm p-6 shadow-md border border-blue-100">
-              <div className="flex items-center gap-4">
-                <div className="bg-linear-to-br from-blue-500 to-indigo-600 p-3 rounded-lg shadow-sm">
-                  <MapPin className="h-8 w-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold bg-linear-to-r from-[#1B365D] to-indigo-600 bg-clip-text text-transparent mb-1">Public Health Map</h1>
-                  <p className="text-gray-600 text-sm">Verified community health reports across the Philippines</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
+      <div className="pt-16">
+        <div className="bg-gray-50 min-h-screen">
           <div className="bg-white shadow-sm border border-gray-100 overflow-hidden relative">
             <GoogleMap
               mapContainerStyle={mapContainerStyle}
@@ -165,6 +146,10 @@ export default function PublicMapPage() {
                     stylers: [{ visibility: 'off' }],
                   },
                 ],
+                fullscreenControl: true,
+                fullscreenControlOptions: {
+                  position: google.maps.ControlPosition.TOP_RIGHT,
+                },
               }}
             >
               {/* User Location Marker */}
@@ -253,7 +238,8 @@ export default function PublicMapPage() {
               })}
             </GoogleMap>
             
-            <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm p-4 shadow-lg border border-gray-200">
+            {/* Map Legend - Bottom Left */}
+            <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm p-4 rounded-[5px] shadow-lg border border-gray-200 z-10">
               <h3 className="font-semibold text-sm text-gray-700 mb-3">Verified Reports</h3>
               <div className="space-y-2">
                 <div className="flex items-center gap-3">
@@ -261,92 +247,113 @@ export default function PublicMapPage() {
                     background: '#10B981',
                     clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)'
                   }}></div>
-                  <span className="text-xs text-gray-700">Low (1)</span>
+                  <span className="text-xs text-gray-700">Low (1 symptom)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-6" style={{ 
                     background: '#F59E0B',
                     clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)'
                   }}></div>
-                  <span className="text-xs text-gray-700">Medium (2-3)</span>
+                  <span className="text-xs text-gray-700">Medium (2-3 symptoms)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-6" style={{ 
                     background: '#DC2626',
                     clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)'
                   }}></div>
-                  <span className="text-xs text-gray-700">High (4+)</span>
+                  <span className="text-xs text-gray-700">High (4+ symptoms)</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {selectedReport && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="fixed bottom-8 right-8 bg-white p-6 shadow-2xl border border-gray-200 max-w-md z-50"
-            >
-              <button
-                onClick={() => {
-                  setSelectedReport(null);
-                  setDirections(null);
+            {/* Selected Report Modal - Fixed position that stays visible in fullscreen */}
+            {selectedReport && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="fixed bottom-6 right-6 bg-white rounded-[5px] shadow-2xl border border-gray-200 w-96 max-w-[calc(100vw-3rem)] z-[100] overflow-hidden"
+                style={{
+                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
                 }}
-                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
               >
-                ✕
-              </button>
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-semibold">
-                    A
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-xl text-[#1B365D] mb-1">Anonymous Report</h3>
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {selectedReport.location}
-                    </p>
-                  </div>
-                </div>
+                <div className="relative">
+                  {/* Header with gradient accent */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500" />
+                  
+                  <button
+                    onClick={() => {
+                      setSelectedReport(null);
+                      setDirections(null);
+                    }}
+                    className="absolute top-3 right-3 p-1.5 bg-gray-100 hover:bg-gray-200 rounded-[5px] transition-colors z-10"
+                  >
+                    <X className="h-4 w-4 text-gray-500" />
+                  </button>
+                  
+                  <div className="p-5 pt-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="h-6 w-6 text-red-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-lg text-gray-900 mb-1">Health Report</h3>
+                        <p className="text-sm text-gray-500 flex items-center gap-1 truncate">
+                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">{selectedReport.location || 'Location reported'}</span>
+                        </p>
+                      </div>
+                    </div>
 
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Symptoms</span>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedReport.symptoms?.map((symptom, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-red-100 text-red-700 text-sm font-medium rounded-full">
-                        {symptom}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                    {/* Symptoms Section */}
+                    <div className="bg-gray-50 rounded-[5px] p-3 mb-4">
+                      <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Reported Symptoms</span>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {selectedReport.symptoms?.map((symptom, idx) => (
+                          <span key={idx} className="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+                            {symptom}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                    VERIFIED
-                  </span>
-                  <div className="flex items-center gap-2">
-                    {userLocation && (
-                      <button
-                        onClick={() => {
-                          const url = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${selectedReport.latitude},${selectedReport.longitude}`;
-                          window.open(url, '_blank');
-                        }}
-                        className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="Get Directions"
-                      >
-                        <Navigation className="h-4 w-4" />
-                      </button>
+                    {/* Description if available */}
+                    {selectedReport.description && (
+                      <div className="mb-4">
+                        <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Additional Info</span>
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-3">{selectedReport.description}</p>
+                      </div>
                     )}
-                    <span className="text-xs text-gray-500">
-                      {selectedReport.createdAt?.toDate?.()?.toLocaleDateString()}
-                    </span>
+
+                    {/* Footer with status and actions */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                        ✓ VERIFIED
+                      </span>
+                      <div className="flex items-center gap-3">
+                        {userLocation && (
+                          <button
+                            onClick={() => {
+                              const url = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${selectedReport.latitude},${selectedReport.longitude}`;
+                              window.open(url, '_blank');
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-[5px] transition-colors text-xs font-semibold"
+                            title="Get Directions"
+                          >
+                            <Navigation className="h-3.5 w-3.5" />
+                            Directions
+                          </button>
+                        )}
+                        <span className="text-xs text-gray-400">
+                          {selectedReport.createdAt?.toDate?.()?.toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
+          </div>
         </div>
       </div>
     </div>

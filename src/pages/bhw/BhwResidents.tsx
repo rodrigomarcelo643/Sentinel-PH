@@ -175,7 +175,7 @@ export default function BhwSentinels() {
           className="mb-6"
         >
           <h1 className="text-3xl font-bold text-[#1B365D] dark:text-white mb-2">
-            Community Sentinels
+            Community Residents
           </h1>
           <p className="text-gray-600 dark:text-white">
             Manage sentinel registrations and approvals
@@ -330,10 +330,10 @@ export default function BhwSentinels() {
         className="mb-6"
       >
         <h1 className="text-3xl font-bold text-[#1B365D] dark:text-white mb-2">
-          Community Sentinels
+          Community Residents
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Manage sentinel registrations and approvals
+          Manage Residents registrations and approvals
         </p>
       </motion.div>
 
@@ -350,10 +350,10 @@ export default function BhwSentinels() {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                All Sentinels
+                All Residents
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {filteredSentinels.length} sentinels found
+                {filteredSentinels.length} Residents found
               </p>
             </div>
           </div>
@@ -596,7 +596,7 @@ export default function BhwSentinels() {
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="sm:max-w-150 max-w-200!">
           <DialogHeader>
-            <DialogTitle>Sentinel Registration Details</DialogTitle>
+            <DialogTitle>Residents Registration Details</DialogTitle>
           </DialogHeader>
           {selectedSentinel && (
             <div className="space-y-4">

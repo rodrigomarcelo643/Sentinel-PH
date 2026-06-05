@@ -15,7 +15,7 @@ export default function AuthLoading() {
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <img src="/transparent_sentinel_ph_logo.png" alt="SentinelPH" className="h-20 w-auto" />
+          <img src="/logo_main.png" alt="HealthWatch" className="h-20 w-auto" />
         </motion.div>
 
         {/* Spinner */}
@@ -24,19 +24,19 @@ export default function AuthLoading() {
         {/* Main Text */}
         <div className="text-center space-y-2">
           <motion.h3 
-            className="text-2xl font-bold dark:text-white text-[#1B365D]"
+            className="text-2xl font-bold dark:text-white text-blue-500"
             animate={{ opacity: [1, 0.5, 1] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >
             Logging In
           </motion.h3>
-          <p className="text-sm text-gray-600 dark:text-white">Please wait while we authenticate your credentials</p>
+          <p className="text-sm text-blue-600 dark:text-white">Please wait while we authenticate your credentials</p>
         </div>
 
         {/* Progress Bar */}
         <div className="w-full dark:bg-gray-700 bg-gray-200 rounded-full h-2 overflow-hidden">
           <motion.div 
-            className="h-full bg-[#1B365D] dark:bg-white "
+            className="h-full bg-blue-500 dark:bg-white "
             initial={{ width: "0%" }}
             animate={{ width: "100%" }}
             transition={{ duration: 2, ease: "easeInOut" }}

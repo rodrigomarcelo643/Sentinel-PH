@@ -19,7 +19,11 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Tooltip,
   TooltipContent,
@@ -47,7 +51,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import type { NavLinkProps, SidebarContentProps } from '@/@types/layouts/common';
+import type {
+  NavLinkProps,
+  SidebarContentProps,
+} from "@/@types/layouts/common";
 
 export default function MunicipalLayout() {
   const { logout, user } = useAuth();
@@ -86,31 +93,45 @@ export default function MunicipalLayout() {
 
   const getInitials = (name?: string | null, email?: string | null) => {
     if (name) {
-      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      return name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
     }
     if (email) {
       return email.slice(0, 2).toUpperCase();
     }
-    return 'MU';
+    return "MU";
   };
 
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Municipal User';
-  const userRole = user?.role || 'Municipal Officer';
+  const displayName =
+    user?.displayName || user?.email?.split("@")[0] || "Municipal User";
+  const userRole = user?.role || "Municipal Officer";
 
-  const NavLink = ({ to, icon: Icon, label, onClick, isDesktop = false }: NavLinkProps) => {
+  const NavLink = ({
+    to,
+    icon: Icon,
+    label,
+    onClick,
+    isDesktop = false,
+  }: NavLinkProps) => {
     const active = isActive(to);
     const content = (
       <Link
         to={to}
-        className={`flex items-center ${isDesktop && sidebarCollapsed ? 'justify-center' : 'gap-2'} px-3 py-1.5 rounded-lg text-sm transition-colors ${
-          active 
-            ? "bg-[#1B365D] text-white hover:bg-[#1B365D]/90" 
+        className={`flex items-center ${isDesktop && sidebarCollapsed ? "justify-center" : "gap-2"} px-3 py-1.5 rounded-lg text-sm transition-colors ${
+          active
+            ? "bg-[#1B365D] text-white hover:bg-[#1B365D]/90"
             : "hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600"
         }`}
         onClick={onClick}
       >
         <Icon className="h-4 w-4 shrink-0" />
-        {!(isDesktop && sidebarCollapsed) && <span className="text-sm">{label}</span>}
+        {!(isDesktop && sidebarCollapsed) && (
+          <span className="text-sm">{label}</span>
+        )}
       </Link>
     );
 
@@ -128,20 +149,38 @@ export default function MunicipalLayout() {
   const SidebarContent = ({ isDesktop = false }: SidebarContentProps) => (
     <>
       <div className="border-b bg-white dark:bg-gray-800 p-2 flex items-center justify-center">
-        <img 
-          src="/sentinel_ph_logo.png" 
-          alt="SentinelPH" 
-          className={`transition-all duration-300 ${isDesktop && sidebarCollapsed ? 'h-10 w-auto object-contain' : 'h-30 w-auto'}`} 
+        <img
+          src="/logo.png"
+          alt="HealthWatch"
+          className={`transition-all duration-300 ${isDesktop && sidebarCollapsed ? "h-10 w-auto object-contain" : "h-30 w-auto"}`}
         />
       </div>
       <div className="bg-white dark:bg-gray-800 px-3 py-4 flex-1 overflow-y-auto">
         <nav className="space-y-1">
-          <NavLink to="/municipal/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink
+            to="/municipal/dashboard"
+            icon={LayoutDashboard}
+            label="Dashboard"
+            onClick={() => setMobileOpen(false)}
+            isDesktop={isDesktop}
+          />
 
           {isDesktop && sidebarCollapsed ? (
             <div className="space-y-1">
-              <NavLink to="/municipal/bhws" icon={UserCog} label="BHWs" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-              <NavLink to="/municipal/sentinels" icon={Shield} label="Sentinels" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+              <NavLink
+                to="/municipal/bhws"
+                icon={UserCog}
+                label="BHWs"
+                onClick={() => setMobileOpen(false)}
+                isDesktop={isDesktop}
+              />
+              <NavLink
+                to="/municipal/sentinels"
+                icon={Shield}
+                label="Sentinels"
+                onClick={() => setMobileOpen(false)}
+                isDesktop={isDesktop}
+              />
             </div>
           ) : (
             <Collapsible open={usersOpen} onOpenChange={setUsersOpen}>
@@ -150,21 +189,71 @@ export default function MunicipalLayout() {
                   <Users className="h-4 w-4" />
                   <span className="text-sm">Users</span>
                 </div>
-                <ChevronDown className={`h-4 w-4 transition-transform ${usersOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${usersOpen ? "rotate-180" : ""}`}
+                />
               </CollapsibleTrigger>
               <CollapsibleContent className="ml-3 mt-1 space-y-1">
-                <NavLink to="/municipal/bhws" icon={UserCog} label="BHWs" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-                <NavLink to="/municipal/sentinels" icon={Shield} label="Sentinels" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+                <NavLink
+                  to="/municipal/bhws"
+                  icon={UserCog}
+                  label="BHWs"
+                  onClick={() => setMobileOpen(false)}
+                  isDesktop={isDesktop}
+                />
+                <NavLink
+                  to="/municipal/sentinels"
+                  icon={Shield}
+                  label="Sentinels"
+                  onClick={() => setMobileOpen(false)}
+                  isDesktop={isDesktop}
+                />
               </CollapsibleContent>
             </Collapsible>
           )}
 
-          <NavLink to="/municipal/reports" icon={ShieldAlert} label="Reports" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/municipal/map" icon={MapPinned} label="Map" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/municipal/observations" icon={Telescope} label="Observations" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/municipal/qr-scanner" icon={QrCode} label="QR Scanner" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/municipal/outbreak-response" icon={AlertTriangle} label="Outbreak Response" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
-          <NavLink to="/municipal/announcements" icon={Megaphone} label="Announcements" onClick={() => setMobileOpen(false)} isDesktop={isDesktop} />
+          <NavLink
+            to="/municipal/reports"
+            icon={ShieldAlert}
+            label="Reports"
+            onClick={() => setMobileOpen(false)}
+            isDesktop={isDesktop}
+          />
+          <NavLink
+            to="/municipal/map"
+            icon={MapPinned}
+            label="Map"
+            onClick={() => setMobileOpen(false)}
+            isDesktop={isDesktop}
+          />
+          <NavLink
+            to="/municipal/observations"
+            icon={Telescope}
+            label="Observations"
+            onClick={() => setMobileOpen(false)}
+            isDesktop={isDesktop}
+          />
+          <NavLink
+            to="/municipal/qr-scanner"
+            icon={QrCode}
+            label="QR Scanner"
+            onClick={() => setMobileOpen(false)}
+            isDesktop={isDesktop}
+          />
+          <NavLink
+            to="/municipal/outbreak-response"
+            icon={AlertTriangle}
+            label="Outbreak Response"
+            onClick={() => setMobileOpen(false)}
+            isDesktop={isDesktop}
+          />
+          <NavLink
+            to="/municipal/announcements"
+            icon={Megaphone}
+            label="Announcements"
+            onClick={() => setMobileOpen(false)}
+            isDesktop={isDesktop}
+          />
         </nav>
       </div>
       <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
@@ -197,7 +286,9 @@ export default function MunicipalLayout() {
     <TooltipProvider>
       <div className="flex h-screen">
         {/* Desktop Sidebar */}
-        <aside className={`hidden lg:flex flex-col bg-white dark:bg-gray-800 border-r dark:border-gray-700 transition-all duration-300 ${sidebarCollapsed ? "w-16" : "w-64"}`}>
+        <aside
+          className={`hidden lg:flex flex-col bg-white dark:bg-gray-800 border-r dark:border-gray-700 transition-all duration-300 ${sidebarCollapsed ? "w-16" : "w-64"}`}
+        >
           <SidebarContent isDesktop={true} />
         </aside>
 
@@ -229,17 +320,26 @@ export default function MunicipalLayout() {
                 )}
               </button>
             </div>
-            
+
             {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-3 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 rounded-lg transition-colors outline-none">
                 <Avatar size="default">
-                  <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt={displayName} />
-                  <AvatarFallback>{getInitials(user?.displayName, user?.email)}</AvatarFallback>
+                  <AvatarImage
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
+                    alt={displayName}
+                  />
+                  <AvatarFallback>
+                    {getInitials(user?.displayName, user?.email)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="hidden md:flex flex-col items-start">
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">{displayName}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{userRole}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    {displayName}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {userRole}
+                  </span>
                 </div>
                 <ChevronDown className="h-4 w-4 text-gray-600 dark:text-gray-400" />
               </DropdownMenuTrigger>
@@ -247,20 +347,29 @@ export default function MunicipalLayout() {
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium">{displayName}</p>
-                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user?.email}
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/municipal/profile")}>
+                <DropdownMenuItem
+                  onClick={() => navigate("/municipal/profile")}
+                >
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/municipal/settings")}>
+                <DropdownMenuItem
+                  onClick={() => navigate("/municipal/settings")}
+                >
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onClick={() => setLogoutDialogOpen(true)}>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setLogoutDialogOpen(true)}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
@@ -278,7 +387,8 @@ export default function MunicipalLayout() {
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to logout? You will need to sign in again to access your account.
+                Are you sure you want to logout? You will need to sign in again
+                to access your account.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

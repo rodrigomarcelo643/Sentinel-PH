@@ -75,8 +75,8 @@ export default function AdminLayout() {
     <>
       <div className="border-b bg-white dark:bg-gray-800 p-2 flex items-center justify-center">
         <img 
-          src="/sentinel_ph_logo.png" 
-          alt="SentinelPH" 
+          src="/logo.png" 
+          alt="HealthWatch" 
           className={`transition-all duration-300 ${isDesktop && sidebarCollapsed ? 'h-10 w--auto object-contain' : 'h-30 w-auto'}`} 
         />
       </div>

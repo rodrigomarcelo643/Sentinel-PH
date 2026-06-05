@@ -11,10 +11,11 @@ import {
 } from 'firebase/auth';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import type { User, AuthContextType } from '@/@types/contexts/auth';
+import { getMockUserByCredentials, MOCK_USER_FLAG } from '@/data/mockUsers';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const USER_STORAGE_KEY = 'sentinelph_user';
+const USER_STORAGE_KEY = 'healthwatch_user';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
@@ -90,6 +91,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (firebaseUser) {
         const userData = await fetchUserData(firebaseUser);
         updateUser(firebaseUser, userData);
+      } else if (localStorage.getItem(MOCK_USER_FLAG) === 'true') {
+        try {
+          const stored = localStorage.getItem(USER_STORAGE_KEY);
+          if (stored) {
+            setUser(JSON.parse(stored));
+          } else {
+            updateUser(null);
+          }
+        } catch {
+          updateUser(null);
+        }
       } else {
         updateUser(null);
       }
@@ -100,16 +112,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    console.log("AuthContext login attempt with email:", email);
+    const mockProfile = getMockUserByCredentials(email, password);
+    if (mockProfile) {
+      const mockUser: User = { ...mockProfile };
+      setUser(mockUser);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(mockUser));
+      localStorage.setItem(MOCK_USER_FLAG, 'true');
+      return mockUser;
+    }
+
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    console.log("Firebase auth successful, user:", userCredential.user);
-    
+    localStorage.removeItem(MOCK_USER_FLAG);
+
     const userData = await fetchUserData(userCredential.user);
-    console.log("Fetched user data:", userData);
-    
     updateUser(userCredential.user, userData);
-    console.log("User updated in context:", userData);
-    return userData; // Return data for immediate use in redirection
+    return userData;
   };
 
   const signup = async (email: string, password: string) => {
@@ -130,7 +147,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await signOut(auth);
+    const isMock = localStorage.getItem(MOCK_USER_FLAG) === 'true';
+    localStorage.removeItem(MOCK_USER_FLAG);
+    if (!isMock) {
+      try {
+        await signOut(auth);
+      } catch {
+        /* mock user may not have Firebase session */
+      }
+    }
     updateUser(null);
   };
 
