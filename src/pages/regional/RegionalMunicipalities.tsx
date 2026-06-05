@@ -13,10 +13,28 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRegionScope } from '@/contexts/RegionScopeContext';
+import { isMockUser, updateMockCredential } from '@/data/mockUsers';
+import {
+  loadMockMunicipalities,
+  saveMockMunicipalities,
+} from '@/data/dohRegionViiSeedData';
+import { AccountCredentialsFields } from '@/components/admin/AccountCredentialsFields';
+import { getPasswordValidationError } from '@/lib/passwordValidation';
+import {
+  buildMunicipalCredentialProfile,
+  changeManagedAccountPassword,
+  createManagedAccount,
+  deleteManagedAccountCredentials,
+  updateManagedAccountCredentials,
+} from '@/services/adminAccountService';
 
 export default function RegionalMunicipalities() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { basePath, region } = useRegionScope();
+  const regionFilter = region || user?.region || '';
+  const isDohPortal = basePath === '/doh-r7';
   
   const [municipalities, setMunicipalities] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,22 +44,48 @@ export default function RegionalMunicipalities() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [newMunicipality, setNewMunicipality] = useState({
+  const emptyMunicipalityForm = () => ({
     name: '',
-    region: user?.region || '',
+    region: regionFilter,
     headOfficer: '',
     officialEmail: '',
     phone: '',
     address: '',
+    username: '',
     status: 'active',
     createdBy: user?.uid,
-    createdAt: serverTimestamp()
+    createdAt: serverTimestamp(),
   });
+  const [newMunicipality, setNewMunicipality] = useState(emptyMunicipalityForm());
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [editPassword, setEditPassword] = useState('');
+  const [editConfirmPassword, setEditConfirmPassword] = useState('');
+  const [showEditPassword, setShowEditPassword] = useState(false);
+  const [showEditConfirmPassword, setShowEditConfirmPassword] = useState(false);
   const itemsPerPage = 10;
+
+  const resetAddForm = () => {
+    setNewMunicipality(emptyMunicipalityForm());
+    setNewPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  const resetEditPasswordForm = () => {
+    setEditPassword('');
+    setEditConfirmPassword('');
+    setShowEditPassword(false);
+    setShowEditConfirmPassword(false);
+  };
 
   useEffect(() => {
     fetchMunicipalities();
@@ -49,8 +93,13 @@ export default function RegionalMunicipalities() {
 
   const fetchMunicipalities = async () => {
     try {
+      if (isMockUser(user)) {
+        setMunicipalities(loadMockMunicipalities());
+        return;
+      }
+
       const municipalitiesRef = collection(db, 'municipalities');
-      const q = query(municipalitiesRef, where('region', '==', user?.region || ''));
+      const q = query(municipalitiesRef, where('region', '==', regionFilter));
       const querySnapshot = await getDocs(q);
       
       const municipalityData = querySnapshot.docs.map(doc => ({
@@ -69,69 +118,204 @@ export default function RegionalMunicipalities() {
   };
 
   const handleAddMunicipality = async () => {
+    const passwordError = getPasswordValidationError(newPassword, confirmPassword);
+    if (!newMunicipality.name || !newMunicipality.headOfficer || !newMunicipality.officialEmail || !newMunicipality.username) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in municipality name, head officer, official email, and username.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (passwordError) {
+      toast({
+        title: "Invalid password",
+        description: passwordError,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      await addDoc(collection(db, 'municipalities'), {
+      const accountId = `mock-muni-${Date.now()}`;
+      const entry = {
         ...newMunicipality,
-        createdAt: serverTimestamp(),
-        createdBy: user?.uid
+        id: accountId,
+        createdAt: new Date().toISOString(),
+        bhws: 0,
+        sentinels: 0,
+      };
+
+      await createManagedAccount(isMockUser(user), {
+        accountId,
+        email: newMunicipality.officialEmail,
+        username: newMunicipality.username,
+        password: newPassword,
+        profile: buildMunicipalCredentialProfile(newMunicipality, regionFilter),
+        registrationData: {
+          ...newMunicipality,
+          role: 'municipal_admin',
+          accountType: 'municipal_admin',
+          email: newMunicipality.officialEmail,
+          fullName: newMunicipality.headOfficer,
+          status: 'approved',
+          createdBy: user?.uid,
+        },
       });
-      
-      setNewMunicipality({
-        name: '',
-        region: user?.region || '',
-        headOfficer: '',
-        officialEmail: '',
-        phone: '',
-        address: '',
-        status: 'active',
-        createdBy: user?.uid,
-        createdAt: serverTimestamp()
-      });
-      
+
+      if (isMockUser(user)) {
+        const current = loadMockMunicipalities();
+        saveMockMunicipalities([...current, entry] as typeof current);
+      } else {
+        await addDoc(collection(db, 'municipalities'), {
+          ...newMunicipality,
+          createdAt: serverTimestamp(),
+          createdBy: user?.uid,
+        });
+      }
+
+      resetAddForm();
       setIsAddDialogOpen(false);
       fetchMunicipalities();
-      
+
       toast({
         title: "Municipality Added",
-        description: "New municipality has been added successfully.",
+        description: "Municipal admin account auto-approved. They can sign in immediately.",
         variant: "success",
       });
     } catch (error) {
       console.error('Error adding municipality:', error);
       toast({
         title: "Error",
-        description: "Failed to add municipality.",
+        description: error instanceof Error ? error.message : "Failed to add municipality.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleMunicipalityActive = async (municipalityId: string, activate: boolean) => {
+    const newStatus = activate ? 'active' : 'inactive';
+    const municipality = municipalities.find((m) => m.id === municipalityId);
+    if (!municipality) return;
+
+    const updatedMunicipality = { ...municipality, status: newStatus };
+
+    try {
+      if (isMockUser(user)) {
+        const current = loadMockMunicipalities();
+        saveMockMunicipalities(
+          current.map((m) => (m.id === municipalityId ? updatedMunicipality : m)) as typeof current
+        );
+        setMunicipalities(current.map((m) => (m.id === municipalityId ? updatedMunicipality : m)));
+        updateMockCredential(municipalityId, {
+          profile: { status: newStatus === 'active' ? 'approved' : 'inactive' },
+        });
+      } else {
+        const municipalityRef = doc(db, 'municipalities', municipalityId);
+        await updateDoc(municipalityRef, {
+          status: newStatus,
+          updatedAt: serverTimestamp(),
+          updatedBy: user?.uid,
+        });
+        setMunicipalities(
+          municipalities.map((m) => (m.id === municipalityId ? updatedMunicipality : m))
+        );
+      }
+
+      setIsDeactivateDialogOpen(false);
+      setIsViewDialogOpen(false);
+      setSelectedMunicipality(null);
+
+      toast({
+        title: activate ? "Municipality Reactivated" : "Municipality Deactivated",
+        description: activate
+          ? "The municipal admin can sign in again."
+          : "The municipal admin can no longer sign in until reactivated.",
+        variant: "success",
+      });
+    } catch (error) {
+      console.error('Error updating municipality status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update municipality status.",
         variant: "destructive",
       });
     }
   };
 
   const handleUpdateMunicipality = async () => {
+    if (!selectedMunicipality) return;
+
+    const hasPasswordChange = editPassword.length > 0 || editConfirmPassword.length > 0;
+    if (hasPasswordChange) {
+      const passwordError = getPasswordValidationError(editPassword, editConfirmPassword);
+      if (passwordError) {
+        toast({
+          title: "Invalid password",
+          description: passwordError,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     try {
-      const municipalityRef = doc(db, 'municipalities', selectedMunicipality.id);
-      await updateDoc(municipalityRef, {
-        ...selectedMunicipality,
-        updatedAt: serverTimestamp(),
-        updatedBy: user?.uid
-      });
-      
-      setMunicipalities(municipalities.map(m => 
-        m.id === selectedMunicipality.id ? selectedMunicipality : m
-      ));
+      if (hasPasswordChange) {
+        await changeManagedAccountPassword(
+          isMockUser(user),
+          selectedMunicipality.id,
+          editPassword
+        );
+      }
+
+      if (isMockUser(user)) {
+        await updateManagedAccountCredentials(true, selectedMunicipality.id, {
+          email: selectedMunicipality.officialEmail,
+          username: selectedMunicipality.username,
+          profile: buildMunicipalCredentialProfile(selectedMunicipality, regionFilter),
+        });
+      }
+
+      if (isMockUser(user)) {
+        const current = loadMockMunicipalities();
+        saveMockMunicipalities(
+          current.map((m) =>
+            m.id === selectedMunicipality.id ? selectedMunicipality : m
+          ) as typeof current
+        );
+        setMunicipalities(
+          current.map((m) =>
+            m.id === selectedMunicipality.id ? selectedMunicipality : m
+          )
+        );
+      } else {
+        const municipalityRef = doc(db, 'municipalities', selectedMunicipality.id);
+        await updateDoc(municipalityRef, {
+          ...selectedMunicipality,
+          updatedAt: serverTimestamp(),
+          updatedBy: user?.uid
+        });
+        setMunicipalities(municipalities.map(m => 
+          m.id === selectedMunicipality.id ? selectedMunicipality : m
+        ));
+      }
       
       setIsEditDialogOpen(false);
       setSelectedMunicipality(null);
+      resetEditPasswordForm();
       
       toast({
         title: "Municipality Updated",
-        description: "Municipality has been updated successfully.",
+        description: hasPasswordChange
+          ? "Municipality and login password updated successfully."
+          : "Municipality has been updated successfully.",
         variant: "success",
       });
     } catch (error) {
       console.error('Error updating municipality:', error);
       toast({
         title: "Error",
-        description: "Failed to update municipality.",
+        description: error instanceof Error ? error.message : "Failed to update municipality.",
         variant: "destructive",
       });
     }
@@ -139,9 +323,17 @@ export default function RegionalMunicipalities() {
 
   const handleDelete = async (municipalityId: string) => {
     try {
-      const municipalityRef = doc(db, 'municipalities', municipalityId);
-      await deleteDoc(municipalityRef);
-      setMunicipalities(municipalities.filter(m => m.id !== municipalityId));
+      deleteManagedAccountCredentials(isMockUser(user), municipalityId);
+      if (isMockUser(user)) {
+        const current = loadMockMunicipalities();
+        const updated = current.filter((m) => m.id !== municipalityId);
+        saveMockMunicipalities(updated);
+        setMunicipalities(updated);
+      } else {
+        const municipalityRef = doc(db, 'municipalities', municipalityId);
+        await deleteDoc(municipalityRef);
+        setMunicipalities(municipalities.filter(m => m.id !== municipalityId));
+      }
       setIsDeleteDialogOpen(false);
       setSelectedMunicipality(null);
       
@@ -244,8 +436,14 @@ export default function RegionalMunicipalities() {
       >
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-[#1B365D] mb-2">Regional Municipalities</h1>
-            <p className="text-gray-600">Manage municipalities in your region</p>
+            <h1 className="text-3xl font-bold text-[#1B365D] mb-2">
+              {isDohPortal ? 'DOH Region VII Municipalities' : 'Regional Municipalities'}
+            </h1>
+            <p className="text-gray-600">
+              {isDohPortal
+                ? 'Manage municipalities under Central Visayas (Region VII)'
+                : 'Manage municipalities in your region'}
+            </p>
           </div>
           <Button
             onClick={() => setIsAddDialogOpen(true)}
@@ -406,6 +604,28 @@ export default function RegionalMunicipalities() {
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
+                      {municipality.status === 'active' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedMunicipality(municipality);
+                            setIsDeactivateDialogOpen(true);
+                          }}
+                          className="border-gray-500 text-gray-600 hover:bg-gray-50"
+                        >
+                          Deactivate
+                        </Button>
+                      )}
+                      {municipality.status === 'inactive' && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleToggleMunicipalityActive(municipality.id, true)}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          Reactivate
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"
@@ -515,6 +735,16 @@ export default function RegionalMunicipalities() {
                   placeholder="Enter phone number"
                 />
               </div>
+              <div>
+                <Label htmlFor="username">Login Username</Label>
+                <Input
+                  id="username"
+                  value={newMunicipality.username}
+                  onChange={(e) => setNewMunicipality({...newMunicipality, username: e.target.value})}
+                  placeholder="Municipal admin username"
+                  autoComplete="off"
+                />
+              </div>
               <div className="col-span-2">
                 <Label htmlFor="address">Address</Label>
                 <Textarea
@@ -525,9 +755,22 @@ export default function RegionalMunicipalities() {
                   rows={3}
                 />
               </div>
+              <AccountCredentialsFields
+                password={newPassword}
+                setPassword={setNewPassword}
+                confirmPassword={confirmPassword}
+                setConfirmPassword={setConfirmPassword}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+                showConfirmPassword={showConfirmPassword}
+                setShowConfirmPassword={setShowConfirmPassword}
+              />
             </div>
+            <p className="text-xs text-gray-500">
+              Manually added municipal admins are auto-approved and can sign in right away. You can deactivate them later if needed.
+            </p>
             <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              <Button variant="outline" onClick={() => { setIsAddDialogOpen(false); resetAddForm(); }}>
                 Cancel
               </Button>
               <Button onClick={handleAddMunicipality} className="bg-[#1B365D] hover:bg-[#1B365D]/90">
@@ -560,6 +803,10 @@ export default function RegionalMunicipalities() {
                   <p className="text-sm text-gray-900">{selectedMunicipality.officialEmail}</p>
                 </div>
                 <div>
+                  <p className="text-sm font-medium text-gray-500">Login Username</p>
+                  <p className="text-sm text-gray-900">{selectedMunicipality.username || '—'}</p>
+                </div>
+                <div>
                   <p className="text-sm font-medium text-gray-500">Phone</p>
                   <p className="text-sm text-gray-900">{selectedMunicipality.phone}</p>
                 </div>
@@ -576,7 +823,26 @@ export default function RegionalMunicipalities() {
                   <p className="text-sm text-gray-900">{selectedMunicipality.bhws || 0}</p>
                 </div>
               </div>
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex flex-wrap justify-between gap-2 pt-4 border-t">
+                <div className="flex flex-wrap gap-2">
+                  {selectedMunicipality.status === 'active' && (
+                    <Button
+                      variant="outline"
+                      className="border-gray-500 text-gray-600 hover:bg-gray-50"
+                      onClick={() => setIsDeactivateDialogOpen(true)}
+                    >
+                      Deactivate
+                    </Button>
+                  )}
+                  {selectedMunicipality.status === 'inactive' && (
+                    <Button
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                      onClick={() => handleToggleMunicipalityActive(selectedMunicipality.id, true)}
+                    >
+                      Reactivate
+                    </Button>
+                  )}
+                </div>
                 <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
                   Close
                 </Button>
@@ -587,7 +853,10 @@ export default function RegionalMunicipalities() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
+        setIsEditDialogOpen(open);
+        if (!open) resetEditPasswordForm();
+      }}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Edit Municipality</DialogTitle>
@@ -632,6 +901,16 @@ export default function RegionalMunicipalities() {
                     placeholder="Enter phone number"
                   />
                 </div>
+                <div>
+                  <Label htmlFor="edit-username">Login Username</Label>
+                  <Input
+                    id="edit-username"
+                    value={selectedMunicipality.username || ''}
+                    onChange={(e) => setSelectedMunicipality({...selectedMunicipality, username: e.target.value})}
+                    placeholder="Municipal admin username"
+                    autoComplete="off"
+                  />
+                </div>
                 <div className="col-span-2">
                   <Label htmlFor="edit-address">Address</Label>
                   <Textarea
@@ -655,8 +934,26 @@ export default function RegionalMunicipalities() {
                   </Select>
                 </div>
               </div>
+              <div className="border-t pt-4 space-y-3">
+                <p className="text-sm font-medium text-gray-700">Change Login Password (optional)</p>
+                <div className="grid grid-cols-1 gap-4">
+                  <AccountCredentialsFields
+                    password={editPassword}
+                    setPassword={setEditPassword}
+                    confirmPassword={editConfirmPassword}
+                    setConfirmPassword={setEditConfirmPassword}
+                    showPassword={showEditPassword}
+                    setShowPassword={setShowEditPassword}
+                    showConfirmPassword={showEditConfirmPassword}
+                    setShowConfirmPassword={setShowEditConfirmPassword}
+                    passwordLabel="New Password"
+                    confirmLabel="Confirm New Password"
+                    showRequirements={editPassword.length > 0}
+                  />
+                </div>
+              </div>
               <div className="flex justify-end gap-2 pt-4 border-t">
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                <Button variant="outline" onClick={() => { setIsEditDialogOpen(false); resetEditPasswordForm(); }}>
                   Cancel
                 </Button>
                 <Button onClick={handleUpdateMunicipality} className="bg-[#1B365D] hover:bg-[#1B365D]/90">
@@ -667,6 +964,31 @@ export default function RegionalMunicipalities() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Deactivate Dialog */}
+      <AlertDialog open={isDeactivateDialogOpen} onOpenChange={setIsDeactivateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deactivate Municipality Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deactivate <strong>{selectedMunicipality?.name}</strong>? The municipal admin will not
+              be able to sign in until you reactivate the account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                selectedMunicipality &&
+                handleToggleMunicipalityActive(selectedMunicipality.id, false)
+              }
+              className="bg-gray-700 hover:bg-gray-800"
+            >
+              Deactivate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
