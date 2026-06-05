@@ -93,7 +93,7 @@ export const initiateMayaWalletPayment = async (data: MayaPaymentRequest) => {
       metadata: {
         pf: {
           smi: 'SM001',
-          smn: 'SentinelPh Merchant',
+          smn: 'HealthWatch Merchant',
           mci: '0000',
           mpc: '608',
           mco: 'PHL',
