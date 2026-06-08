@@ -55,7 +55,7 @@ export function CredentialsStep({
       )}
 
       <div className="space-y-2">
-        <Label>Username *</Label>
+        <Label>Username <span className="text-red-500">*</span></Label>
         <div className="flex items-center rounded-md border border-gray-300 bg-gray-50 px-4">
           <PhilippinesFlag className="mr-2" />
           <span className="mr-2 text-sm font-medium text-gray-500">+63</span>
@@ -65,7 +65,7 @@ export function CredentialsStep({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password *</Label>
+        <Label htmlFor="password">Password <span className="text-red-500">*</span></Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -87,7 +87,7 @@ export function CredentialsStep({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm Password *</Label>
+        <Label htmlFor="confirmPassword">Confirm Password <span className="text-red-500">*</span></Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -114,7 +114,7 @@ export function CredentialsStep({
       </div>
 
       {password.length > 0 && (
-        <div className="bg-gray-50 rounded-lg p-3">
+        <div className="bg-gray-50 rounded-lg p-2">
           <p className="text-gray-700 text-sm font-semibold mb-2">Password Requirements:</p>
           <ul className="space-y-1 text-sm">
             <li className={hasMinLength ? "text-green-600" : "text-gray-400"}>
@@ -142,7 +142,7 @@ export function CredentialsStep({
           checked={agreedToPolicy}
           onCheckedChange={(checked) => setAgreedToPolicy(checked === true)}
         />
-        <label htmlFor="agreeToPolicy" className="text-sm text-gray-700 leading-relaxed cursor-pointer">
+        <label htmlFor="agreeToPolicy" className=" relative -top-1 text-sm text-gray-700 leading-relaxed cursor-pointer">
           I agree to the{" "}
           <span className="text-[#1B365D] font-semibold underline">Terms and Conditions</span> and{" "}
           <span className="text-[#1B365D] font-semibold underline">Privacy Policy</span>
