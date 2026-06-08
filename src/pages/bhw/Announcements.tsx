@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Megaphone, Plus, Send, AlertCircle, Info, X, ChevronLeft, ChevronRight, Calendar, Package, Siren, Droplet, Edit2, Trash2, Activity, Upload } from 'lucide-react';
+import { Megaphone, CirclePlus, Send, AlertCircle, Info, X, ChevronLeft, ChevronRight, Calendar, Package, Siren, Droplet, Edit2, Trash2, Activity, CloudUpload } from 'lucide-react';
 import { collection, getDocs, addDoc, serverTimestamp, orderBy, query, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -240,7 +240,7 @@ export default function Announcements() {
               onClick={() => setShowModal(true)}
               className="flex items-center justify-center gap-2 bg-[#1B365D] text-white px-3 sm:px-4 py-2 rounded-sm hover:bg-[#152a4a] transition-colors cursor-pointer text-sm sm:text-base w-full sm:w-auto"
             >
-              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+              <CirclePlus className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>New Announcement</span>
             </button>
           </div>
@@ -426,7 +426,7 @@ export default function Announcements() {
                           htmlFor="image-upload"
                           className="cursor-pointer flex flex-col items-center gap-2"
                         >
-                          <Upload className="h-8 w-8 text-gray-400" />
+                          <CloudUpload className="h-8 w-8 text-gray-400" />
                           <span className="text-sm text-gray-600">Click to upload image</span>
                           <span className="text-xs text-gray-500">PNG, JPG up to 10MB</span>
                         </label>
