@@ -9,6 +9,8 @@ import RegionPage from "@/pages/public/RegionPage";
 import PricingPage from "@/pages/public/PricingPage";
 import RegisterPage from "@/pages/public/RegisterPage";
 import SignInPage from "@/pages/public/SignInPage";
+import ForgotPasswordPage from "@/pages/public/ForgotPasswordPage";
+import ErrorPage from "@/pages/public/ErrorPage";
 import ResidentRegisterPage from "@/pages/resident/RegisterPage";
 import ReportPage from "@/pages/resident/ReportPage";
 import AdminLayout from "@/layouts/admin/AdminLayout";
@@ -63,6 +65,14 @@ export default function AppRoutes() {
       />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/resident/register" element={<ResidentRegisterPage />} />
+      <Route
+        path="/forgot-password"
+        element={
+          <GuestRoute>
+            <ForgotPasswordPage />
+          </GuestRoute>
+        }
+      />
 
       {/* BHW Routes */}
       <Route
@@ -344,6 +354,12 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Error Routes */}
+      <Route path="/501" element={<ErrorPage code="501" />} />
+      <Route path="/500" element={<ErrorPage code="500" />} />
+      <Route path="/error/:code" element={<ErrorPage />} />
+      <Route path="*" element={<ErrorPage code="404" />} />
     </Routes>
   );
 }
