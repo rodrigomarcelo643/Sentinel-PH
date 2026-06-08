@@ -12,20 +12,17 @@ function AppContent() {
   const { } = useAuth();
   const location = useLocation();
   
-  // Hide navbar on dashboard routes and register page
-  const isDashboardRoute = location.pathname.startsWith('/admin') || 
-                          location.pathname.startsWith('/dashboard') ||
-                          location.pathname.startsWith('/bhw') ||
-                          location.pathname.startsWith('/regional') ||
-                          location.pathname.startsWith('/doh-r7') ||
-                          location.pathname.startsWith('/municipal') ||
-                          location.pathname === '/register' ||
-                          location.pathname === '/resident/register' ||
-                          location.pathname === '/signin';
+  // Show navbar only on specific public pages
+  const showNavbar = location.pathname === '/' ||
+                     location.pathname === '/about' ||
+                     location.pathname === '/pricing' ||
+                     location.pathname === '/map' ||
+                     location.pathname.startsWith('/region/') ||
+                     location.pathname === '/resident/report';
   
   return (
     <>
-      {!isDashboardRoute && <Navbar />}
+      {showNavbar && <Navbar />}
       <AppRoutes />
       <Toaster />
     </>
