@@ -21,7 +21,7 @@ import {
   LogIn,
   Zap,
   ShieldCheck,
-  Map,
+  MapPinHouse,
 } from "lucide-react";
 
 export default function SignInPage() {
@@ -158,7 +158,7 @@ export default function SignInPage() {
       description: "Multi-source verification before outbreak alerts are triggered.",
     },
     {
-      icon: Map,
+      icon: MapPinHouse,
       title: "Real-time heatmaps",
       description: "See geographic clustering of symptoms as they emerge.",
     },
@@ -331,9 +331,12 @@ export default function SignInPage() {
               </motion.div>
 
               <motion.div variants={fadeUp} className="flex justify-end text-sm">
-                <a href="#" className="text-cyan-600 hover:text-cyan-700 hover:underline">
+                <Link
+                  to="/forgot-password"
+                  className="text-cyan-600 hover:text-cyan-700 hover:underline"
+                >
                   Forgot password?
-                </a>
+                </Link>
               </motion.div>
 
               <motion.div variants={fadeUp}>
