@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScanLine, Camera, ChevronDown, X } from "lucide-react";
+import { CloudUpload, Camera, ChevronDown, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 
 export const ID_TYPES = [
@@ -64,7 +64,7 @@ export function DocumentVerificationStep({
       )}
 
       <div className="space-y-2">
-        <Label>Select ID Type *</Label>
+        <Label>Select ID Type <span className="text-red-500">*</span></Label>
         <div className="relative">
           <button
             type="button"
@@ -99,7 +99,7 @@ export function DocumentVerificationStep({
       <div className="grid gap-6 md:grid-cols-2">
         <div>
           <div className="flex items-center justify-between mb-3">
-            <Label>Valid ID *</Label>
+            <Label>Valid ID <span className="text-red-500">*</span></Label>
             {validId && (
               <button
                 type="button"
@@ -126,8 +126,8 @@ export function DocumentVerificationStep({
               <img src={validIdPreview} alt="Valid ID" className="w-full h-48 object-cover" />
             ) : (
               <div className="p-8 flex flex-col items-center bg-white">
-                <ScanLine className="h-12 w-12 text-[#1B365D]" strokeWidth={1.5} />
-                <p className="text-[#1B365D] font-semibold mt-4">Scan or upload your ID</p>
+                <CloudUpload className="h-12 w-12 text-[#1B365D]" strokeWidth={1.5} />
+                <p className="text-[#1B365D] font-semibold mt-4"> Drag or upload your ID</p>
               </div>
             )}
           </label>
@@ -135,7 +135,7 @@ export function DocumentVerificationStep({
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <Label>Selfie *</Label>
+            <Label>Selfie <span className="text-red-500">*</span></Label>
             {selfie && (
               <button
                 type="button"
@@ -163,7 +163,7 @@ export function DocumentVerificationStep({
             ) : (
               <div className="p-8 flex flex-col items-center bg-white">
                 <Camera className="h-12 w-12 text-[#1B365D]" strokeWidth={1.5} />
-                <p className="text-[#1B365D] font-semibold mt-4">Take or upload a selfie</p>
+                <p className="text-[#1B365D] font-semibold mt-4">Drag or upload a selfie</p>
               </div>
             )}
           </label>
