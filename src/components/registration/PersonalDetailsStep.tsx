@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Loader2, ChevronDown } from "lucide-react";
+import { LocateFixed, Loader2, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -121,9 +121,9 @@ export function PersonalDetailsStep({
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold text-[#1B365D] mb-4">Basic Information</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="firstName">First Name *</Label>
+            <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
             <Input
               id="firstName"
               placeholder="Enter first name"
@@ -136,7 +136,7 @@ export function PersonalDetailsStep({
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name *</Label>
+            <Label htmlFor="lastName">Last Name <span className="text-red-500">*</span></Label>
             <Input
               id="lastName"
               placeholder="Enter last name"
@@ -148,8 +148,7 @@ export function PersonalDetailsStep({
               <p className="text-red-500 text-sm">Last Name is required</p>
             )}
           </div>
-        </div>
-        <div className="mt-4 space-y-2">
+          <div className="space-y-2">
           <Label htmlFor="middleInitial">Middle Initial (Optional)</Label>
           <Input
             id="middleInitial"
@@ -157,13 +156,13 @@ export function PersonalDetailsStep({
             value={middleInitial}
             onChange={(e) => setMiddleInitial(e.target.value.slice(0, 2).toUpperCase())}
             maxLength={2}
-            className="max-w-[120px]"
           />
+          </div>
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label>Community Role *</Label>
+        <Label>Community Role <span className="text-red-500">*</span></Label>
         <div className="relative">
           <button
             type="button"
@@ -203,7 +202,7 @@ export function PersonalDetailsStep({
 
       {communityRole === "Other (Specify)" && (
         <div className="space-y-2">
-          <Label htmlFor="customRole">Specify Role *</Label>
+          <Label htmlFor="customRole">Specify Role <span className="text-red-500">*</span></Label>
           <Input
             id="customRole"
             placeholder="Enter your community role"
@@ -221,7 +220,7 @@ export function PersonalDetailsStep({
         <h2 className="text-lg font-semibold text-[#1B365D] mb-4">Contact Information</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>Contact Number *</Label>
+            <Label>Contact Number <span className="text-red-500">*</span></Label>
             <div
               className={`flex items-center rounded-md border bg-white px-4 ${
                 errors.includes("Valid contact number is required") ? "border-red-500" : "border-gray-300"
@@ -245,7 +244,7 @@ export function PersonalDetailsStep({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address *</Label>
+            <Label htmlFor="email">Email Address <span className="text-red-500">*</span></Label>
             <Input
               id="email"
               type="email"
@@ -275,14 +274,14 @@ export function PersonalDetailsStep({
             {loadingLocation ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <MapPin className="h-4 w-4" />
+              <LocateFixed className="h-4 w-4" />
             )}
             {loadingLocation ? "Getting..." : "Auto-fill"}
           </Button>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="region">Region *</Label>
+            <Label htmlFor="region">Region <span className="text-red-500">*</span></Label>
             <Input
               id="region"
               placeholder="Enter Region"
@@ -291,7 +290,7 @@ export function PersonalDetailsStep({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="municipality">Municipality *</Label>
+            <Label htmlFor="municipality">Municipality <span className="text-red-500">*</span></Label>
             <Input
               id="municipality"
               placeholder="Enter Municipality"
@@ -300,7 +299,7 @@ export function PersonalDetailsStep({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="barangay">Barangay *</Label>
+            <Label htmlFor="barangay">Barangay <span className="text-red-500">*</span></Label>
             <Input
               id="barangay"
               placeholder="Enter Barangay"
