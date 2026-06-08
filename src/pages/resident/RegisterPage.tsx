@@ -176,9 +176,9 @@ export default function ResidentRegisterPage() {
         >
           <div className="relative inline-block">
             <img
-              src="/logo.png"
+              src="/logo_main.png"
               alt="HealthWatch"
-              className="h-16 sm:h-20 lg:h-24 mx-auto mb-3 sm:mb-4 lg:mb-6 relative z-10"
+              className="h-16 sm:h-20 lg:h-24 mx-auto mb-3 sm:mb-4 lg:mb-2 relative z-10"
             />
             <div className="absolute inset-0 bg-blue-600 rounded-full blur-3xl opacity-20 -z-10" />
           </div>
@@ -330,7 +330,7 @@ export default function ResidentRegisterPage() {
               />
             )}
 
-            <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
+            <div className="mt-6 sm:mt-6 pt-3 sm:pt-5 border-t border-gray-200">
               {currentStep === 1 ? (
                 <Button
                   onClick={handleNext}
