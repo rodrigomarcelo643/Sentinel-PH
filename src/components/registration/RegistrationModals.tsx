@@ -103,7 +103,7 @@ export function RegistrationModals({
                 className="mb-6 flex justify-center"
               >
                 <img
-                  src="/logo.png"
+                  src="/logo_main.png"
                   alt="HealthWatch"
                   className="h-16 w-16 object-contain"
                 />
