@@ -1,7 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft,
   FileQuestion,
   Wrench,
   ShieldAlert,
